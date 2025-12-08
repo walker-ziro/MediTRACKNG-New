@@ -1,0 +1,503 @@
+{
+  "info": {
+    "name": "MediTRACKNG National System APIs",
+    "description": "Complete API collection for testing MediTRACKNG National Health Records System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000/api",
+      "type": "string"
+    },
+    {
+      "key": "token",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "healthId",
+      "value": "MTN-0001234",
+      "type": "string"
+    },
+    {
+      "key": "facilityId",
+      "value": "FAC-LG-001",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"admin\",\n  \"password\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Consent Management",
+      "item": [
+        {
+          "name": "Create Consent",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientHealthId\": \"{{healthId}}\",\n  \"facilityId\": \"{{facilityId}}\",\n  \"consentType\": \"Full Access\",\n  \"purpose\": \"Primary care provider\",\n  \"scope\": {\n    \"demographics\": true,\n    \"medicalHistory\": true,\n    \"medications\": true,\n    \"allergies\": true,\n    \"labResults\": true,\n    \"radiologyImages\": true,\n    \"clinicalNotes\": true,\n    \"immunizations\": true,\n    \"vitalSigns\": true\n  },\n  \"validUntil\": \"2025-12-31\",\n  \"grantedBy\": \"Patient\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/consents",
+              "host": ["{{baseUrl}}"],
+              "path": ["consents"]
+            }
+          }
+        },
+        {
+          "name": "Get Patient Consents",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/consents/patient/{{healthId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["consents", "patient", "{{healthId}}"]
+            }
+          }
+        },
+        {
+          "name": "Check Consent",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/consents/check/{{healthId}}/{{facilityId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["consents", "check", "{{healthId}}", "{{facilityId}}"]
+            }
+          }
+        },
+        {
+          "name": "Emergency Access",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"patientHealthId\": \"{{healthId}}\",\n  \"facilityId\": \"{{facilityId}}\",\n  \"justification\": \"Patient presented unconscious with suspected heart attack. No existing consent on file. Emergency treatment required immediately.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/consents/emergency",
+              "host": ["{{baseUrl}}"],
+              "path": ["consents", "emergency"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Audit Logs",
+      "item": [
+        {
+          "name": "Get Patient Access Log",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/audit/patient/{{healthId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["audit", "patient", "{{healthId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Suspicious Activities",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/audit/suspicious?reviewed=false",
+              "host": ["{{baseUrl}}"],
+              "path": ["audit", "suspicious"],
+              "query": [
+                {
+                  "key": "reviewed",
+                  "value": "false"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Facility Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/audit/stats/facility/{{facilityId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["audit", "stats", "facility", "{{facilityId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Facility Management",
+      "item": [
+        {
+          "name": "Register Facility",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"facilityId\": \"FAC-LG-002\",\n  \"name\": \"Lagos General Hospital\",\n  \"type\": \"General Hospital\",\n  \"ownership\": \"State\",\n  \"accreditationNumber\": \"ACC-2024-001\",\n  \"accreditationExpiry\": \"2025-12-31\",\n  \"region\": \"South West\",\n  \"state\": \"Lagos\",\n  \"lga\": \"Lagos Island\",\n  \"address\": \"123 Marina Road, Lagos Island\",\n  \"contactPerson\": \"Dr. Adebayo Johnson\",\n  \"phone\": \"+234-803-123-4567\",\n  \"email\": \"admin@lagosgeneral.ng\",\n  \"website\": \"https://lagosgeneral.ng\",\n  \"servicesOffered\": [\"Emergency\", \"Maternity\", \"Surgery\", \"Pediatrics\"],\n  \"subscriptionTier\": \"Standard\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/facilities/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["facilities", "register"]
+            }
+          }
+        },
+        {
+          "name": "Get All Facilities",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/facilities",
+              "host": ["{{baseUrl}}"],
+              "path": ["facilities"]
+            }
+          }
+        },
+        {
+          "name": "Get Facility Overview",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/facilities/analytics/overview",
+              "host": ["{{baseUrl}}"],
+              "path": ["facilities", "analytics", "overview"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Analytics (Public Health)",
+      "item": [
+        {
+          "name": "Get National Overview",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/overview",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "overview"]
+            }
+          }
+        },
+        {
+          "name": "Get Disease Surveillance",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/disease-surveillance",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "disease-surveillance"]
+            }
+          }
+        },
+        {
+          "name": "Get Demographics",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/demographics",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "demographics"]
+            }
+          }
+        },
+        {
+          "name": "Get Immunization Coverage",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/immunization-coverage",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "immunization-coverage"]
+            }
+          }
+        },
+        {
+          "name": "Get Regional Health",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/analytics/regional-health",
+              "host": ["{{baseUrl}}"],
+              "path": ["analytics", "regional-health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Patient Portal",
+      "item": [
+        {
+          "name": "Get Patient Profile",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/patient-portal/profile/{{healthId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["patient-portal", "profile", "{{healthId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Medical History",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/patient-portal/medical-history/{{healthId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["patient-portal", "medical-history", "{{healthId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Encounters",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/patient-portal/encounters/{{healthId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["patient-portal", "encounters", "{{healthId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Lab Results",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/patient-portal/lab-results/{{healthId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["patient-portal", "lab-results", "{{healthId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Consents (Who Has Access)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/patient-portal/consents/{{healthId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["patient-portal", "consents", "{{healthId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Access Log (Who Accessed My Records)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/patient-portal/access-log/{{healthId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["patient-portal", "access-log", "{{healthId}}"]
+            }
+          }
+        },
+        {
+          "name": "Download Full Record",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/patient-portal/download/{{healthId}}?format=json",
+              "host": ["{{baseUrl}}"],
+              "path": ["patient-portal", "download", "{{healthId}}"],
+              "query": [
+                {
+                  "key": "format",
+                  "value": "json"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Patients (Original)",
+      "item": [
+        {
+          "name": "Create Patient",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"healthId\": \"MTN-0001234\",\n  \"firstName\": \"John\",\n  \"lastName\": \"Doe\",\n  \"dateOfBirth\": \"1990-05-15\",\n  \"gender\": \"Male\",\n  \"bloodGroup\": \"O+\",\n  \"genotype\": \"AA\",\n  \"contact\": {\n    \"phone\": \"+234-803-123-4567\",\n    \"email\": \"john.doe@example.com\",\n    \"address\": \"123 Main Street\",\n    \"lga\": \"Lagos Island\",\n    \"state\": \"Lagos\"\n  },\n  \"nationalId\": {\n    \"nin\": \"12345678901\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/patients",
+              "host": ["{{baseUrl}}"],
+              "path": ["patients"]
+            }
+          }
+        },
+        {
+          "name": "Get All Patients",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/patients",
+              "host": ["{{baseUrl}}"],
+              "path": ["patients"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Dashboard",
+      "item": [
+        {
+          "name": "Get Dashboard Stats",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/dashboard/stats",
+              "host": ["{{baseUrl}}"],
+              "path": ["dashboard", "stats"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

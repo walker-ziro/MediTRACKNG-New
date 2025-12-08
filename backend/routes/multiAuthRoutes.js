@@ -1,0 +1,683 @@
+const express = require('express');
+const router = express.Router();
+const jwt = require('jsonwebtoken');
+const ProviderAuth = require('../models/ProviderAuth');
+const PatientAuth = require('../models/PatientAuth');
+const AdminAuth = require('../models/AdminAuth');
+
+// Generate JWT token
+const generateToken = (user, userType) => {
+  return jwt.sign(
+    { 
+      id: user._id,
+      userId: user.providerId || user.healthId || user.adminId,
+      userType,
+      role: user.role
+    },
+    process.env.JWT_SECRET,
+    { expiresIn: '7d' }
+  );
+};
+
+// ========== PROVIDER ROUTES ==========
+
+// Provider Registration
+router.post('/provider/register', async (req, res) => {
+  try {
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
+      password,
+      specialization,
+      licenseNumber,
+      facilityId,
+      facilityName,
+      department,
+      role,
+      licenseExpiryDate,
+      dateOfBirth,
+      gender,
+      address
+    } = req.body;
+
+    // Validate required fields
+    if (!firstName || !lastName || !email || !phone || !password || !licenseNumber) {
+      return res.status(400).json({ 
+        message: 'Missing required fields: firstName, lastName, email, phone, password, licenseNumber' 
+      });
+    }
+
+    // Check if provider already exists
+    const existingProvider = await ProviderAuth.findOne({ 
+      $or: [{ email }, { licenseNumber }] 
+    });
+    
+    if (existingProvider) {
+      return res.status(400).json({ 
+        message: 'Provider with this email or license number already exists' 
+      });
+    }
+
+    // Create new provider with all fields
+    const providerData = {
+      firstName,
+      lastName,
+      email,
+      phone,
+      password,
+      licenseNumber,
+      role: role || 'Doctor'
+    };
+
+    // Add optional fields if provided
+    if (specialization) providerData.specialization = specialization;
+    if (facilityId) providerData.facilityId = facilityId;
+    if (facilityName) providerData.facilityName = facilityName;
+    if (department) providerData.department = department;
+    if (licenseExpiryDate) providerData.licenseExpiryDate = licenseExpiryDate;
+    if (dateOfBirth) providerData.dateOfBirth = dateOfBirth;
+    if (gender) providerData.gender = gender;
+    if (address) providerData.address = address;
+
+    const provider = await ProviderAuth.create(providerData);
+
+    // Set role-based permissions
+    provider.setRolePermissions();
+    await provider.save();
+
+    res.status(201).json({
+      message: 'Provider registered successfully. Awaiting approval.',
+      providerId: provider.providerId,
+      userType: 'provider'
+    });
+  } catch (error) {
+    console.error('Provider registration error:', error);
+    console.error('Error details:', error.stack);
+    res.status(500).json({ 
+      message: 'Error registering provider', 
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
+
+// Provider Login
+router.post('/provider/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find provider
+    const provider = await ProviderAuth.findOne({ email });
+    
+    if (!provider) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Check if account is locked
+    if (provider.isLocked()) {
+      return res.status(423).json({ message: 'Account is locked. Please contact administrator.' });
+    }
+
+    // Check if account is active
+    if (!provider.isActive) {
+      return res.status(403).json({ message: 'Account is not activated. Please contact administrator.' });
+    }
+
+    // Verify password
+    const isMatch = await provider.comparePassword(password);
+    
+    if (!isMatch) {
+      provider.loginAttempts += 1;
+      
+      // Lock account after 5 failed attempts
+      if (provider.loginAttempts >= 5) {
+        provider.lockUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+      }
+      
+      await provider.save();
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Reset login attempts and update last login
+    provider.loginAttempts = 0;
+    provider.lockUntil = undefined;
+    provider.lastLogin = new Date();
+    await provider.save();
+
+    // Generate token
+    const token = generateToken(provider, 'provider');
+
+    res.json({
+      message: 'Login successful',
+      token,
+      userType: 'provider',
+      user: {
+        providerId: provider.providerId,
+        name: `${provider.firstName} ${provider.lastName}`,
+        email: provider.email,
+        role: provider.role,
+        specialization: provider.specialization,
+        facilityName: provider.facilityName,
+        permissions: provider.permissions,
+        photo: provider.photo
+      }
+    });
+  } catch (error) {
+    console.error('Provider login error:', error);
+    res.status(500).json({ message: 'Error logging in', error: error.message });
+  }
+});
+
+// ========== PATIENT ROUTES ==========
+
+// Patient Registration
+router.post('/patient/register', async (req, res) => {
+  try {
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
+      password,
+      dateOfBirth,
+      gender,
+      address,
+      bloodType,
+      genotype,
+      emergencyContact,
+      allergies,
+      chronicConditions
+    } = req.body;
+
+    // Validate required fields
+    if (!firstName || !lastName || !email || !phone || !password) {
+      return res.status(400).json({ 
+        message: 'Missing required fields: firstName, lastName, email, phone, password' 
+      });
+    }
+
+    // Check if patient already exists
+    const existingPatient = await PatientAuth.findOne({ 
+      $or: [{ email }, { phone }] 
+    });
+    
+    if (existingPatient) {
+      return res.status(400).json({ 
+        message: 'Patient with this email or phone already exists' 
+      });
+    }
+
+    // Create patient data object
+    const patientData = {
+      firstName,
+      lastName,
+      email,
+      phone,
+      password
+    };
+
+    // Add optional fields if provided
+    if (dateOfBirth) patientData.dateOfBirth = dateOfBirth;
+    if (gender) patientData.gender = gender;
+    if (address) patientData.address = address;
+    if (bloodType) patientData.bloodType = bloodType;
+    if (genotype) patientData.genotype = genotype;
+    if (emergencyContact) patientData.emergencyContact = emergencyContact;
+    if (allergies) patientData.allergies = Array.isArray(allergies) ? allergies : allergies.split(',').map(a => a.trim()).filter(Boolean);
+    if (chronicConditions) patientData.chronicConditions = Array.isArray(chronicConditions) ? chronicConditions : chronicConditions.split(',').map(c => c.trim()).filter(Boolean);
+
+    // Create new patient
+    const patient = await PatientAuth.create(patientData);
+
+    // Generate token
+    const token = generateToken(patient, 'patient');
+
+    res.status(201).json({
+      message: 'Patient registered successfully',
+      token,
+      userType: 'patient',
+      user: {
+        healthId: patient.healthId,
+        name: `${patient.firstName} ${patient.lastName}`,
+        email: patient.email
+      }
+    });
+  } catch (error) {
+    console.error('Patient registration error:', error);
+    res.status(500).json({ message: 'Error registering patient', error: error.message });
+  }
+});
+
+// Patient Login
+router.post('/patient/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find patient
+    const patient = await PatientAuth.findOne({ email });
+    
+    if (!patient) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Check if account is locked
+    if (patient.isLocked()) {
+      return res.status(423).json({ message: 'Account is locked. Please try again later.' });
+    }
+
+    // Check if account is active
+    if (!patient.isActive) {
+      return res.status(403).json({ message: 'Account is deactivated.' });
+    }
+
+    // Verify password
+    const isMatch = await patient.comparePassword(password);
+    
+    if (!isMatch) {
+      patient.loginAttempts += 1;
+      
+      // Lock account after 5 failed attempts
+      if (patient.loginAttempts >= 5) {
+        patient.lockUntil = new Date(Date.now() + 30 * 60 * 1000); // 30 minutes
+      }
+      
+      await patient.save();
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Reset login attempts and update last login
+    patient.loginAttempts = 0;
+    patient.lockUntil = undefined;
+    patient.lastLogin = new Date();
+    await patient.save();
+
+    // Generate token
+    const token = generateToken(patient, 'patient');
+
+    res.json({
+      message: 'Login successful',
+      token,
+      userType: 'patient',
+      user: {
+        healthId: patient.healthId,
+        name: `${patient.firstName} ${patient.lastName}`,
+        email: patient.email,
+        phone: patient.phone,
+        age: patient.getAge(),
+        bloodType: patient.bloodType,
+        photo: patient.photo,
+        permissions: patient.permissions
+      }
+    });
+  } catch (error) {
+    console.error('Patient login error:', error);
+    res.status(500).json({ message: 'Error logging in', error: error.message });
+  }
+});
+
+// ========== ADMIN ROUTES ==========
+
+// Admin Registration (Super Admin only can create)
+router.post('/admin/register', async (req, res) => {
+  try {
+    const {
+      firstName,
+      lastName,
+      email,
+      phone,
+      password,
+      role,
+      adminLevel,
+      state,
+      facilityId,
+      facilityName
+    } = req.body;
+
+    // Validate required fields
+    if (!firstName || !lastName || !email || !phone || !password) {
+      return res.status(400).json({ 
+        message: 'Missing required fields: firstName, lastName, email, phone, password' 
+      });
+    }
+
+    // Check if admin already exists
+    const existingAdmin = await AdminAuth.findOne({ email });
+    
+    if (existingAdmin) {
+      return res.status(400).json({ 
+        message: 'Admin with this email already exists' 
+      });
+    }
+
+    // Create admin data object
+    const adminData = {
+      firstName,
+      lastName,
+      email,
+      phone,
+      password,
+      role: role || 'System Admin',
+      adminLevel: adminLevel || 'Facility',
+      twoFactorEnabled: true
+    };
+
+    // Add jurisdiction fields based on admin level
+    if (adminLevel === 'State' && state) {
+      adminData.state = state;
+    } else if (adminLevel === 'Facility') {
+      if (facilityId) adminData.facilityId = facilityId;
+      if (facilityName) adminData.facilityName = facilityName;
+    }
+
+    // Create new admin
+    const admin = await AdminAuth.create(adminData);
+
+    // Set role-based permissions
+    admin.setRolePermissions();
+    await admin.save();
+
+    res.status(201).json({
+      message: 'Admin registered successfully. Awaiting approval.',
+      adminId: admin.adminId,
+      userType: 'admin'
+    });
+  } catch (error) {
+    console.error('Admin registration error:', error);
+    console.error('Error details:', error.stack);
+    res.status(500).json({ 
+      message: 'Error registering admin', 
+      error: error.message,
+      details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
+  }
+});
+
+// Admin Login
+router.post('/admin/login', async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    // Find admin
+    const admin = await AdminAuth.findOne({ email });
+    
+    if (!admin) {
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Check if account is locked
+    if (admin.isLocked()) {
+      return res.status(423).json({ message: 'Account is locked. Please contact super admin.' });
+    }
+
+    // Check if account is active
+    if (!admin.isActive) {
+      return res.status(403).json({ message: 'Account is not activated. Please contact super admin.' });
+    }
+
+    // Verify password
+    const isMatch = await admin.comparePassword(password);
+    
+    if (!isMatch) {
+      admin.loginAttempts += 1;
+      
+      // Lock account after 3 failed attempts (stricter for admins)
+      if (admin.loginAttempts >= 3) {
+        admin.lockUntil = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+      }
+      
+      await admin.save();
+      return res.status(401).json({ message: 'Invalid credentials' });
+    }
+
+    // Reset login attempts and update last login
+    admin.loginAttempts = 0;
+    admin.lockUntil = undefined;
+    admin.lastLogin = new Date();
+    
+    // Log activity
+    admin.logActivity('Login', 'Authentication', req.ip, 'Successful login');
+    
+    await admin.save();
+
+    // Check if 2FA is required
+    if (admin.twoFactorEnabled) {
+      // Generate temporary token for 2FA (expires in 5 minutes)
+      const tempToken = jwt.sign(
+        { 
+          id: admin._id,
+          userType: 'admin',
+          temp2FA: true
+        },
+        process.env.JWT_SECRET,
+        { expiresIn: '5m' }
+      );
+      
+      return res.json({
+        message: 'Password verified. 2FA required.',
+        require2FA: true,
+        tempToken,
+        userType: 'admin'
+      });
+    }
+
+    // Generate full token if 2FA not enabled
+    const token = generateToken(admin, 'admin');
+
+    res.json({
+      message: 'Login successful',
+      token,
+      userType: 'admin',
+      user: {
+        adminId: admin.adminId,
+        name: `${admin.firstName} ${admin.lastName}`,
+        email: admin.email,
+        role: admin.role,
+        adminLevel: admin.adminLevel,
+        jurisdiction: admin.jurisdiction,
+        permissions: admin.permissions,
+        photo: admin.photo
+      }
+    });
+  } catch (error) {
+    console.error('Admin login error:', error);
+    res.status(500).json({ message: 'Error logging in', error: error.message });
+  }
+});
+
+// ========== COMMON ROUTES ==========
+
+// Verify Token (for all user types)
+router.get('/verify', async (req, res) => {
+  try {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    
+    if (!token) {
+      return res.status(401).json({ message: 'No token provided' });
+    }
+
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    let user;
+    if (decoded.userType === 'provider') {
+      user = await ProviderAuth.findById(decoded.id).select('-password');
+    } else if (decoded.userType === 'patient') {
+      user = await PatientAuth.findById(decoded.id).select('-password');
+    } else if (decoded.userType === 'admin') {
+      user = await AdminAuth.findById(decoded.id).select('-password');
+    }
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json({
+      valid: true,
+      userType: decoded.userType,
+      user
+    });
+  } catch (error) {
+    res.status(401).json({ message: 'Invalid token', error: error.message });
+  }
+});
+
+// Admin 2FA Verification
+router.post('/admin/verify-2fa', async (req, res) => {
+  try {
+    const token = req.header('Authorization')?.replace('Bearer ', '');
+    const { code } = req.body;
+
+    if (!token) {
+      return res.status(401).json({ message: 'No temporary token provided' });
+    }
+
+    if (!code) {
+      return res.status(400).json({ message: 'Verification code is required' });
+    }
+
+    // Verify the temporary token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    
+    if (decoded.userType !== 'admin' || !decoded.temp2FA) {
+      return res.status(401).json({ message: 'Invalid temporary token' });
+    }
+
+    const admin = await AdminAuth.findById(decoded.id);
+
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+
+    // In a real implementation, verify the 2FA code against the stored secret
+    // For now, we'll accept any 6-digit code for demonstration
+    if (!/^\d{6}$/.test(code)) {
+      return res.status(400).json({ message: 'Invalid code format. Must be 6 digits' });
+    }
+
+    // Log successful 2FA verification
+    await admin.logActivity('2FA Verification', 'Authentication', req.ip, {
+      status: 'success',
+      timestamp: new Date()
+    });
+
+    // Generate final token
+    const finalToken = generateToken(admin, 'admin');
+
+    res.json({
+      message: '2FA verification successful',
+      token: finalToken,
+      userType: 'admin',
+      user: {
+        adminId: admin.adminId,
+        firstName: admin.firstName,
+        lastName: admin.lastName,
+        email: admin.email,
+        role: admin.role,
+        adminLevel: admin.adminLevel,
+        jurisdiction: {
+          state: admin.state,
+          facilityId: admin.facilityId,
+          facilityName: admin.facilityName
+        },
+        permissions: admin.permissions,
+        photo: admin.photo
+      }
+    });
+  } catch (error) {
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: '2FA session expired. Please login again' });
+    }
+    res.status(500).json({ message: 'Error verifying 2FA code', error: error.message });
+  }
+});
+
+// Logout (for all user types)
+router.post('/logout', async (req, res) => {
+  try {
+    // In a production system, you would invalidate the token here
+    // For now, we'll just send a success response
+    res.json({ message: 'Logged out successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Error logging out', error: error.message });
+  }
+});
+
+// ========== ADMIN ACTIVATION ROUTES ==========
+
+// Activate Provider Account (Admin only)
+router.patch('/admin/activate/provider/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    
+    const provider = await ProviderAuth.findOne({ email });
+    
+    if (!provider) {
+      return res.status(404).json({ message: 'Provider not found' });
+    }
+
+    provider.isActive = true;
+    await provider.save();
+
+    res.json({
+      message: 'Provider account activated successfully',
+      providerId: provider.providerId,
+      email: provider.email
+    });
+  } catch (error) {
+    console.error('Provider activation error:', error);
+    res.status(500).json({ message: 'Error activating provider', error: error.message });
+  }
+});
+
+// Activate Patient Account (Admin only)
+router.patch('/admin/activate/patient/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    
+    const patient = await PatientAuth.findOne({ email });
+    
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+
+    patient.isActive = true;
+    await patient.save();
+
+    res.json({
+      message: 'Patient account activated successfully',
+      healthId: patient.healthId,
+      email: patient.email
+    });
+  } catch (error) {
+    console.error('Patient activation error:', error);
+    res.status(500).json({ message: 'Error activating patient', error: error.message });
+  }
+});
+
+// Activate Admin Account (Super Admin only)
+router.patch('/admin/activate/admin/:email', async (req, res) => {
+  try {
+    const { email } = req.params;
+    
+    const admin = await AdminAuth.findOne({ email });
+    
+    if (!admin) {
+      return res.status(404).json({ message: 'Admin not found' });
+    }
+
+    admin.isActive = true;
+    await admin.save();
+
+    res.json({
+      message: 'Admin account activated successfully',
+      adminId: admin.adminId,
+      email: admin.email
+    });
+  } catch (error) {
+    console.error('Admin activation error:', error);
+    res.status(500).json({ message: 'Error activating admin', error: error.message });
+  }
+});
+
+module.exports = router;
