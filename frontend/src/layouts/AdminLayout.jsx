@@ -1,11 +1,16 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link, Outlet, useLocation } from 'react-router-dom';
+import { useSettings } from '../context/SettingsContext';
 
 const AdminLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [userData, setUserData] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const { theme, t } = useSettings();
+  const darkMode = theme.toLowerCase() === 'dark';
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [showProfile, setShowProfile] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -28,6 +33,9 @@ const AdminLayout = () => {
     } else {
       navigate('/admin/login');
     }
+
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
   }, [navigate]);
 
   const handleLogout = () => {
@@ -40,158 +48,284 @@ const AdminLayout = () => {
   if (!userData) return null;
 
   return (
-    <div className="min-h-screen bg-gray-900 flex">
+    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       {/* Sidebar */}
-      <aside className={`${sidebarOpen ? 'w-64' : 'w-20'} bg-gradient-to-b from-gray-800 to-black text-white transition-all duration-300 flex flex-col border-r border-gray-700`}>
-        {/* Header */}
-        <div className="p-4 border-b border-gray-700">
-          <div className="flex items-center justify-between">
-            {sidebarOpen && (
-              <div>
-                <h2 className="font-bold text-xl text-red-400">MediTrack</h2>
-                <p className="text-xs text-gray-400">Admin Portal</p>
-              </div>
-            )}
-            <button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="p-2 hover:bg-gray-700 rounded-lg transition-colors"
-            >
-              <i className={`fas fa-${sidebarOpen ? 'angles-left' : 'angles-right'}`}></i>
-            </button>
-          </div>
-        </div>
-
-        {/* User Profile */}
-        <div className="p-4 border-b border-gray-700">
-          <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-red-900 to-red-700 rounded-full flex items-center justify-center flex-shrink-0">
-              <i className="fas fa-user-shield text-lg"></i>
+      <aside className={`fixed inset-y-0 left-0 w-64 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-r transition-transform duration-300 z-50`}>
+        {/* Logo/Brand */}
+        <div className={`p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          <div className="flex items-center gap-2">
+            <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+              <svg className="w-5 h-5 text-white" fill="currentColor" viewBox="0 0 20 20">
+                <path d="M10 2a8 8 0 100 16 8 8 0 000-16zM9 9V6h2v3h3v2h-3v3H9v-3H6V9h3z"/>
+              </svg>
             </div>
-            {sidebarOpen && (
-              <div className="overflow-hidden">
-                <p className="font-semibold text-sm truncate">{userData.name}</p>
-                <p className="text-xs text-gray-400 truncate">{userData.role}</p>
-                <p className="text-xs text-gray-500 truncate">{userData.adminId}</p>
-              </div>
-            )}
+            <span className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>MediTRACKNG</span>
           </div>
+          <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1`}>Admin Portal</p>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+        <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 120px)' }}>
           <Link
             to="/admin/dashboard"
-            className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/admin/dashboard')
-                ? 'bg-red-900 text-white'
-                : 'hover:bg-gray-700'
+                ? 'bg-blue-600 text-white'
+                : `${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`
             }`}
           >
-            <i className="fas fa-home w-5"></i>
-            {sidebarOpen && <span>Dashboard</span>}
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" />
+            </svg>
+            <span>{t('dashboard')}</span>
           </Link>
 
           <Link
             to="/admin/users"
-            className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/admin/users')
-                ? 'bg-red-900 text-white'
-                : 'hover:bg-gray-700'
+                ? 'bg-blue-600 text-white'
+                : `${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`
             }`}
           >
-            <i className="fas fa-users w-5"></i>
-            {sidebarOpen && <span>User Management</span>}
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+            </svg>
+            <span>{t('userManagement')}</span>
           </Link>
 
           <Link
             to="/admin/providers"
-            className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/admin/providers')
-                ? 'bg-red-900 text-white'
-                : 'hover:bg-gray-700'
+                ? 'bg-blue-600 text-white'
+                : `${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`
             }`}
           >
-            <i className="fas fa-user-md w-5"></i>
-            {sidebarOpen && <span>Provider Management</span>}
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span>{t('providers')}</span>
           </Link>
 
           <Link
             to="/admin/facilities"
-            className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/admin/facilities')
-                ? 'bg-red-900 text-white'
-                : 'hover:bg-gray-700'
+                ? 'bg-blue-600 text-white'
+                : `${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`
             }`}
           >
-            <i className="fas fa-hospital w-5"></i>
-            {sidebarOpen && <span>Facilities</span>}
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+            </svg>
+            <span>{t('facilities')}</span>
           </Link>
 
           <Link
             to="/admin/analytics"
-            className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/admin/analytics')
-                ? 'bg-red-900 text-white'
-                : 'hover:bg-gray-700'
+                ? 'bg-blue-600 text-white'
+                : `${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`
             }`}
           >
-            <i className="fas fa-chart-line w-5"></i>
-            {sidebarOpen && <span>Analytics</span>}
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+            </svg>
+            <span>{t('analytics')}</span>
           </Link>
 
           <Link
             to="/admin/audit-logs"
-            className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/admin/audit-logs')
-                ? 'bg-red-900 text-white'
-                : 'hover:bg-gray-700'
+                ? 'bg-blue-600 text-white'
+                : `${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`
             }`}
           >
-            <i className="fas fa-clipboard-list w-5"></i>
-            {sidebarOpen && <span>Audit Logs</span>}
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            <span>{t('auditLogs')}</span>
           </Link>
 
           <Link
             to="/admin/insurance"
-            className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/admin/insurance')
-                ? 'bg-red-900 text-white'
-                : 'hover:bg-gray-700'
+                ? 'bg-blue-600 text-white'
+                : `${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`
             }`}
           >
-            <i className="fas fa-shield-alt w-5"></i>
-            {sidebarOpen && <span>Insurance</span>}
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+            </svg>
+            <span>{t('insurance')}</span>
           </Link>
+
+          <div className={`my-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}></div>
 
           <Link
             to="/admin/settings"
-            className={`flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors ${
+            className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/admin/settings')
-                ? 'bg-red-900 text-white'
-                : 'hover:bg-gray-700'
+                ? 'bg-blue-600 text-white'
+                : `${darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`
             }`}
           >
-            <i className="fas fa-cog w-5"></i>
-            {sidebarOpen && <span>Settings</span>}
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+            </svg>
+            <span>{t('settings')}</span>
           </Link>
-        </nav>
 
-        {/* Logout */}
-        <div className="p-4 border-t border-gray-700">
           <button
             onClick={handleLogout}
-            className="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-red-600 transition-colors w-full"
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
+              darkMode ? 'text-red-400 hover:bg-red-900/20' : 'text-red-600 hover:bg-red-50'
+            }`}
           >
-            <i className="fas fa-sign-out-alt w-5"></i>
-            {sidebarOpen && <span>Logout</span>}
+            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+            </svg>
+            <span>{t('logout')}</span>
           </button>
-        </div>
+        </nav>
       </aside>
 
-      {/* Main Content */}
-      <main className="flex-1 overflow-auto">
-        <Outlet />
-      </main>
+      {/* Main Content Area */}
+      <div className="ml-64 flex flex-col min-h-screen">
+        {/* Top Navigation Bar */}
+        <header className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-b px-8 py-4 sticky top-0 z-40`}>
+          <div className="flex items-center justify-between">
+            {/* Search Bar */}
+            <div className="flex items-center flex-1 max-w-2xl">
+              <div className="relative w-full">
+                <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input
+                  type="text"
+                  placeholder="Search users, facilities, logs... (Ctrl+K)"
+                  className={`w-full pl-10 pr-4 py-2 ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-200'} border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                />
+              </div>
+            </div>
+
+            {/* Right Side Actions */}
+            <div className="flex items-center gap-4">
+              {/* Dark Mode Toggle */}
+              <button
+                onClick={() => setDarkMode(!darkMode)}
+                className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700 text-yellow-400' : 'bg-gray-100 text-gray-600'} hover:opacity-80 transition-opacity`}
+              >
+                {darkMode ? (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
+                  </svg>
+                )}
+              </button>
+
+              {/* Notifications */}
+              <button
+                onClick={() => setShowNotifications(!showNotifications)}
+                className="relative p-2 text-gray-400 hover:bg-gray-700 rounded-lg transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+                </svg>
+                <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
+              </button>
+
+              {/* Time Display */}
+              <div className={`px-4 py-2 ${darkMode ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-700'} rounded-lg text-sm font-medium`}>
+                {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+              </div>
+
+              {/* Profile */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowProfile(!showProfile)}
+                  className="flex items-center gap-3 p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                >
+                  <div className="w-10 h-10 bg-gradient-to-br from-red-900 to-red-700 rounded-full flex items-center justify-center">
+                    <svg className="w-5 h-5 text-red-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                    </svg>
+                  </div>
+                  <div className="text-left">
+                    <p className={`font-semibold text-sm ${darkMode ? 'text-white' : 'text-gray-800'}`}>
+                      {userData.name}
+                    </p>
+                    <p className="text-xs text-gray-400">{userData.role}</p>
+                  </div>
+                  <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+
+                {/* Profile Dropdown */}
+                {showProfile && (
+                  <div className="absolute right-0 mt-2 w-64 bg-gray-800 rounded-lg shadow-lg border border-gray-700 py-2 z-50">
+                    <div className="px-4 py-3 border-b border-gray-700">
+                      <p className="font-semibold text-white">{userData.name}</p>
+                      <p className="text-sm text-gray-400">{userData.email}</p>
+                      <p className="text-xs text-red-400 mt-1">{userData.adminId}</p>
+                    </div>
+                    <Link to="/admin/settings" className="block px-4 py-2 hover:bg-gray-700 text-gray-300">Profile Settings</Link>
+                    <button onClick={handleLogout} className="w-full text-left px-4 py-2 hover:bg-red-900/50 text-red-400">
+                      Log out
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Main Content */}
+        <main className={`flex-1 overflow-y-auto ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
+          <Outlet />
+        </main>
+      </div>
+
+      {/* Notifications Panel */}
+      {showNotifications && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 z-50" onClick={() => setShowNotifications(false)}>
+          <div className="absolute right-0 top-0 h-full w-96 bg-gray-800 shadow-xl border-l border-gray-700" onClick={(e) => e.stopPropagation()}>
+            <div className="p-6">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold text-white">System Notifications</h3>
+                <button onClick={() => setShowNotifications(false)} className="text-gray-400 hover:text-gray-300">
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+              </div>
+              <div className="space-y-4">
+                <div className="p-4 bg-red-900/50 border border-red-700 rounded-lg">
+                  <p className="font-semibold text-sm text-white">Security Alert</p>
+                  <p className="text-xs text-gray-300 mt-1">Unusual login attempt detected - Lagos, Nigeria</p>
+                </div>
+                <div className="p-4 bg-yellow-900/50 border border-yellow-700 rounded-lg">
+                  <p className="font-semibold text-sm text-white">Pending Approvals</p>
+                  <p className="text-xs text-gray-300 mt-1">18 provider registrations awaiting approval</p>
+                </div>
+                <div className="p-4 bg-blue-900/50 border border-blue-700 rounded-lg">
+                  <p className="font-semibold text-sm text-white">System Update</p>
+                  <p className="text-xs text-gray-300 mt-1">New features deployed successfully</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

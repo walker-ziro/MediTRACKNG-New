@@ -1,54 +1,57 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useSettings } from '../../context/SettingsContext';
 
 const AdminDashboard = () => {
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+  const { theme, t } = useSettings();
+  const darkMode = theme.toLowerCase() === 'dark';
 
   return (
-    <div className="p-8 bg-gray-900 min-h-screen text-white">
+    <div className={`p-8 min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
       {/* Top Header */}
-      <header className="bg-gray-800 shadow-lg p-6 rounded-lg mb-6 border border-gray-700">
-        <h1 className="text-3xl font-bold text-white">Admin Dashboard</h1>
-        <p className="text-gray-400 mt-1">System Overview and Management</p>
+      <header className={`shadow-lg p-6 rounded-lg mb-6 border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+        <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('dashboard')}</h1>
+        <p className={`mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>System Overview and Management</p>
       </header>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <div className="bg-gray-800 p-6 rounded-lg shadow-lg border-l-4 border-blue-500">
+        <div className={`p-6 rounded-lg shadow-lg border-l-4 border-blue-500 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-400 text-sm">Total Users</p>
-              <h3 className="text-3xl font-bold text-white">12,487</h3>
+              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Total Users</p>
+              <h3 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>12,487</h3>
             </div>
             <i className="fas fa-users text-blue-500 text-2xl"></i>
           </div>
         </div>
 
-        <div className="bg-gray-800 p-6 rounded-lg shadow-lg border-l-4 border-green-500">
+        <div className={`p-6 rounded-lg shadow-lg border-l-4 border-green-500 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-400 text-sm">Active Facilities</p>
-              <h3 className="text-3xl font-bold text-white">243</h3>
+              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Active Facilities</p>
+              <h3 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>243</h3>
             </div>
             <i className="fas fa-hospital text-green-500 text-2xl"></i>
           </div>
         </div>
 
-        <div className="bg-gray-800 p-6 rounded-lg shadow-lg border-l-4 border-yellow-500">
+        <div className={`p-6 rounded-lg shadow-lg border-l-4 border-yellow-500 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-400 text-sm">Pending Approvals</p>
-              <h3 className="text-3xl font-bold text-white">18</h3>
+              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Pending Approvals</p>
+              <h3 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>18</h3>
             </div>
             <i className="fas fa-clock text-yellow-500 text-2xl"></i>
           </div>
         </div>
 
-        <div className="bg-gray-800 p-6 rounded-lg shadow-lg border-l-4 border-red-500">
+        <div className={`p-6 rounded-lg shadow-lg border-l-4 border-red-500 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-400 text-sm">System Alerts</p>
-              <h3 className="text-3xl font-bold text-white">3</h3>
+              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>System Alerts</p>
+              <h3 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>3</h3>
             </div>
             <i className="fas fa-exclamation-triangle text-red-500 text-2xl"></i>
           </div>

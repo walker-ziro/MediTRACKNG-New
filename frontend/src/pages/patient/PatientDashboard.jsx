@@ -1,54 +1,57 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import { useSettings } from '../../context/SettingsContext';
 
 const PatientDashboard = () => {
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+  const { theme, t } = useSettings();
+  const darkMode = theme.toLowerCase() === 'dark';
 
   return (
-    <div className="p-8 bg-gray-50 min-h-screen">
+    <div className={`p-8 min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       {/* Top Header */}
-      <header className="bg-white shadow-sm p-6 rounded-lg mb-6">
-        <h1 className="text-3xl font-bold text-gray-800">Welcome, {userData.name || 'Patient'}</h1>
-        <p className="text-gray-600 mt-1">Your health information at your fingertips</p>
+      <header className={`shadow-sm p-6 rounded-lg mb-6 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+        <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Welcome, {userData.name || 'Patient'}</h1>
+        <p className={`mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Your health information at your fingertips</p>
       </header>
 
       {/* Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-6">
-        <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-green-500">
+        <div className={`p-6 rounded-lg shadow-sm border-l-4 border-green-500 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-500 text-sm">Health ID</p>
-              <h3 className="text-xl font-bold text-gray-800">{userData.healthId || 'N/A'}</h3>
+              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Health ID</p>
+              <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{userData.healthId || 'N/A'}</h3>
             </div>
             <i className="fas fa-id-card text-green-500 text-2xl"></i>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-red-500">
+        <div className={`p-6 rounded-lg shadow-sm border-l-4 border-red-500 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-500 text-sm">Blood Type</p>
-              <h3 className="text-3xl font-bold text-gray-800">{userData.bloodType || 'N/A'}</h3>
+              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Blood Type</p>
+              <h3 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{userData.bloodType || 'N/A'}</h3>
             </div>
             <i className="fas fa-tint text-red-500 text-2xl"></i>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-blue-500">
+        <div className={`p-6 rounded-lg shadow-sm border-l-4 border-blue-500 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-500 text-sm">Appointments</p>
-              <h3 className="text-3xl font-bold text-gray-800">3</h3>
+              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{t('appointments')}</p>
+              <h3 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>3</h3>
             </div>
             <i className="fas fa-calendar-alt text-blue-500 text-2xl"></i>
           </div>
         </div>
 
-        <div className="bg-white p-6 rounded-lg shadow-sm border-l-4 border-purple-500">
+        <div className={`p-6 rounded-lg shadow-sm border-l-4 border-purple-500 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
           <div className="flex justify-between items-start">
             <div>
-              <p className="text-gray-500 text-sm">Prescriptions</p>
-              <h3 className="text-3xl font-bold text-gray-800">5</h3>
+              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{t('prescriptions')}</p>
+              <h3 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>5</h3>
             </div>
             <i className="fas fa-pills text-purple-500 text-2xl"></i>
           </div>
@@ -81,8 +84,8 @@ const PatientDashboard = () => {
       {/* Quick Actions & Upcoming Appointments */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Quick Actions */}
-        <div className="bg-white p-6 rounded-lg shadow-sm">
-          <h3 className="text-lg font-bold mb-4">Quick Actions</h3>
+        <div className={`p-6 rounded-lg shadow-sm ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+          <h3 className={`text-lg font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Quick Actions</h3>
           <div className="space-y-3">
             {[
               { icon: 'calendar-plus', label: 'Book Appointment', color: 'blue', link: '/patient/appointments' },

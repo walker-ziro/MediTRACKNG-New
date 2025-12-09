@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AppProvider } from './context/AppContext';
+import { SettingsProvider } from './context/SettingsContext';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import PatientRecord from './components/PatientRecord';
@@ -38,12 +39,33 @@ import { ProtectedProviderRoute, ProtectedPatientRoute, ProtectedAdminRoute } fr
 // Layout Components
 import ProviderLayout from './layouts/ProviderLayout';
 import PatientLayout from './layouts/PatientLayout';
+
+// Provider Pages
+import ProviderPatients from './pages/provider/Patients';
+import ProviderEncounters from './pages/provider/Encounters';
+import ProviderPrescriptions from './pages/provider/Prescriptions';
+import ProviderLabOrders from './pages/provider/LabOrders';
+import ProviderTelemedicine from './pages/provider/Telemedicine';
+import ProviderSettings from './pages/provider/Settings';
+
+// Patient Pages
+import PatientHealthRecords from './pages/patient/HealthRecords';
+import PatientAppointments from './pages/patient/Appointments';
+import PatientPrescriptions from './pages/patient/Prescriptions';
+import PatientFamilyHealth from './pages/patient/FamilyHealth';
+import PatientSettings from './pages/patient/Settings';
+
+// Admin Pages
+import AdminUserManagement from './pages/admin/UserManagement';
+import AdminProviderManagement from './pages/admin/ProviderManagement';
+import AdminSettings from './pages/admin/Settings';
 import AdminLayout from './layouts/AdminLayout';
 
 function App() {
   return (
     <AppProvider>
-      <Router>
+    <SettingsProvider>
+    <Router>
         <div className="min-h-screen bg-gray-50">
           <Routes>
           <Route path="/login" element={<Login />} />
@@ -210,12 +232,12 @@ function App() {
             </ProtectedProviderRoute>
           }>
             <Route path="dashboard" element={<ProviderDashboard />} />
-            <Route path="patients" element={<div className="p-8"><h1 className="text-3xl font-bold text-gray-800">Patients</h1><p className="text-gray-600 mt-4">Patient list page coming soon...</p></div>} />
-            <Route path="encounters" element={<div className="p-8"><h1 className="text-3xl font-bold text-gray-800">Encounters</h1><p className="text-gray-600 mt-4">Encounters page coming soon...</p></div>} />
-            <Route path="prescriptions" element={<div className="p-8"><h1 className="text-3xl font-bold text-gray-800">Prescriptions</h1><p className="text-gray-600 mt-4">Prescriptions page coming soon...</p></div>} />
-            <Route path="lab-orders" element={<div className="p-8"><h1 className="text-3xl font-bold text-gray-800">Lab Orders</h1><p className="text-gray-600 mt-4">Lab orders page coming soon...</p></div>} />
-            <Route path="telemedicine" element={<div className="p-8"><h1 className="text-3xl font-bold text-gray-800">Telemedicine</h1><p className="text-gray-600 mt-4">Telemedicine page coming soon...</p></div>} />
-            <Route path="settings" element={<div className="p-8"><h1 className="text-3xl font-bold text-gray-800">Settings</h1><p className="text-gray-600 mt-4">Settings page coming soon...</p></div>} />
+            <Route path="patients" element={<ProviderPatients />} />
+            <Route path="encounters" element={<ProviderEncounters />} />
+            <Route path="prescriptions" element={<ProviderPrescriptions />} />
+            <Route path="lab-orders" element={<ProviderLabOrders />} />
+            <Route path="telemedicine" element={<ProviderTelemedicine />} />
+            <Route path="settings" element={<ProviderSettings />} />
           </Route>
           
           {/* Patient Portal */}
@@ -227,12 +249,12 @@ function App() {
             </ProtectedPatientRoute>
           }>
             <Route path="dashboard" element={<PatientDashboard />} />
-            <Route path="health-records" element={<div className="p-8"><h1 className="text-3xl font-bold text-gray-800">Health Records</h1><p className="text-gray-600 mt-4">Health records page coming soon...</p></div>} />
-            <Route path="appointments" element={<div className="p-8"><h1 className="text-3xl font-bold text-gray-800">Appointments</h1><p className="text-gray-600 mt-4">Appointments page coming soon...</p></div>} />
-            <Route path="prescriptions" element={<div className="p-8"><h1 className="text-3xl font-bold text-gray-800">Prescriptions</h1><p className="text-gray-600 mt-4">Prescriptions page coming soon...</p></div>} />
-            <Route path="telemedicine" element={<div className="p-8"><h1 className="text-3xl font-bold text-gray-800">Telemedicine</h1><p className="text-gray-600 mt-4">Telemedicine page coming soon...</p></div>} />
-            <Route path="family-health" element={<div className="p-8"><h1 className="text-3xl font-bold text-gray-800">Family Health</h1><p className="text-gray-600 mt-4">Family health page coming soon...</p></div>} />
-            <Route path="settings" element={<div className="p-8"><h1 className="text-3xl font-bold text-gray-800">Settings</h1><p className="text-gray-600 mt-4">Settings page coming soon...</p></div>} />
+            <Route path="health-records" element={<PatientHealthRecords />} />
+            <Route path="appointments" element={<PatientAppointments />} />
+            <Route path="prescriptions" element={<PatientPrescriptions />} />
+            <Route path="telemedicine" element={<ProviderTelemedicine />} />
+            <Route path="family-health" element={<PatientFamilyHealth />} />
+            <Route path="settings" element={<PatientSettings />} />
           </Route>
           
           {/* Admin Portal */}
@@ -244,19 +266,20 @@ function App() {
             </ProtectedAdminRoute>
           }>
             <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="users" element={<div className="p-8 bg-gray-900 min-h-screen"><h1 className="text-3xl font-bold text-white">User Management</h1><p className="text-gray-400 mt-4">User management page coming soon...</p></div>} />
-            <Route path="providers" element={<div className="p-8 bg-gray-900 min-h-screen"><h1 className="text-3xl font-bold text-white">Provider Management</h1><p className="text-gray-400 mt-4">Provider management page coming soon...</p></div>} />
-            <Route path="facilities" element={<div className="p-8 bg-gray-900 min-h-screen"><h1 className="text-3xl font-bold text-white">Facilities</h1><p className="text-gray-400 mt-4">Facilities page coming soon...</p></div>} />
-            <Route path="analytics" element={<div className="p-8 bg-gray-900 min-h-screen"><h1 className="text-3xl font-bold text-white">Analytics</h1><p className="text-gray-400 mt-4">Analytics page coming soon...</p></div>} />
-            <Route path="audit-logs" element={<div className="p-8 bg-gray-900 min-h-screen"><h1 className="text-3xl font-bold text-white">Audit Logs</h1><p className="text-gray-400 mt-4">Audit logs page coming soon...</p></div>} />
-            <Route path="insurance" element={<div className="p-8 bg-gray-900 min-h-screen"><h1 className="text-3xl font-bold text-white">Insurance</h1><p className="text-gray-400 mt-4">Insurance page coming soon...</p></div>} />
-            <Route path="settings" element={<div className="p-8 bg-gray-900 min-h-screen"><h1 className="text-3xl font-bold text-white">Settings</h1><p className="text-gray-400 mt-4">Settings page coming soon...</p></div>} />
+            <Route path="users" element={<AdminUserManagement />} />
+            <Route path="providers" element={<AdminProviderManagement />} />
+            <Route path="facilities" element={<div className="p-8 bg-gray-900 min-h-screen"><h1 className="text-3xl font-bold text-white">Facilities</h1><p className="text-gray-400 mt-4">Facilities management page - Feature in development</p></div>} />
+            <Route path="analytics" element={<div className="p-8 bg-gray-900 min-h-screen"><h1 className="text-3xl font-bold text-white">Analytics</h1><p className="text-gray-400 mt-4">System analytics - Feature in development</p></div>} />
+            <Route path="audit-logs" element={<div className="p-8 bg-gray-900 min-h-screen"><h1 className="text-3xl font-bold text-white">Audit Logs</h1><p className="text-gray-400 mt-4">Security audit logs - Feature in development</p></div>} />
+            <Route path="insurance" element={<div className="p-8 bg-gray-900 min-h-screen"><h1 className="text-3xl font-bold text-white">Insurance</h1><p className="text-gray-400 mt-4">Insurance management - Feature in development</p></div>} />
+            <Route path="settings" element={<AdminSettings />} />
           </Route>
           
           <Route path="/" element={<LandingPage />} />
         </Routes>
       </div>
     </Router>
+    </SettingsProvider>
     </AppProvider>
   );
 }
