@@ -124,7 +124,7 @@ const AdminDashboard = () => {
                     <p className="text-xs text-gray-400">{activity.user}</p>
                   </div>
                 </div>
-                <span className="text-xs text-gray-500">{activity.time}</span>
+                <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{activity.time}</span>
               </div>
             ))}
           </div>

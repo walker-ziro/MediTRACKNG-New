@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AppProvider } from './context/AppContext';
-import { SettingsProvider } from './context/SettingsContext';
+import { useSettings } from './context/SettingsContext';
+
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
 import PatientRecord from './components/PatientRecord';
@@ -62,11 +62,12 @@ import AdminSettings from './pages/admin/Settings';
 import AdminLayout from './layouts/AdminLayout';
 
 function App() {
+  const { theme } = useSettings();
+  const darkMode = theme && theme.toLowerCase() === 'dark';
   return (
-    <AppProvider>
-    <SettingsProvider>
+
     <Router>
-        <div className="min-h-screen bg-gray-50">
+        <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
           <Routes>
           <Route path="/login" element={<Login />} />
           <Route
@@ -279,8 +280,7 @@ function App() {
         </Routes>
       </div>
     </Router>
-    </SettingsProvider>
-    </AppProvider>
+
   );
 }
 

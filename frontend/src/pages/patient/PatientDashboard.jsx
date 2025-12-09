@@ -99,14 +99,14 @@ const PatientDashboard = () => {
                 className={`flex items-center gap-3 p-3 border-2 border-${action.color}-200 hover:bg-${action.color}-50 rounded-lg transition-colors`}
               >
                 <i className={`fas fa-${action.icon} text-${action.color}-600`}></i>
-                <span className="font-medium text-gray-700">{action.label}</span>
+                <span className={`font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{action.label}</span>
               </Link>
             ))}
           </div>
         </div>
 
         {/* Upcoming Appointments */}
-        <div className="bg-white p-6 rounded-lg shadow-sm">
+        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} p-6 rounded-lg shadow-sm`}>
           <h3 className="text-lg font-bold mb-4">Upcoming Appointments</h3>
           <div className="space-y-3">
             {[
@@ -114,14 +114,14 @@ const PatientDashboard = () => {
               { date: 'Dec 15, 2025', doctor: 'Dr. Mike Brown', specialty: 'General', time: '02:30 PM' },
               { date: 'Dec 20, 2025', doctor: 'Dr. Lisa White', specialty: 'Dermatologist', time: '11:00 AM' },
             ].map((apt, idx) => (
-              <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+              <div key={idx} className={`flex items-center justify-between p-3 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} rounded-lg hover:bg-gray-100 transition-colors`}>
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                     <i className="fas fa-user-md text-green-600"></i>
                   </div>
                   <div>
                     <p className="font-semibold text-sm">{apt.doctor}</p>
-                    <p className="text-xs text-gray-500">{apt.specialty}</p>
+                    <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{apt.specialty}</p>
                     <p className="text-xs text-gray-400">{apt.date} at {apt.time}</p>
                   </div>
                 </div>

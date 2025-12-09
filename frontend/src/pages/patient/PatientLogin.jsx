@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useSettings } from '../../context/SettingsContext';
 import { useNavigate, Link } from 'react-router-dom';
 
 const PatientLogin = () => {
+  const { theme } = useSettings();
+  const darkMode = theme.toLowerCase() === 'dark';
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
@@ -54,10 +57,10 @@ const PatientLogin = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-green-50 via-emerald-50 to-teal-100 px-4 py-8">
       <div className="w-full max-w-md">
-        <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-2xl overflow-hidden`}>
           {/* Header */}
           <div className="bg-gradient-to-r from-green-500 to-emerald-600 px-8 py-10 text-white text-center">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-white rounded-full mb-4 shadow-lg">
+            <div className={`inline-flex items-center justify-center w-20 h-20 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-full mb-4 shadow-lg`}>
               <i className="fas fa-heartbeat text-4xl text-green-500"></i>
             </div>
             <h1 className="text-3xl font-bold mb-2">Patient Portal</h1>
@@ -75,7 +78,7 @@ const PatientLogin = () => {
               )}
 
               <div>
-                <label htmlFor="email" className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="email" className={`block text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
                   <i className="fas fa-envelope mr-2 text-green-500"></i>
                   Email Address
                 </label>
@@ -86,13 +89,13 @@ const PatientLogin = () => {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="Enter your email"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
+                  className={`w-full px-4 py-3 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all`}
                   required
                 />
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-semibold text-gray-700 mb-2">
+                <label htmlFor="password" className={`block text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
                   <i className="fas fa-lock mr-2 text-green-500"></i>
                   Password
                 </label>
@@ -104,13 +107,13 @@ const PatientLogin = () => {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="Enter your password"
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all"
+                    className={`w-full px-4 py-3 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none transition-all`}
                     required
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-700"
+                    className={`absolute right-3 top-1/2 -translate-y-1/2 ${darkMode ? 'text-gray-400' : 'text-gray-500'} hover:text-gray-700`}
                   >
                     <i className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
                   </button>
@@ -119,8 +122,8 @@ const PatientLogin = () => {
 
               <div className="flex items-center justify-between text-sm">
                 <label className="flex items-center cursor-pointer">
-                  <input type="checkbox" className="mr-2 w-4 h-4 text-green-500 border-gray-300 rounded focus:ring-green-500" />
-                  <span className="text-gray-700">Remember me</span>
+                  <input type="checkbox" className={`mr-2 w-4 h-4 text-green-500 ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded focus:ring-green-500`} />
+                  <span className={`${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Remember me</span>
                 </label>
                 <Link to="/patient/forgot-password" className="text-green-600 hover:text-green-700 font-medium">
                   Forgot password?
@@ -164,7 +167,7 @@ const PatientLogin = () => {
               </Link>
             </div>
 
-            <div className="mt-6 text-center text-sm text-gray-600">
+            <div className={`mt-6 text-center text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
               Don't have an account?{' '}
               <Link to="/patient/signup" className="text-green-600 hover:text-green-700 font-semibold">
                 Register here
@@ -173,18 +176,18 @@ const PatientLogin = () => {
           </div>
 
           {/* Footer */}
-          <div className="bg-gray-50 px-8 py-6 border-t">
+          <div className={`${darkMode ? 'bg-gray-900' : 'bg-gray-50'} px-8 py-6 border-t`}>
             <div className="flex justify-center gap-6 mb-4">
               <Link to="/provider/login" className="text-purple-600 hover:text-purple-700 font-medium text-sm flex items-center">
                 <i className="fas fa-user-md mr-1"></i>
                 Provider Portal
               </Link>
-              <Link to="/admin/login" className="text-gray-700 hover:text-gray-900 font-medium text-sm flex items-center">
+              <Link to="/admin/login" className={`${darkMode ? 'text-gray-300' : 'text-gray-700'} hover:text-gray-900 font-medium text-sm flex items-center`}>
                 <i className="fas fa-user-shield mr-1"></i>
                 Admin Portal
               </Link>
             </div>
-            <p className="text-center text-xs text-gray-500 flex items-center justify-center">
+            <p className={`text-center text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} flex items-center justify-center`}>
               <i className="fas fa-shield-alt mr-2 text-green-500"></i>
               Secure connection with end-to-end encryption
             </p>

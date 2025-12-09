@@ -121,7 +121,7 @@ const ProviderDashboard = () => {
                   </div>
                   <div>
                     <p className="font-semibold text-sm">{apt.patient}</p>
-                    <p className="text-xs text-gray-500">{apt.type}</p>
+                    <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{apt.type}</p>
                   </div>
                 </div>
                 <span className="text-sm font-medium text-purple-600">{apt.time}</span>

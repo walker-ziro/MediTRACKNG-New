@@ -24,25 +24,25 @@ const LabOrders = () => {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-        <div className="bg-white rounded-xl p-6 border border-gray-200">
-          <p className="text-gray-600 text-sm">Total Orders</p>
-          <p className="text-3xl font-bold text-gray-900 mt-1">{labOrders.length}</p>
+        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-6 border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} text-sm`}>Total Orders</p>
+          <p className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'} mt-1`}>{labOrders.length}</p>
         </div>
-        <div className="bg-white rounded-xl p-6 border border-gray-200">
-          <p className="text-gray-600 text-sm">Pending</p>
+        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-6 border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} text-sm`}>Pending</p>
           <p className="text-3xl font-bold text-yellow-600 mt-1">{labOrders.filter(l => l.status === 'Pending').length}</p>
         </div>
-        <div className="bg-white rounded-xl p-6 border border-gray-200">
-          <p className="text-gray-600 text-sm">In Progress</p>
+        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-6 border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} text-sm`}>In Progress</p>
           <p className="text-3xl font-bold text-blue-600 mt-1">{labOrders.filter(l => l.status === 'In Progress').length}</p>
         </div>
-        <div className="bg-white rounded-xl p-6 border border-gray-200">
-          <p className="text-gray-600 text-sm">Completed</p>
+        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-6 border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+          <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} text-sm`}>Completed</p>
           <p className="text-3xl font-bold text-green-600 mt-1">{labOrders.filter(l => l.status === 'Completed').length}</p>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+      <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-sm border ${darkMode ? 'border-gray-700' : 'border-gray-200'} overflow-hidden`}>
         <div className="overflow-x-auto">
           <table className="w-full">
             <thead className={`border-b ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
@@ -79,7 +79,7 @@ const LabOrders = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm text-gray-600">{order.date}</span>
+                    <span className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{order.date}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`px-3 py-1 rounded-full text-xs font-medium ${

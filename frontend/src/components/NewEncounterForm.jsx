@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useSettings } from '../context/SettingsContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import { patientAPI, encounterAPI } from '../utils/api';
 
 const NewEncounterForm = () => {
+  const { theme } = useSettings();
+  const darkMode = theme && theme.toLowerCase() === 'dark';
   const { healthId } = useParams();
   const navigate = useNavigate();
   const [patient, setPatient] = useState(null);
@@ -96,10 +99,10 @@ const NewEncounterForm = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} flex items-center justify-center`}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading...</p>
+          <p className={`mt-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Loading...</p>
         </div>
       </div>
     );
@@ -107,7 +110,7 @@ const NewEncounterForm = () => {
 
   if (!patient) {
     return (
-      <div className="min-h-screen bg-gray-50">
+      <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="bg-red-50 border border-red-200 text-red-700 px-6 py-4 rounded-md">
             <p>Patient not found</p>
@@ -118,9 +121,9 @@ const NewEncounterForm = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       {/* Header */}
-      <header className="bg-white shadow">
+      <header className={`${darkMode ? 'bg-gray-800' : 'bg-white'} shadow`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <button
             onClick={() => navigate(`/patient/${healthId}`)}
@@ -128,7 +131,7 @@ const NewEncounterForm = () => {
           >
             ← Back to Patient Record
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">New Encounter</h1>
+          <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>New Encounter</h1>
         </div>
       </header>
 
@@ -140,10 +143,10 @@ const NewEncounterForm = () => {
               {patient.demographics.name.charAt(0).toUpperCase()}
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-900">
+              <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                 {patient.demographics.name}
               </h2>
-              <p className="text-sm text-gray-600">
+              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                 Health ID: <span className="font-semibold">{patient.healthId}</span>
               </p>
             </div>
@@ -171,7 +174,7 @@ const NewEncounterForm = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Clinical Notes */}
           <div className="card">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-4 flex items-center`}>
               <span className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
                 <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -188,14 +191,14 @@ const NewEncounterForm = () => {
               placeholder="Enter clinical observations, diagnosis, treatment plan, and any other relevant medical information..."
               required
             />
-            <p className="mt-2 text-sm text-gray-500">
+            <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
               Include patient complaints, examination findings, diagnosis, and treatment recommendations
             </p>
           </div>
 
           {/* Lab Results */}
           <div className="card">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-4 flex items-center`}>
               <span className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
                 <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
@@ -208,10 +211,10 @@ const NewEncounterForm = () => {
             {formData.labResults.length > 0 && (
               <div className="mb-4 space-y-2">
                 {formData.labResults.map((lab, index) => (
-                  <div key={index} className="bg-gray-50 p-3 rounded-md flex justify-between items-center">
+                  <div key={index} className={`${darkMode ? 'bg-gray-900' : 'bg-gray-50'} p-3 rounded-md flex justify-between items-center`}>
                     <div>
-                      <p className="font-medium text-gray-900">{lab.name}</p>
-                      <p className="text-sm text-gray-600">
+                      <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{lab.name}</p>
+                      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                         Status: <span className="font-medium">{lab.status}</span>
                         {lab.link && ` | Link: ${lab.link}`}
                       </p>
@@ -231,8 +234,8 @@ const NewEncounterForm = () => {
             )}
 
             {/* Add New Lab Test */}
-            <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-              <h4 className="font-medium text-gray-900 mb-3">Add Lab Test</h4>
+            <div className={`border ${darkMode ? 'border-gray-700' : 'border-gray-200'} rounded-lg p-4 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+              <h4 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'} mb-3`}>Add Lab Test</h4>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-3">
                 <div>
                   <label className="label text-xs">Test Name *</label>
@@ -282,7 +285,7 @@ const NewEncounterForm = () => {
 
           {/* Discharge Summary */}
           <div className="card">
-            <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+            <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-4 flex items-center`}>
               <span className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
                 <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -298,7 +301,7 @@ const NewEncounterForm = () => {
               rows="4"
               placeholder="Enter discharge instructions, follow-up recommendations, and prescribed medications..."
             />
-            <p className="mt-2 text-sm text-gray-500">
+            <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
               Include follow-up appointments, medications prescribed, and any special instructions
             </p>
           </div>

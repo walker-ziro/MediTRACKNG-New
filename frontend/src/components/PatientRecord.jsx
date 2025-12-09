@@ -1,8 +1,11 @@
 import { useState, useEffect } from 'react';
+import { useSettings } from '../context/SettingsContext';
 import { useParams, useNavigate } from 'react-router-dom';
 import { patientAPI } from '../utils/api';
 
 const PatientRecord = () => {
+  const { theme } = useSettings();
+  const darkMode = theme && theme.toLowerCase() === 'dark';
   const { healthId } = useParams();
   const navigate = useNavigate();
   const [patient, setPatient] = useState(null);
@@ -65,10 +68,10 @@ const PatientRecord = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} flex items-center justify-center`}>
         <div className="text-center">
           <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading patient data...</p>
+          <p className={`mt-4 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Loading patient data...</p>
         </div>
       </div>
     );
@@ -76,8 +79,8 @@ const PatientRecord = () => {
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50">
-        <header className="bg-white shadow">
+      <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+        <header className={`${darkMode ? 'bg-gray-800' : 'bg-white'} shadow`}>
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <button
               onClick={() => navigate('/dashboard')}
@@ -102,9 +105,9 @@ const PatientRecord = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       {/* Header */}
-      <header className="bg-white shadow">
+      <header className={`${darkMode ? 'bg-gray-800' : 'bg-white'} shadow`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <button
             onClick={() => navigate('/dashboard')}
@@ -112,7 +115,7 @@ const PatientRecord = () => {
           >
             ← Back to Dashboard
           </button>
-          <h1 className="text-3xl font-bold text-gray-900">Patient Medical Record</h1>
+          <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Patient Medical Record</h1>
         </div>
       </header>
 
@@ -126,33 +129,33 @@ const PatientRecord = () => {
                   {patient.demographics.name.charAt(0).toUpperCase()}
                 </div>
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">
+                  <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                     {patient.demographics.name}
                   </h2>
-                  <p className="text-gray-600">Health ID: <span className="font-semibold text-primary-700">{patient.healthId}</span></p>
+                  <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Health ID: <span className="font-semibold text-primary-700">{patient.healthId}</span></p>
                 </div>
               </div>
               
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                 <div>
-                  <p className="text-sm text-gray-600">Age</p>
-                  <p className="font-semibold text-gray-900">
+                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Age</p>
+                  <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                     {calculateAge(patient.demographics.dateOfBirth)} years
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Gender</p>
-                  <p className="font-semibold text-gray-900">{patient.demographics.gender}</p>
+                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Gender</p>
+                  <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{patient.demographics.gender}</p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Date of Birth</p>
-                  <p className="font-semibold text-gray-900">
+                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Date of Birth</p>
+                  <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                     {formatDate(patient.demographics.dateOfBirth)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-600">Phone</p>
-                  <p className="font-semibold text-gray-900">
+                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Phone</p>
+                  <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                     {patient.demographics.phone || 'N/A'}
                   </p>
                 </div>
@@ -171,8 +174,8 @@ const PatientRecord = () => {
         </div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-lg shadow mb-6">
-          <div className="border-b border-gray-200">
+        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow mb-6`}>
+          <div className={`border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
             <nav className="flex -mb-px">
               <button
                 onClick={() => setActiveTab('overview')}
@@ -217,7 +220,7 @@ const OverviewTab = ({ patient }) => {
     <div className="space-y-6">
       {/* Demographics */}
       <section>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+        <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-4 flex items-center`}>
           <span className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center mr-3">
             <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
@@ -225,21 +228,21 @@ const OverviewTab = ({ patient }) => {
           </span>
           Demographics
         </h3>
-        <div className="bg-gray-50 rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className={`${darkMode ? 'bg-gray-900' : 'bg-gray-50'} rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4`}>
           <div>
-            <p className="text-sm text-gray-600">Full Name</p>
-            <p className="font-medium text-gray-900">{patient.demographics.name}</p>
+            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Full Name</p>
+            <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{patient.demographics.name}</p>
           </div>
           <div>
-            <p className="text-sm text-gray-600">Address</p>
-            <p className="font-medium text-gray-900">{patient.demographics.address || 'Not provided'}</p>
+            <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Address</p>
+            <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{patient.demographics.address || 'Not provided'}</p>
           </div>
         </div>
       </section>
 
       {/* Medical History */}
       <section>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+        <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-4 flex items-center`}>
           <span className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-3">
             <svg className="w-5 h-5 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
@@ -253,19 +256,19 @@ const OverviewTab = ({ patient }) => {
               {patient.medicalHistory.map((item, index) => (
                 <li key={index} className="flex items-start">
                   <span className="text-red-600 mr-2">•</span>
-                  <span className="text-gray-900">{item}</span>
+                  <span className={`${darkMode ? 'text-white' : 'text-gray-900'}`}>{item}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-gray-600 italic">No medical history recorded</p>
+            <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} italic`}>No medical history recorded</p>
           )}
         </div>
       </section>
 
       {/* Medication History */}
       <section>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+        <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-4 flex items-center`}>
           <span className="w-8 h-8 bg-green-100 rounded-full flex items-center justify-center mr-3">
             <svg className="w-5 h-5 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
@@ -279,19 +282,19 @@ const OverviewTab = ({ patient }) => {
               {patient.medicationHistory.map((item, index) => (
                 <li key={index} className="flex items-start">
                   <span className="text-green-600 mr-2">•</span>
-                  <span className="text-gray-900">{item}</span>
+                  <span className={`${darkMode ? 'text-white' : 'text-gray-900'}`}>{item}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-gray-600 italic">No medication history recorded</p>
+            <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} italic`}>No medication history recorded</p>
           )}
         </div>
       </section>
 
       {/* Immunization Records */}
       <section>
-        <h3 className="text-lg font-semibold text-gray-900 mb-4 flex items-center">
+        <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-4 flex items-center`}>
           <span className="w-8 h-8 bg-purple-100 rounded-full flex items-center justify-center mr-3">
             <svg className="w-5 h-5 text-purple-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
@@ -305,12 +308,12 @@ const OverviewTab = ({ patient }) => {
               {patient.immunizationRecords.map((item, index) => (
                 <li key={index} className="flex items-start">
                   <span className="text-purple-600 mr-2">•</span>
-                  <span className="text-gray-900">{item}</span>
+                  <span className={`${darkMode ? 'text-white' : 'text-gray-900'}`}>{item}</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-gray-600 italic">No immunization records</p>
+            <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} italic`}>No immunization records</p>
           )}
         </div>
       </section>
@@ -338,8 +341,8 @@ const EncountersTab = ({ encounters, formatDateTime }) => {
             d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
           />
         </svg>
-        <h3 className="mt-2 text-sm font-medium text-gray-900">No encounters</h3>
-        <p className="mt-1 text-sm text-gray-500">
+        <h3 className={`mt-2 text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>No encounters</h3>
+        <p className={`mt-1 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
           This patient has no encounter history yet.
         </p>
       </div>
@@ -349,10 +352,10 @@ const EncountersTab = ({ encounters, formatDateTime }) => {
   return (
     <div className="space-y-4">
       <div className="mb-4">
-        <h3 className="text-lg font-semibold text-gray-900">
+        <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
           Complete Encounter Timeline
         </h3>
-        <p className="text-sm text-gray-600">
+        <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
           View patient's medical journey across all healthcare facilities
         </p>
       </div>
@@ -381,25 +384,25 @@ const EncountersTab = ({ encounters, formatDateTime }) => {
                 <div className="flex-1">
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-2">
                     <div>
-                      <h4 className="text-lg font-semibold text-gray-900">
+                      <h4 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                         {encounter.providerName}
                       </h4>
-                      <p className="text-sm text-gray-600">
+                      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
                         Provider ID: {encounter.providerId}
                       </p>
                     </div>
-                    <div className="text-sm text-gray-600 mt-1 md:mt-0">
+                    <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1 md:mt-0`}>
                       <span className="font-medium">{formatDateTime(encounter.date)}</span>
                     </div>
                   </div>
 
                   {selectedEncounter === encounter._id && (
-                    <div className="mt-4 pt-4 border-t border-gray-200 space-y-4">
+                    <div className={`mt-4 pt-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'} space-y-4`}>
                       {/* Clinical Notes */}
                       {encounter.clinicalNotes && (
                         <div>
-                          <h5 className="font-semibold text-gray-900 mb-2">Clinical Notes</h5>
-                          <p className="text-gray-700 bg-gray-50 p-3 rounded-md">
+                          <h5 className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-2`}>Clinical Notes</h5>
+                          <p className={`${darkMode ? 'text-gray-300' : 'text-gray-700'} ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} p-3 rounded-md`}>
                             {encounter.clinicalNotes}
                           </p>
                         </div>
@@ -408,12 +411,12 @@ const EncountersTab = ({ encounters, formatDateTime }) => {
                       {/* Lab Results */}
                       {encounter.labResults && encounter.labResults.length > 0 && (
                         <div>
-                          <h5 className="font-semibold text-gray-900 mb-2">Lab Results</h5>
+                          <h5 className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-2`}>Lab Results</h5>
                           <div className="space-y-2">
                             {encounter.labResults.map((lab, labIndex) => (
-                              <div key={labIndex} className="bg-gray-50 p-3 rounded-md flex justify-between items-center">
+                              <div key={labIndex} className={`${darkMode ? 'bg-gray-900' : 'bg-gray-50'} p-3 rounded-md flex justify-between items-center`}>
                                 <div>
-                                  <p className="font-medium text-gray-900">{lab.name}</p>
+                                  <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{lab.name}</p>
                                   {lab.link && (
                                     <a href={lab.link} className="text-sm text-primary-600 hover:underline">
                                       View Report
@@ -436,8 +439,8 @@ const EncountersTab = ({ encounters, formatDateTime }) => {
                       {/* Discharge Summary */}
                       {encounter.dischargeSummary && (
                         <div>
-                          <h5 className="font-semibold text-gray-900 mb-2">Discharge Summary</h5>
-                          <p className="text-gray-700 bg-gray-50 p-3 rounded-md">
+                          <h5 className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-2`}>Discharge Summary</h5>
+                          <p className={`${darkMode ? 'text-gray-300' : 'text-gray-700'} ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} p-3 rounded-md`}>
                             {encounter.dischargeSummary}
                           </p>
                         </div>

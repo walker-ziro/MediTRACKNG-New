@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSettings } from '../context/SettingsContext';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '../context/AppContext';
 import Layout from './Layout';
@@ -174,7 +175,7 @@ const BedsRooms = () => {
 
         {/* Tabs */}
         <div className="mb-6">
-          <div className="flex gap-4 border-b border-gray-200 dark:border-gray-700">
+          <div className={`flex gap-4 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'} dark:border-gray-700`}>
             <button
               onClick={() => setActiveTab('beds')}
               className={`px-4 py-2 font-medium transition-colors ${

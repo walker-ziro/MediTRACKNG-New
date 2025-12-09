@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSettings } from '../context/SettingsContext';
 import { useApp } from '../context/AppContext';
 import { patientAPI } from '../utils/api';
 
@@ -304,7 +305,7 @@ const NewPatientModal = ({ onClose, onSuccess }) => {
               </div>
             </div>
 
-            <div className="flex gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+            <div className={`flex gap-3 pt-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'} dark:border-gray-700`}>
               <button
                 type="button"
                 onClick={onClose}

@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSettings } from '../context/SettingsContext';
 import { useNavigate } from 'react-router-dom';
 import { patientAPI, dashboardAPI, aiAPI } from '../utils/api';
 import { useApp } from '../context/AppContext';
@@ -311,11 +312,11 @@ const Dashboard = () => {
                 title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
               >
                 {darkMode ? (
-                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z" />
                   </svg>
                 ) : (
-                  <svg className="w-6 h-6 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg className={`w-6 h-6 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z" />
                   </svg>
                 )}
@@ -572,7 +573,7 @@ const Dashboard = () => {
             <div className="card">
               <div className="flex items-center justify-between mb-6">
                 <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Patient Overview</h3>
-                <select className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select className={`px-3 py-1.5 border ${darkMode ? 'border-gray-700' : 'border-gray-200'} rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}>
                   <option>Last 6 Months</option>
                   <option>Last 3 Months</option>
                   <option>Last Month</option>
@@ -624,7 +625,7 @@ const Dashboard = () => {
             <div className="card">
               <div className="flex items-center justify-between mb-6">
                 <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Total Expense</h3>
-                <select className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select className={`px-3 py-1.5 border ${darkMode ? 'border-gray-700' : 'border-gray-200'} rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}>
                   <option>19/11/2025</option>
                 </select>
               </div>
@@ -689,7 +690,7 @@ const Dashboard = () => {
             <div className="lg:col-span-2 card">
               <div className="flex items-center justify-between mb-6">
                 <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Doctors Schedule</h3>
-                <select className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select className={`px-3 py-1.5 border ${darkMode ? 'border-gray-700' : 'border-gray-200'} rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}>
                   <option>All</option>
                   <option>On Duty</option>
                   <option>On Leave</option>
@@ -699,7 +700,7 @@ const Dashboard = () => {
               <div className="overflow-x-auto">
                 <table className="w-full">
                   <thead>
-                    <tr className="border-b border-gray-200">
+                    <tr className={`border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
                       <th className={`text-left py-3 px-2 text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Doctor</th>
                       <th className={`text-left py-3 px-2 text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Department</th>
                       <th className={`text-left py-3 px-2 text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Shift</th>
@@ -754,7 +755,7 @@ const Dashboard = () => {
             <div className="card">
               <div className="flex items-center justify-between mb-6">
                 <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Department Overview <span className={`text-sm font-normal ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>(Top 5)</span></h3>
-                <select className="px-3 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500">
+                <select className={`px-3 py-1.5 border ${darkMode ? 'border-gray-700' : 'border-gray-200'} rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500`}>
                   <option>Last 6 Months</option>
                 </select>
               </div>

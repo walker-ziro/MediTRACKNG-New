@@ -1,8 +1,11 @@
 import { useState } from 'react';
+import { useSettings } from '../context/SettingsContext';
 import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../utils/api';
 
 const Login = () => {
+  const { theme } = useSettings();
+  const darkMode = theme && theme.toLowerCase() === 'dark';
   const navigate = useNavigate();
   const [userType, setUserType] = useState('provider'); // 'provider' or 'patient'
   const [isLogin, setIsLogin] = useState(true);
@@ -66,11 +69,11 @@ const Login = () => {
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-primary-700 mb-2">MediTRACKNG</h1>
-          <p className="text-gray-600">National Health Records System</p>
+          <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>National Health Records System</p>
         </div>
 
         {/* User Type Toggle */}
-        <div className="bg-white rounded-lg shadow-md p-2 mb-6 flex gap-2">
+        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-md p-2 mb-6 flex gap-2`}>
           <button
             onClick={() => {
               setUserType('provider');
@@ -130,7 +133,7 @@ const Login = () => {
                     placeholder="MTN-XXXXXXX"
                     required
                   />
-                  <p className="text-xs text-gray-500 mt-1">Enter your National Health ID</p>
+                  <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1`}>Enter your National Health ID</p>
                 </div>
 
                 <div>
@@ -230,7 +233,7 @@ const Login = () => {
         </div>
 
         {/* Info Box */}
-        <div className="mt-6 bg-white rounded-lg shadow p-4 text-sm text-gray-600">
+        <div className={`mt-6 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-4 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
           {userType === 'patient' ? (
             <>
               <p className="font-semibold text-gray-800 mb-2">For Patients:</p>

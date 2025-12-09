@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useSettings } from '../context/SettingsContext';
 import { useApp } from '../context/AppContext';
 import Layout from './Layout';
 
@@ -46,7 +47,7 @@ const Settings = () => {
         </div>
 
         {/* Tabs */}
-        <div className="flex items-center gap-4 mb-6 border-b border-gray-200 dark:border-gray-700">
+        <div className={`flex items-center gap-4 mb-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'} dark:border-gray-700`}>
           <button
             onClick={() => setActiveTab('profile')}
             className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
@@ -154,7 +155,7 @@ const Settings = () => {
               <h2 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-4`}>System Preferences</h2>
               
               <div className="space-y-4">
-                <div className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+                <div className={`flex items-center justify-between py-3 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'} dark:border-gray-700`}>
                   <div>
                     <h3 className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>Push Notifications</h3>
                     <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Receive notifications about system updates</p>
@@ -173,7 +174,7 @@ const Settings = () => {
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+                <div className={`flex items-center justify-between py-3 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'} dark:border-gray-700`}>
                   <div>
                     <h3 className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>Email Alerts</h3>
                     <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Get email notifications for important events</p>
@@ -192,7 +193,7 @@ const Settings = () => {
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+                <div className={`flex items-center justify-between py-3 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'} dark:border-gray-700`}>
                   <div>
                     <h3 className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>SMS Alerts</h3>
                     <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Receive SMS for critical updates</p>
@@ -239,7 +240,7 @@ const Settings = () => {
               <h2 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-4`}>Security Settings</h2>
               
               <div className="space-y-4">
-                <div className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+                <div className={`flex items-center justify-between py-3 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'} dark:border-gray-700`}>
                   <div>
                     <h3 className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>Two-Factor Authentication</h3>
                     <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Add an extra layer of security</p>
@@ -289,7 +290,7 @@ const Settings = () => {
               <h2 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-4`}>Appearance & Localization</h2>
               
               <div className="space-y-4">
-                <div className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700">
+                <div className={`flex items-center justify-between py-3 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'} dark:border-gray-700`}>
                   <div>
                     <h3 className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>Dark Mode</h3>
                     <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Switch between light and dark theme</p>
@@ -357,7 +358,7 @@ const Settings = () => {
           )}
 
           {/* Save Button */}
-          <div className="mt-6 pt-6 border-t border-gray-200 dark:border-gray-700 flex justify-end gap-3">
+          <div className={`mt-6 pt-6 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'} dark:border-gray-700 flex justify-end gap-3`}>
             <button className={`px-6 py-2 ${darkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'} rounded-lg transition-colors`}>
               Cancel
             </button>

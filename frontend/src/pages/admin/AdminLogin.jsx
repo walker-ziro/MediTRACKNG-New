@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useSettings } from '../../context/SettingsContext';
 import { useNavigate, Link } from 'react-router-dom';
 
 const AdminLogin = () => {
+  const { theme } = useSettings();
+  const darkMode = theme && theme.toLowerCase() === 'dark';
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
@@ -285,7 +288,7 @@ const AdminLogin = () => {
                 Patient Portal
               </Link>
             </div>
-            <p className="text-center text-xs text-gray-500 flex items-center justify-center">
+            <p className={`text-center text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} flex items-center justify-center`}>
               <i className="fas fa-shield-alt mr-2 text-red-500"></i>
               Military-grade encryption • All activities monitored
             </p>

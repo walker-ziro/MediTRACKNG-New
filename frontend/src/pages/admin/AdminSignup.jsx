@@ -1,7 +1,10 @@
 import React, { useState } from 'react';
+import { useSettings } from '../../context/SettingsContext';
 import { useNavigate, Link } from 'react-router-dom';
 
 const AdminSignup = () => {
+  const { theme } = useSettings();
+  const darkMode = theme && theme.toLowerCase() === 'dark';
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     firstName: '',
@@ -344,7 +347,7 @@ const AdminSignup = () => {
                 Patient Portal
               </Link>
             </div>
-            <p className="text-center text-xs text-gray-500">
+            <p className={`text-center text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
               <i className="fas fa-shield-alt mr-1 text-red-500"></i>
               All registration requests are reviewed and approved manually
             </p>
