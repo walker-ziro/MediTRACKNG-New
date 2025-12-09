@@ -6,7 +6,7 @@ const AdminLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [userData, setUserData] = useState(null);
-  const { theme, t } = useSettings();
+  const { theme, updateTheme, timezone, t } = useSettings();
   const darkMode = theme.toLowerCase() === 'dark';
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
@@ -218,7 +218,7 @@ const AdminLayout = () => {
             <div className="flex items-center gap-4">
               {/* Dark Mode Toggle */}
               <button
-                onClick={() => setDarkMode(!darkMode)}
+                onClick={() => updateTheme(darkMode ? 'light' : 'dark')}
                 className={`p-2 rounded-lg ${darkMode ? 'bg-gray-700 text-yellow-400' : 'bg-gray-100 text-gray-600'} hover:opacity-80 transition-opacity`}
               >
                 {darkMode ? (
@@ -245,7 +245,7 @@ const AdminLayout = () => {
 
               {/* Time Display */}
               <div className={`px-4 py-2 ${darkMode ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-700'} rounded-lg text-sm font-medium`}>
-                {currentTime.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}
+                {currentTime.toLocaleTimeString('en-US', { timeZone: timezone, hour: '2-digit', minute: '2-digit' })}
               </div>
 
               {/* Profile */}

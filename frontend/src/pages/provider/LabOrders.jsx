@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { useSettings } from '../../context/SettingsContext';
 
 const LabOrders = () => {
   const { theme, t } = useSettings();
   const darkMode = theme.toLowerCase() === 'dark';
+  const [showModal, setShowModal] = useState(false);
   const labOrders = [
     { id: 'LAB-001', patient: 'John Doe', healthId: 'HID-20241208-001', test: 'Complete Blood Count (CBC)', priority: 'Routine', date: '2024-12-08', status: 'Pending' },
     { id: 'LAB-002', patient: 'Jane Smith', healthId: 'HID-20241208-002', test: 'Lipid Panel', priority: 'Routine', date: '2024-12-05', status: 'Completed' },
@@ -18,7 +20,7 @@ const LabOrders = () => {
       </div>
 
       <div className={`rounded-xl shadow-sm border p-6 mb-6 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-        <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
+        <button onClick={() => setShowModal(true)} className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
           + New Lab Order
         </button>
       </div>
@@ -102,6 +104,33 @@ const LabOrders = () => {
           </table>
         </div>
       </div>
+      {/* Add Lab Order Modal */}
+      {showModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto m-4`}>
+            <div className={`p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'} flex items-center justify-between`}>
+              <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('newLabOrder')}</h2>
+              <button onClick={() => setShowModal(false)} className={`${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'}`}>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6">
+              <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Lab order form goes here...</p>
+              <div className="flex justify-end gap-3 pt-4 mt-4">
+                <button onClick={() => setShowModal(false)} className={`px-6 py-2 border rounded-lg transition-colors ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
+                  {t('cancel')}
+                </button>
+                <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                  {t('save')}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };

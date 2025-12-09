@@ -7,10 +7,10 @@ import { SettingsProvider } from './context/SettingsContext';
 
 ReactDOM.createRoot(document.getElementById('root')).render(
   <React.StrictMode>
-    <AppProvider>
-      <SettingsProvider>
+    <SettingsProvider>
+      <AppProvider>
         <App />
-      </SettingsProvider>
-    </AppProvider>
+      </AppProvider>
+    </SettingsProvider>
   </React.StrictMode>,
 )

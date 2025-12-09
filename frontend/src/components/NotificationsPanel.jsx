@@ -3,6 +3,8 @@ import { useSettings } from '../context/SettingsContext';
 import { useNavigate } from 'react-router-dom';
 
 const NotificationsPanel = ({ isOpen, onClose }) => {
+  const { theme } = useSettings();
+  const darkMode = theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
   const { notifications, markNotificationAsRead, markAllNotificationsAsRead, deleteNotification } = useApp();
   const navigate = useNavigate();
 

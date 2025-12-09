@@ -7,13 +7,22 @@ import GlobalSearch from './GlobalSearch';
 import AIAssistant from './AIAssistant';
 
 const TopBar = ({ title, subtitle }) => {
-  const { darkMode, toggleDarkMode, unreadNotificationsCount, unreadMessagesCount } = useApp();
+  const { unreadNotificationsCount, unreadMessagesCount } = useApp();
+  const { theme, updateTheme, timezone } = useSettings();
+  const darkMode = theme === 'dark' || (theme === 'auto' && window.matchMedia('(prefers-color-scheme: dark)').matches);
   const [showNotifications, setShowNotifications] = useState(false);
   const [showMessages, setShowMessages] = useState(false);
   const [showGlobalSearch, setShowGlobalSearch] = useState(false);
   const [showAIAssistant, setShowAIAssistant] = useState(false);
+  const [currentTime, setCurrentTime] = useState(new Date());
 
   const provider = JSON.parse(localStorage.getItem('provider') || '{}');
+
+  // Update time every second
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(new Date()), 1000);
+    return () => clearInterval(timer);
+  }, []);
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -55,6 +64,20 @@ const TopBar = ({ title, subtitle }) => {
           </div>
 
           <div className="flex items-center gap-4">
+            
+            <div className={`hidden md:flex items-center px-4 py-2 rounded-lg mr-4 ${darkMode ? 'bg-gray-700 text-gray-200' : 'bg-gray-100 text-gray-700'}`}>
+              <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <span className="font-medium">
+                {currentTime.toLocaleTimeString('en-US', { 
+                  timeZone: timezone,
+                  hour: '2-digit', 
+                  minute: '2-digit' 
+                })}
+              </span>
+            </div>
+
             <button 
               onClick={() => setShowAIAssistant(true)}
               className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
@@ -65,11 +88,13 @@ const TopBar = ({ title, subtitle }) => {
 
             <button 
               type="button"
+              
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
-                toggleDarkMode();
+                updateTheme(darkMode ? 'light' : 'dark');
               }}
+
               className={`p-2 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} rounded-lg transition-colors`}
               title={darkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             >

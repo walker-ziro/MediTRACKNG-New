@@ -13,6 +13,7 @@ import NewPatientModal from './NewPatientModal';
 const Dashboard = () => {
   const navigate = useNavigate();
   const { darkMode, toggleDarkMode, unreadNotificationsCount, unreadMessagesCount } = useApp();
+  const { timezone } = useSettings();
   const [searchHealthId, setSearchHealthId] = useState('');
   const [showNewPatientForm, setShowNewPatientForm] = useState(false);
   const [showNewAppointment, setShowNewAppointment] = useState(false);
@@ -129,7 +130,7 @@ const Dashboard = () => {
   };
 
   const formatTime = (date) => {
-    return date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+    return date.toLocaleTimeString('en-US', { timeZone: timezone, hour: '2-digit', minute: '2-digit' });
   };
 
   const formatDate = (date) => {

@@ -19,6 +19,7 @@ export const SettingsProvider = ({ children }) => {
   const [twoFactorEnabled, setTwoFactorEnabled] = useState(false);
   const [twoFactorCode, setTwoFactorCode] = useState('');
   const [sessionTimeout, setSessionTimeout] = useState('30');
+  const [darkMode, setDarkMode] = useState(false);
 
   // Load settings from localStorage on mount
   useEffect(() => {
@@ -44,25 +45,33 @@ export const SettingsProvider = ({ children }) => {
     const body = document.body;
     const themeValue = theme.toLowerCase();
     
-    if (themeValue === 'dark') {
-      root.classList.add('dark');
-      body.style.backgroundColor = '#111827'; // bg-gray-900
-      body.style.color = '#f9fafb';
-    } else if (themeValue === 'light') {
-      root.classList.remove('dark');
-      body.style.backgroundColor = '#ffffff'; // white
-      body.style.color = '#111827';
-    } else if (themeValue === 'auto') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      if (prefersDark) {
+    const applyTheme = (isDark) => {
+      setDarkMode(isDark);
+      if (isDark) {
         root.classList.add('dark');
-        body.style.backgroundColor = '#111827';
+        body.style.backgroundColor = '#111827'; // bg-gray-900
         body.style.color = '#f9fafb';
       } else {
         root.classList.remove('dark');
-        body.style.backgroundColor = '#ffffff';
+        body.style.backgroundColor = '#ffffff'; // white
         body.style.color = '#111827';
       }
+    };
+
+    if (themeValue === 'dark') {
+      applyTheme(true);
+    } else if (themeValue === 'light') {
+      applyTheme(false);
+    } else if (themeValue === 'auto') {
+      const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+      applyTheme(mediaQuery.matches);
+
+      const handleChange = (e) => {
+        applyTheme(e.matches);
+      };
+
+      mediaQuery.addEventListener('change', handleChange);
+      return () => mediaQuery.removeEventListener('change', handleChange);
     }
   }, [theme]);
 
@@ -105,17 +114,20 @@ export const SettingsProvider = ({ children }) => {
 
   const updateTimezone = (newTimezone) => {
     setTimezone(newTimezone);
-    saveSettings();
+    const settings = { theme, language, timezone: newTimezone, dateFormat, twoFactorEnabled, sessionTimeout };
+    localStorage.setItem('appSettings', JSON.stringify(settings));
   };
 
   const updateDateFormat = (newFormat) => {
     setDateFormat(newFormat);
-    saveSettings();
+    const settings = { theme, language, timezone, dateFormat: newFormat, twoFactorEnabled, sessionTimeout };
+    localStorage.setItem('appSettings', JSON.stringify(settings));
   };
 
   const updateSessionTimeout = (newTimeout) => {
     setSessionTimeout(newTimeout);
-    saveSettings();
+    const settings = { theme, language, timezone, dateFormat, twoFactorEnabled, sessionTimeout: newTimeout };
+    localStorage.setItem('appSettings', JSON.stringify(settings));
   };
 
   const enableTwoFactor = (code) => {
@@ -176,6 +188,7 @@ export const SettingsProvider = ({ children }) => {
     dateFormat,
     twoFactorEnabled,
     sessionTimeout,
+    darkMode,
     updateTheme,
     updateLanguage,
     updateTimezone,

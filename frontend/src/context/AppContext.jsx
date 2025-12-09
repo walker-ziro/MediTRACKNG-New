@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import { notificationAPI, messageAPI } from '../utils/api';
+import { useSettings } from './SettingsContext';
 
 const AppContext = createContext();
 
@@ -12,10 +13,11 @@ export const useApp = () => {
 };
 
 export const AppProvider = ({ children }) => {
-  const [darkMode, setDarkMode] = useState(() => {
-    const saved = localStorage.getItem('darkMode');
-    return saved ? JSON.parse(saved) : false;
-  });
+  const { theme, updateTheme, darkMode } = useSettings();
+  
+  const toggleDarkMode = () => {
+    updateTheme(darkMode ? 'light' : 'dark');
+  };
 
   const [notifications, setNotifications] = useState([]);
   const [messages, setMessages] = useState([]);
@@ -42,21 +44,10 @@ export const AppProvider = ({ children }) => {
     }
   }, []);
 
-  useEffect(() => {
-    localStorage.setItem('darkMode', JSON.stringify(darkMode));
-    const root = document.documentElement;
-    if (darkMode) {
-      root.classList.add('dark');
-      root.style.backgroundColor = '#1f2937';
-    } else {
-      root.classList.remove('dark');
-      root.style.backgroundColor = '#ffffff';
-    }
-  }, [darkMode]);
-
-  const toggleDarkMode = () => {
-    setDarkMode(prev => !prev);
-  };
+  // Removed local darkMode effect since SettingsContext handles it now
+  // // root.classList.add('dark');
+  // // root.classList.remove('dark');
+  // // root.style.backgroundColor =
 
   const markNotificationAsRead = async (id) => {
     try {
