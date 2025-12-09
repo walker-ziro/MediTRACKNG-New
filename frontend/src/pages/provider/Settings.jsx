@@ -16,6 +16,7 @@ const Settings = () => {
     dateFormat, 
     twoFactorEnabled,
     sessionTimeout,
+    darkMode,
     updateTheme, 
     updateLanguage, 
     updateTimezone, 
@@ -25,8 +26,6 @@ const Settings = () => {
     disableTwoFactor,
     t
   } = useSettings();
-
-  const darkMode = theme.toLowerCase() === 'dark';
 
   const [formData, setFormData] = useState({
     name: '',
@@ -429,7 +428,6 @@ const Settings = () => {
                     <option>Yoruba</option>
                     <option>Igbo</option>
                   </select>
-                  <p className="mt-2 text-sm text-green-600">✓ {t('currentLanguage') || 'Current language'}: {language}</p>
                 </div>
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('timezone') || 'Timezone'}</label>
@@ -445,7 +443,6 @@ const Settings = () => {
                     <option value="Europe/London">GMT</option>
                     <option value="America/New_York">EST</option>
                   </select>
-                  <p className="mt-2 text-sm text-green-600">✓ {t('currentTimezone') || 'Current timezone'}: {timezone}</p>
                 </div>
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('dateFormat') || 'Date Format'}</label>
@@ -460,7 +457,6 @@ const Settings = () => {
                     <option value="MM/DD/YYYY">MM/DD/YYYY</option>
                     <option value="YYYY-MM-DD">YYYY-MM-DD</option>
                   </select>
-                  <p className="mt-2 text-sm text-green-600">✓ {t('currentFormat') || 'Current format'}: {dateFormat} (Example: {new Date().toLocaleDateString()})</p>
                 </div>
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('theme') || 'Theme'}</label>
@@ -475,10 +471,9 @@ const Settings = () => {
                     <option value="Dark">Dark</option>
                     <option value="Auto">Auto</option>
                   </select>
-                  <p className="mt-2 text-sm text-green-600">✓ {t('currentTheme') || 'Current theme'}: {theme}</p>
                 </div>
                 <div>
-                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('defaultAppointmentDuration') || 'Default Appointment Duration'}</label>
+                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Default Appointment Duration</label>
                   <select
                     value={appointmentDuration}
                     onChange={(e) => {
@@ -492,18 +487,6 @@ const Settings = () => {
                     <option value="45">45 {t('minutes') || 'minutes'}</option>
                     <option value="60">1 {t('hour') || 'hour'}</option>
                   </select>
-                  <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('durationForNewAppointments') || 'Duration for new appointments'}</p>
-                </div>
-                <div className={`pt-4 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                  <div className={`p-4 rounded-lg ${darkMode ? 'bg-blue-900/20' : 'bg-blue-50'}`}>
-                    <h3 className={`font-medium mb-2 ${darkMode ? 'text-blue-400' : 'text-blue-900'}`}>{t('settingsApplied') || 'Settings Applied'}</h3>
-                    <ul className={`text-sm space-y-1 ${darkMode ? 'text-blue-300' : 'text-blue-800'}`}>
-                      <li>• {t('themeChangesApplyImmediately') || 'Theme changes apply immediately'}</li>
-                      <li>• {t('dateFormatUpdates') || 'Date format updates across all dates'}</li>
-                      <li>• {t('timezoneAffectsTime') || 'Timezone affects time displays'}</li>
-                      <li>• {t('languagePreferenceSaved') || 'Language preference saved'}</li>
-                    </ul>
-                  </div>
                 </div>
               </form>
             </div>

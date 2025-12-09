@@ -2,9 +2,35 @@ import { useState } from 'react';
 import { useSettings } from '../../context/SettingsContext';
 
 const LabOrders = () => {
-  const { theme, t } = useSettings();
-  const darkMode = theme.toLowerCase() === 'dark';
+  const { theme, t , darkMode } = useSettings();
   const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState({
+    patientName: '',
+    testType: 'Blood Test',
+    priority: 'Routine',
+    sampleType: '',
+    clinicalNotes: ''
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('New Lab Order:', formData);
+    setShowModal(false);
+    // Reset form
+    setFormData({
+      patientName: '',
+      testType: 'Blood Test',
+      priority: 'Routine',
+      sampleType: '',
+      clinicalNotes: ''
+    });
+  };
+
   const labOrders = [
     { id: 'LAB-001', patient: 'John Doe', healthId: 'HID-20241208-001', test: 'Complete Blood Count (CBC)', priority: 'Routine', date: '2024-12-08', status: 'Pending' },
     { id: 'LAB-002', patient: 'Jane Smith', healthId: 'HID-20241208-002', test: 'Lipid Panel', priority: 'Routine', date: '2024-12-05', status: 'Completed' },
@@ -117,15 +143,92 @@ const LabOrders = () => {
               </button>
             </div>
             <div className="p-6">
-              <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Lab order form goes here...</p>
-              <div className="flex justify-end gap-3 pt-4 mt-4">
-                <button onClick={() => setShowModal(false)} className={`px-6 py-2 border rounded-lg transition-colors ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
-                  {t('cancel')}
-                </button>
-                <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                  {t('save')}
-                </button>
-              </div>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Patient Name</label>
+                  <input
+                    type="text"
+                    name="patientName"
+                    value={formData.patientName}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`}
+                    placeholder="Enter patient name"
+                    required
+                  />
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Test Type</label>
+                    <select
+                      name="testType"
+                      value={formData.testType}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`}
+                    >
+                      <option value="Blood Test">Blood Test</option>
+                      <option value="Urinalysis">Urinalysis</option>
+                      <option value="X-Ray">X-Ray</option>
+                      <option value="MRI">MRI</option>
+                      <option value="CT Scan">CT Scan</option>
+                      <option value="Ultrasound">Ultrasound</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Priority</label>
+                    <select
+                      name="priority"
+                      value={formData.priority}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`}
+                    >
+                      <option value="Routine">Routine</option>
+                      <option value="Urgent">Urgent</option>
+                      <option value="Stat">Stat (Immediate)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Sample Type</label>
+                  <input
+                    type="text"
+                    name="sampleType"
+                    value={formData.sampleType}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`}
+                    placeholder="e.g. Blood, Urine, Swab"
+                  />
+                </div>
+
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Clinical Notes</label>
+                  <textarea
+                    name="clinicalNotes"
+                    value={formData.clinicalNotes}
+                    onChange={handleInputChange}
+                    rows="3"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`}
+                    placeholder="Reason for test, symptoms, etc."
+                  ></textarea>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
+                  <button 
+                    type="button"
+                    onClick={() => setShowModal(false)} 
+                    className={`px-6 py-2 border rounded-lg transition-colors ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+                  >
+                    {t('cancel')}
+                  </button>
+                  <button 
+                    type="submit"
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    {t('save')}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>

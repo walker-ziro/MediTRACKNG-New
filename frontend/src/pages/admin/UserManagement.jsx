@@ -1,8 +1,7 @@
 import { useSettings } from '../../context/SettingsContext';
 
 const UserManagement = () => {
-  const { theme, t } = useSettings();
-  const darkMode = theme.toLowerCase() === 'dark';
+  const { theme, t , darkMode } = useSettings();
   const users = [
     { id: 'USR-001', name: 'Dr. Sarah Johnson', role: 'Provider', email: 'sarah.j@example.com', status: 'Active', lastLogin: '2024-12-08 10:30 AM' },
     { id: 'USR-002', name: 'John Doe', role: 'Patient', email: 'john.doe@example.com', status: 'Active', lastLogin: '2024-12-08 09:15 AM' },

@@ -6,8 +6,7 @@ const ProviderLayout = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [userData, setUserData] = useState(null);
-  const { theme, updateTheme, timezone, t } = useSettings();
-  const darkMode = theme.toLowerCase() === 'dark';
+  const { theme, updateTheme, timezone, t , darkMode } = useSettings();
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());

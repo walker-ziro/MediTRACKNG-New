@@ -4,9 +4,7 @@ import { useSettings } from '../../context/SettingsContext';
 
 const AdminDashboard = () => {
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-  const { theme, t } = useSettings();
-  const darkMode = theme.toLowerCase() === 'dark';
-
+  const { theme, t , darkMode } = useSettings();
   return (
     <div className={`p-8 min-h-screen ${darkMode ? 'bg-gray-900 text-white' : 'bg-gray-50 text-gray-900'}`}>
       {/* Top Header */}

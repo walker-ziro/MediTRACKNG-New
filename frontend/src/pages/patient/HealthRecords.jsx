@@ -1,8 +1,7 @@
 import { useSettings } from '../../context/SettingsContext';
 
 const HealthRecords = () => {
-  const { theme, t } = useSettings();
-  const darkMode = theme.toLowerCase() === 'dark';
+  const { theme, t , darkMode } = useSettings();
   const records = [
     { id: 'REC-001', date: '2024-12-08', type: 'Consultation', provider: 'Dr. Sarah Johnson', diagnosis: 'Seasonal Allergies', notes: 'Prescribed antihistamines' },
     { id: 'REC-002', date: '2024-11-25', type: 'Lab Results', provider: 'Dr. Sarah Johnson', diagnosis: 'Blood Work - Normal', notes: 'All values within normal range' },

@@ -2,9 +2,37 @@ import { useState } from 'react';
 import { useSettings } from '../../context/SettingsContext';
 
 const Prescriptions = () => {
-  const { theme, t } = useSettings();
-  const darkMode = theme.toLowerCase() === 'dark';
+  const { theme, t , darkMode } = useSettings();
   const [showModal, setShowModal] = useState(false);
+  const [formData, setFormData] = useState({
+    patientName: '',
+    medication: '',
+    dosage: '',
+    frequency: 'Once daily',
+    duration: '',
+    notes: ''
+  });
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log('New Prescription:', formData);
+    setShowModal(false);
+    // Reset form
+    setFormData({
+      patientName: '',
+      medication: '',
+      dosage: '',
+      frequency: 'Once daily',
+      duration: '',
+      notes: ''
+    });
+  };
+
   const prescriptions = [
     { id: 'RX-001', patient: 'John Doe', healthId: 'HID-20241208-001', medication: 'Amoxicillin 500mg', dosage: '1 tablet, 3 times daily', duration: '7 days', date: '2024-12-08', status: 'Active' },
     { id: 'RX-002', patient: 'Jane Smith', healthId: 'HID-20241208-002', medication: 'Lisinopril 10mg', dosage: '1 tablet, once daily', duration: '30 days', date: '2024-12-05', status: 'Active' },
@@ -108,15 +136,105 @@ const Prescriptions = () => {
               </button>
             </div>
             <div className="p-6">
-              <p className={`${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Prescription form goes here...</p>
-              <div className="flex justify-end gap-3 pt-4 mt-4">
-                <button onClick={() => setShowModal(false)} className={`px-6 py-2 border rounded-lg transition-colors ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
-                  {t('cancel')}
-                </button>
-                <button className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
-                  {t('save')}
-                </button>
-              </div>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Patient Name</label>
+                  <input
+                    type="text"
+                    name="patientName"
+                    value={formData.patientName}
+                    onChange={handleInputChange}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`}
+                    placeholder="Enter patient name"
+                    required
+                  />
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Medication</label>
+                    <input
+                      type="text"
+                      name="medication"
+                      value={formData.medication}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`}
+                      placeholder="e.g. Amoxicillin"
+                      required
+                    />
+                  </div>
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Dosage</label>
+                    <input
+                      type="text"
+                      name="dosage"
+                      value={formData.dosage}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`}
+                      placeholder="e.g. 500mg"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Frequency</label>
+                    <select
+                      name="frequency"
+                      value={formData.frequency}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`}
+                    >
+                      <option value="Once daily">Once daily</option>
+                      <option value="Twice daily">Twice daily</option>
+                      <option value="Three times daily">Three times daily</option>
+                      <option value="Four times daily">Four times daily</option>
+                      <option value="As needed">As needed</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Duration</label>
+                    <input
+                      type="text"
+                      name="duration"
+                      value={formData.duration}
+                      onChange={handleInputChange}
+                      className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`}
+                      placeholder="e.g. 7 days"
+                      required
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Notes / Instructions</label>
+                  <textarea
+                    name="notes"
+                    value={formData.notes}
+                    onChange={handleInputChange}
+                    rows="3"
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`}
+                    placeholder="Additional instructions..."
+                  ></textarea>
+                </div>
+
+                <div className="flex justify-end gap-3 pt-4 mt-4 border-t border-gray-200 dark:border-gray-700">
+                  <button 
+                    type="button"
+                    onClick={() => setShowModal(false)} 
+                    className={`px-6 py-2 border rounded-lg transition-colors ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+                  >
+                    {t('cancel')}
+                  </button>
+                  <button 
+                    type="submit"
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    {t('save')}
+                  </button>
+                </div>
+              </form>
             </div>
           </div>
         </div>

@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { useSettings } from '../../context/SettingsContext';
 
 const FamilyHealth = () => {
-  const { theme, t } = useSettings();
-  const darkMode = theme.toLowerCase() === 'dark';
+  const { theme, t , darkMode } = useSettings();
   const [showModal, setShowModal] = useState(false);
   const [familyMembers, setFamilyMembers] = useState([
     { id: 'FAM-001', name: 'Emma Doe', relationship: 'Daughter', age: 8, healthId: 'HID-20241208-010', lastCheckup: '2024-11-20', status: 'Healthy' },

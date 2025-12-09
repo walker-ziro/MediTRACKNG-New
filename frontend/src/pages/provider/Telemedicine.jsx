@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { useSettings } from '../../context/SettingsContext';
 
 const Telemedicine = () => {
-  const { theme, t } = useSettings();
-  const darkMode = theme.toLowerCase() === 'dark';
+  const { theme, t , darkMode } = useSettings();
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [activeCall, setActiveCall] = useState(null);

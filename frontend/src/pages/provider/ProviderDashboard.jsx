@@ -4,9 +4,7 @@ import { useSettings } from '../../context/SettingsContext';
 
 const ProviderDashboard = () => {
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
-  const { theme, t } = useSettings();
-  const darkMode = theme.toLowerCase() === 'dark';
-
+  const { theme, t , darkMode } = useSettings();
   return (
     <div className={`p-8 min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       {/* Top Header */}

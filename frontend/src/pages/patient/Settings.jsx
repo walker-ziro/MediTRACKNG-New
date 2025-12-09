@@ -20,9 +20,7 @@ const PatientSettings = () => {
   
   const { theme, language, timezone, dateFormat, twoFactorEnabled,
           updateTheme, updateLanguage, updateTimezone, updateDateFormat,
-          enableTwoFactor, disableTwoFactor, t } = useSettings();
-
-  const darkMode = theme.toLowerCase() === 'dark';
+          enableTwoFactor, disableTwoFactor, t , darkMode } = useSettings();
 
   useEffect(() => {
     const userDataString = localStorage.getItem('userData');
@@ -295,11 +293,6 @@ const PatientSettings = () => {
               <h2 className={`text-xl font-semibold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('preferences') || 'Preferences'}</h2>
               
               <div className="space-y-6">
-                <div className={`border rounded-lg p-4 mb-6 ${darkMode ? 'bg-blue-900/20 border-blue-700' : 'bg-blue-50 border-blue-200'}`}>
-                  <p className={`text-sm ${darkMode ? 'text-blue-300' : 'text-blue-800'}`}>
-                    <strong>{t('note') || 'Note'}:</strong> {t('settingsAppliedImmediately') || 'Changes to these settings are applied immediately and saved automatically.'}
-                  </p>
-                </div>
 
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('theme') || 'Theme'}</label>
@@ -315,7 +308,6 @@ const PatientSettings = () => {
                     <option value="Dark">Dark</option>
                     <option value="Auto">Auto (System)</option>
                   </select>
-                  <p className="mt-2 text-sm text-green-600">✓ {t('currentTheme') || 'Current theme'}: {theme} ({t('appliedImmediately') || 'Applied immediately'})</p>
                 </div>
 
                 <div>
@@ -333,7 +325,6 @@ const PatientSettings = () => {
                     <option value="Yoruba">Yoruba</option>
                     <option value="Igbo">Igbo</option>
                   </select>
-                  <p className="mt-2 text-sm text-green-600">✓ {t('currentLanguage') || 'Current language'}: {language}</p>
                 </div>
 
                 <div>
@@ -351,7 +342,6 @@ const PatientSettings = () => {
                     <option value="America/New_York">America/New York (EST)</option>
                     <option value="Asia/Tokyo">Asia/Tokyo (JST)</option>
                   </select>
-                  <p className="mt-2 text-sm text-green-600">✓ {t('currentTimezone') || 'Current timezone'}: {timezone}</p>
                 </div>
 
                 <div>
@@ -368,8 +358,6 @@ const PatientSettings = () => {
                     <option value="MM/DD/YYYY">MM/DD/YYYY</option>
                     <option value="YYYY-MM-DD">YYYY-MM-DD</option>
                   </select>
-                  <p className="mt-2 text-sm text-green-600">✓ {t('currentFormat') || 'Current format'}: {dateFormat}</p>
-                  <p className={`mt-1 text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{t('example') || 'Example'}: {new Date().toLocaleDateString()}</p>
                 </div>
               </div>
             </div>

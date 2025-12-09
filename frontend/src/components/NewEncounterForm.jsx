@@ -4,8 +4,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 import { patientAPI, encounterAPI } from '../utils/api';
 
 const NewEncounterForm = () => {
-  const { theme } = useSettings();
-  const darkMode = theme && theme.toLowerCase() === 'dark';
+  const { theme , darkMode } = useSettings();
   const { healthId } = useParams();
   const navigate = useNavigate();
   const [patient, setPatient] = useState(null);

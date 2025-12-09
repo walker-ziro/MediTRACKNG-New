@@ -1,8 +1,7 @@
 import { useSettings } from '../../context/SettingsContext';
 
 const ProviderManagement = () => {
-  const { theme, t } = useSettings();
-  const darkMode = theme.toLowerCase() === 'dark';
+  const { theme, t , darkMode } = useSettings();
   const providers = [
     { id: 'PROV-20241208-001', name: 'Dr. Sarah Johnson', specialization: 'General Practice', facility: 'Central Hospital', patients: 145, status: 'Active', verified: true },
     { id: 'PROV-20241207-002', name: 'Dr. Michael Chen', specialization: 'Cardiology', facility: 'City Medical Center', patients: 98, status: 'Active', verified: true },

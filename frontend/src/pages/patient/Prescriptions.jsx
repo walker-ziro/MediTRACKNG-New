@@ -1,7 +1,6 @@
 import { useSettings } from '../../context/SettingsContext';
 const PatientPrescriptions = () => {
-  const { theme } = useSettings();
-  const darkMode = theme && theme.toLowerCase() === 'dark';
+  const { theme , darkMode } = useSettings();
   const prescriptions = [
     { id: 'RX-001', medication: 'Amoxicillin 500mg', dosage: '1 tablet, 3 times daily', duration: '7 days', doctor: 'Dr. Sarah Johnson', date: '2024-12-08', status: 'Active', refills: 0 },
     { id: 'RX-002', medication: 'Lisinopril 10mg', dosage: '1 tablet, once daily', duration: '30 days', doctor: 'Dr. Michael Chen', date: '2024-11-25', status: 'Active', refills: 2 },

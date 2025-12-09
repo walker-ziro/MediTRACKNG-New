@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { useSettings } from '../../context/SettingsContext';
 
 const Encounters = () => {
-  const { theme, t } = useSettings();
-  const darkMode = theme.toLowerCase() === 'dark';
+  const { theme, t , darkMode } = useSettings();
   const [showModal, setShowModal] = useState(false);
   const [encounters, setEncounters] = useState([
     { id: 'ENC-001', patient: 'John Doe', healthId: 'HID-20241208-001', date: '2024-12-08', time: '10:00 AM', type: 'Consultation', status: 'Completed' },

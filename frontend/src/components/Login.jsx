@@ -4,8 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { authAPI } from '../utils/api';
 
 const Login = () => {
-  const { theme } = useSettings();
-  const darkMode = theme && theme.toLowerCase() === 'dark';
+  const { theme , darkMode } = useSettings();
   const navigate = useNavigate();
   const [userType, setUserType] = useState('provider'); // 'provider' or 'patient'
   const [isLogin, setIsLogin] = useState(true);

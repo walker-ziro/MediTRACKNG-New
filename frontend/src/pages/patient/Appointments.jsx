@@ -2,8 +2,7 @@ import { useState } from 'react';
 import { useSettings } from '../../context/SettingsContext';
 
 const Appointments = () => {
-  const { theme, t } = useSettings();
-  const darkMode = theme.toLowerCase() === 'dark';
+  const { theme, t , darkMode } = useSettings();
   const [showModal, setShowModal] = useState(false);
   const [appointments, setAppointments] = useState([
     { id: 'APT-001', date: '2024-12-15', time: '10:00 AM', doctor: 'Dr. Sarah Johnson', specialization: 'General Practice', type: 'Consultation', status: 'Scheduled' },

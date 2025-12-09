@@ -3,8 +3,7 @@ import { useSettings } from '../../context/SettingsContext';
 import { useNavigate, Link } from 'react-router-dom';
 
 const PatientLogin = () => {
-  const { theme } = useSettings();
-  const darkMode = theme.toLowerCase() === 'dark';
+  const { theme , darkMode } = useSettings();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
     email: '',
