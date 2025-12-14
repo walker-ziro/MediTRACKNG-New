@@ -1,12 +1,16 @@
 import { useState, useEffect } from 'react';
 import { useSettings } from '../../context/SettingsContext';
+import { useApi } from '../../hooks/useApi';
+import { useNotification } from '../../context/NotificationContext';
 
 const AdminSettings = () => {
-  
+  const { fetchData, updateData } = useApi();
+  const { showNotification } = useNotification();
   const [userData, setUserData] = useState(null);
   const [activeTab, setActiveTab] = useState('profile');
   const [formData, setFormData] = useState({
-    name: '',
+    firstName: '',
+    lastName: '',
     email: '',
     phone: '',
     role: '',
@@ -23,23 +27,43 @@ const AdminSettings = () => {
           enableTwoFactor, disableTwoFactor, t , darkMode } = useSettings();
 
   useEffect(() => {
-    const userDataString = localStorage.getItem('userData');
-    if (userDataString && userDataString !== 'undefined') {
+    const loadProfile = async () => {
       try {
-        const data = JSON.parse(userDataString);
-        setUserData(data);
-        setFormData({
-          name: data.name || '',
-          email: data.email || '',
-          phone: data.phone || '',
-          role: data.role || 'Admin',
-          department: data.department || 'Administration',
-          adminId: data.adminId || ''
-        });
+        // Try to fetch from API first
+        const data = await fetchData('/multi-auth/profile');
+        if (data) {
+          setUserData(data);
+          setFormData({
+            firstName: data.firstName || '',
+            lastName: data.lastName || '',
+            email: data.email || '',
+            phone: data.phone || '',
+            role: data.role || 'Admin',
+            department: data.department || 'Administration',
+            adminId: data.adminId || ''
+          });
+        } else {
+          // Fallback to local storage if API fails or returns nothing (e.g. offline)
+          const userDataString = localStorage.getItem('userData');
+          if (userDataString && userDataString !== 'undefined') {
+            const data = JSON.parse(userDataString);
+            setUserData(data);
+            setFormData({
+              firstName: data.firstName || '',
+              lastName: data.lastName || '',
+              email: data.email || '',
+              phone: data.phone || '',
+              role: data.role || 'Admin',
+              department: data.department || 'Administration',
+              adminId: data.adminId || ''
+            });
+          }
+        }
       } catch (error) {
-        console.error('Error parsing userData:', error);
+        console.error('Error loading profile:', error);
       }
-    }
+    };
+    loadProfile();
   }, []);
 
   const handleChange = (e) => {
@@ -49,19 +73,29 @@ const AdminSettings = () => {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const updatedData = { ...userData, ...formData };
-    localStorage.setItem('userData', JSON.stringify(updatedData));
-    setUserData(updatedData);
-    alert(t('profileUpdated') || 'Profile updated successfully!');
+    try {
+      // Update via API
+      const updatedProfile = await updateData('/multi-auth/profile', formData);
+      
+      if (updatedProfile) {
+        const updatedData = { ...userData, ...updatedProfile };
+        localStorage.setItem('userData', JSON.stringify(updatedData));
+        setUserData(updatedData);
+        showNotification(t('profileUpdated') || 'Profile updated successfully!', 'success');
+      }
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      showNotification('Failed to update profile', 'error');
+    }
   };
 
   const handleTwoFactorToggle = () => {
     if (twoFactorEnabled) {
       if (window.confirm(t('confirmDisable2FA') || 'Are you sure you want to disable Two-Factor Authentication?')) {
         disableTwoFactor();
-        alert(t('twoFactorDisabled') || 'Two-Factor Authentication disabled successfully!');
+        showNotification(t('twoFactorDisabled') || 'Two-Factor Authentication disabled successfully!', 'info');
       }
     } else {
       const code = Math.floor(100000 + Math.random() * 900000).toString();
@@ -75,9 +109,9 @@ const AdminSettings = () => {
       enableTwoFactor(generatedCode);
       setShowTwoFactorModal(false);
       setVerificationCode('');
-      alert(t('twoFactorEnabled') || 'Two-Factor Authentication enabled successfully!');
+      showNotification(t('twoFactorEnabledMsg') || 'Two-Factor Authentication enabled successfully!', 'success');
     } else {
-      alert(t('invalidCode') || 'Invalid code. Please try again.');
+      showNotification(t('invalidCode') || 'Invalid code. Please try again.', 'error');
     }
   };
 
@@ -92,8 +126,8 @@ const AdminSettings = () => {
   return (
     <div className={`p-8 min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="mb-8">
-        <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('adminSettings') || 'Admin Settings'}</h1>
-        <p className={`mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('manageAdminAccount') || 'Manage your administrative account'}</p>
+        <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('settings') || 'Settings'}</h1>
+        <p className={`mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('manageAccount') || 'Manage your account and preferences'}</p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -110,13 +144,13 @@ const AdminSettings = () => {
                 onClick={() => setActiveTab('security')}
                 className={`w-full text-left px-4 py-3 rounded-lg ${activeTab === 'security' ? (darkMode ? 'bg-blue-900/50 text-blue-400' : 'bg-blue-50 text-blue-600') : (darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-50')}`}
               >
-                {t('securityAnd2FA') || 'Security & 2FA'}
+                {t('security') || 'Security'}
               </button>
               <button 
                 onClick={() => setActiveTab('preferences')}
                 className={`w-full text-left px-4 py-3 rounded-lg ${activeTab === 'preferences' ? (darkMode ? 'bg-blue-900/50 text-blue-400' : 'bg-blue-50 text-blue-600') : (darkMode ? 'text-gray-300 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-50')}`}
               >
-                {t('systemPreferences') || 'System Preferences'}
+                {t('preferences') || 'Preferences'}
               </button>
             </nav>
           </div>
@@ -139,15 +173,27 @@ const AdminSettings = () => {
                 />
               </div>
 
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('fullName') || 'Full Name'}</label>
-                <input
-                  type="text"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200'}`}
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('firstName') || 'First Name'}</label>
+                  <input
+                    type="text"
+                    name="firstName"
+                    value={formData.firstName}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200'}`}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('lastName') || 'Last Name'}</label>
+                  <input
+                    type="text"
+                    name="lastName"
+                    value={formData.lastName}
+                    onChange={handleChange}
+                    className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200'}`}
+                  />
+                </div>
               </div>
 
               <div>
@@ -207,7 +253,7 @@ const AdminSettings = () => {
           </div>
 
           <div className={`rounded-xl shadow-sm border p-6 mt-6 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-            <h2 className={`text-xl font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('securityStatus') || 'Security Status'}</h2>
+            <h2 className={`text-xl font-semibold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('accountStatus') || 'Account Status'}</h2>
             <div className="space-y-3">
               <div className="flex items-center justify-between py-2">
                 <span className={`${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('twoFactorEnabled') || '2FA Enabled'}</span>
@@ -240,7 +286,7 @@ const AdminSettings = () => {
 
           {activeTab === 'security' && (
             <div className={`rounded-xl shadow-sm border p-6 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-              <h2 className={`text-xl font-semibold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('securityAnd2FA') || 'Security & Two-Factor Authentication'}</h2>
+              <h2 className={`text-xl font-semibold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('securitySettings') || 'Security Settings'}</h2>
               
               <div className="space-y-6">
                 <div>
@@ -318,7 +364,7 @@ const AdminSettings = () => {
 
           {activeTab === 'preferences' && (
             <div className={`rounded-xl shadow-sm border p-6 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-              <h2 className={`text-xl font-semibold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('systemPreferences') || 'System Preferences'}</h2>
+              <h2 className={`text-xl font-semibold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('preferences') || 'Preferences'}</h2>
               
               <div className="space-y-6">
 
@@ -328,7 +374,7 @@ const AdminSettings = () => {
                     value={theme}
                     onChange={(e) => {
                       updateTheme(e.target.value);
-                      alert(t('themeChanged') || `Theme changed to ${e.target.value}`);
+                      showNotification(t('themeChanged') || `Theme changed to ${e.target.value}`, 'info');
                     }}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200'}`}
                   >
@@ -344,7 +390,7 @@ const AdminSettings = () => {
                     value={language}
                     onChange={(e) => {
                       updateLanguage(e.target.value);
-                      alert(t('languageChanged') || `Language changed to ${e.target.value}`);
+                      showNotification(t('languageChanged') || `Language changed to ${e.target.value}`, 'info');
                     }}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200'}`}
                   >
@@ -361,7 +407,7 @@ const AdminSettings = () => {
                     value={timezone}
                     onChange={(e) => {
                       updateTimezone(e.target.value);
-                      alert(t('timezoneChanged') || `Timezone changed to ${e.target.value}`);
+                      showNotification(t('timezoneChanged') || `Timezone changed to ${e.target.value}`, 'info');
                     }}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200'}`}
                   >
@@ -378,7 +424,7 @@ const AdminSettings = () => {
                     value={dateFormat}
                     onChange={(e) => {
                       updateDateFormat(e.target.value);
-                      alert(t('dateFormatChanged') || `Date format changed to ${e.target.value}`);
+                      showNotification(t('dateFormatChanged') || `Date format changed to ${e.target.value}`, 'info');
                     }}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200'}`}
                   >
@@ -415,7 +461,7 @@ const AdminSettings = () => {
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(generatedCode);
-                    alert(t('codeCopied') || 'Code copied to clipboard!');
+                    showNotification(t('codeCopied') || 'Code copied to clipboard!', 'success');
                   }}
                   className={`mt-3 text-sm ${darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700'}`}
                 >

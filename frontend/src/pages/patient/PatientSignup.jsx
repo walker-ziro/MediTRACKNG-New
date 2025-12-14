@@ -35,6 +35,10 @@ const PatientSignup = () => {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  
+  // OTP State
+  const [showOTP, setShowOTP] = useState(false);
+  const [otp, setOtp] = useState('');
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -90,10 +94,14 @@ const PatientSignup = () => {
       const data = await response.json();
 
       if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('userType', data.userType);
-        localStorage.setItem('userData', JSON.stringify(data.user));
-        navigate('/patient/dashboard');
+        if (data.requiresVerification) {
+          setShowOTP(true);
+        } else {
+          localStorage.setItem('token', data.token);
+          localStorage.setItem('userType', data.userType);
+          localStorage.setItem('userData', JSON.stringify(data.user));
+          navigate('/patient/dashboard');
+        }
       } else {
         setError(data.message || 'Registration failed');
         console.error('Registration error:', data);
@@ -105,6 +113,80 @@ const PatientSignup = () => {
       setLoading(false);
     }
   };
+
+  const handleVerifyOTP = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError('');
+    try {
+      const response = await fetch('http://localhost:5000/api/multi-auth/verify-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, otp, userType: 'patient' })
+      });
+      const data = await response.json();
+      if (response.ok) {
+        localStorage.setItem('token', data.token);
+        localStorage.setItem('userType', data.userType);
+        localStorage.setItem('userData', JSON.stringify(data.user));
+        navigate('/patient/dashboard');
+      } else {
+        setError(data.message || 'Verification failed');
+      }
+    } catch (err) {
+      setError('Network error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  if (showOTP) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-100 px-4 py-8 flex items-center justify-center">
+        <div className={`max-w-md w-full ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-2xl shadow-2xl overflow-hidden p-8`}>
+          <div className="text-center mb-6">
+            <div className="inline-flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mb-4">
+              <i className="fas fa-envelope-open-text text-3xl text-green-600"></i>
+            </div>
+            <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Verify Your Email</h2>
+            <p className={`mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+              We sent a verification code to <br/> <span className="font-semibold">{formData.email}</span>
+            </p>
+          </div>
+
+          <form onSubmit={handleVerifyOTP} className="space-y-6">
+            {error && (
+              <div className="bg-red-50 border-l-4 border-red-500 px-4 py-3 rounded-md flex items-start">
+                <i className="fas fa-exclamation-circle text-red-500 mt-0.5 mr-3"></i>
+                <span className="text-red-700 text-sm">{error}</span>
+              </div>
+            )}
+
+            <div>
+              <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Verification Code</label>
+              <input
+                type="text"
+                value={otp}
+                onChange={(e) => setOtp(e.target.value)}
+                placeholder="Enter 6-digit code"
+                className={`w-full px-4 py-3 text-center text-2xl tracking-widest border ${darkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent outline-none`}
+                maxLength={6}
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-green-600 text-white font-semibold py-3 px-6 rounded-lg hover:bg-green-700 focus:outline-none focus:ring-4 focus:ring-green-300 transition-all shadow-lg disabled:opacity-50"
+            >
+              {loading ? 'Verifying...' : 'Verify Account'}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-green-50 via-emerald-50 to-teal-100 px-4 py-8">

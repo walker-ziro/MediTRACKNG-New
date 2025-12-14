@@ -1,29 +1,77 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSettings } from '../../context/SettingsContext';
+import { useApi } from '../../hooks/useApi';
 
 const Encounters = () => {
   const { theme, t , darkMode } = useSettings();
+  const { fetchData, postData } = useApi();
   const [showModal, setShowModal] = useState(false);
-  const [encounters, setEncounters] = useState([
-    { id: 'ENC-001', patient: 'John Doe', healthId: 'HID-20241208-001', date: '2024-12-08', time: '10:00 AM', type: 'Consultation', status: 'Completed' },
-    { id: 'ENC-002', patient: 'Jane Smith', healthId: 'HID-20241208-002', date: '2024-12-08', time: '11:30 AM', type: 'Follow-up', status: 'In Progress' },
-    { id: 'ENC-003', patient: 'Michael Johnson', healthId: 'HID-20241207-003', date: '2024-12-07', time: '02:00 PM', type: 'Emergency', status: 'Completed' },
-  ]);
+  const [encounters, setEncounters] = useState([]);
+  const [patients, setPatients] = useState([]);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [encountersData, patientsData] = await Promise.all([
+          fetchData('/encounters'),
+          fetchData('/patients')
+        ]);
+
+        if (encountersData) {
+          const formattedEncounters = encountersData.map(e => ({
+            id: e.encounterId || e._id,
+            patient: e.patient ? `${e.patient.firstName} ${e.patient.lastName}` : 'Unknown',
+            healthId: e.patient?.healthId || 'N/A',
+            date: new Date(e.date || e.createdAt).toLocaleDateString(),
+            time: new Date(e.date || e.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            type: e.encounterType || 'Consultation',
+            status: e.status || 'Completed'
+          }));
+          setEncounters(formattedEncounters);
+        }
+
+        if (patientsData) {
+          setPatients(patientsData);
+        }
+      } catch (error) {
+        console.error('Failed to load data', error);
+      }
+    };
+    loadData();
+  }, []);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    const newEncounter = {
-      id: `ENC-${String(encounters.length + 1).padStart(3, '0')}`,
-      patient: formData.get('patient'),
+    const datetime = formData.get('datetime');
+    
+    const payload = {
       healthId: formData.get('patient'),
-      date: new Date(formData.get('datetime')).toISOString().split('T')[0],
-      time: new Date(formData.get('datetime')).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' }),
+      date: datetime ? datetime.split('T')[0] : new Date().toISOString().split('T')[0],
+      time: datetime ? datetime.split('T')[1] : '00:00',
       type: formData.get('type'),
       status: 'In Progress'
     };
-    setEncounters([newEncounter, ...encounters]);
-    setShowModal(false);
+
+    try {
+      const response = await postData('/encounters', payload);
+      if (response && response.encounter) {
+        const e = response.encounter;
+        const newEncounter = {
+          id: e.encounterId || e._id,
+          patient: e.patient ? `${e.patient.firstName} ${e.patient.lastName}` : 'Unknown',
+          healthId: e.patient?.healthId || 'N/A',
+          date: new Date(e.encounterDate).toLocaleDateString(),
+          time: new Date(e.encounterDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          type: e.encounterType,
+          status: e.status
+        };
+        setEncounters([newEncounter, ...encounters]);
+        setShowModal(false);
+      }
+    } catch (error) {
+      console.error('Failed to create encounter', error);
+    }
   };
 
   return (
@@ -45,7 +93,7 @@ const Encounters = () => {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
         <div className={`rounded-xl p-6 border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
           <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Today's {t('encounters')}</p>
-          <p className={`text-3xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{encounters.filter(e => e.date === '2024-12-08').length}</p>
+          <p className={`text-3xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{encounters.filter(e => e.date === new Date().toLocaleDateString()).length}</p>
         </div>
         <div className={`rounded-xl p-6 border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
           <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>In Progress</p>
@@ -124,9 +172,11 @@ const Encounters = () => {
                 <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Patient *</label>
                 <select name="patient" required className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`}>
                   <option value="">Select Patient</option>
-                  <option value="John Doe">John Doe (HID-20241208-001)</option>
-                  <option value="Jane Smith">Jane Smith (HID-20241208-002)</option>
-                  <option value="Michael Johnson">Michael Johnson (HID-20241207-003)</option>
+                  {patients.map(p => (
+                    <option key={p.healthId} value={p.healthId}>
+                      {p.firstName} {p.lastName} ({p.healthId})
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-4">

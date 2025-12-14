@@ -43,6 +43,14 @@ const patientAuthSchema = new mongoose.Schema({
     required: true,
     minlength: 6
   },
+
+  // OTP Verification
+  otp: String,
+  otpExpires: Date,
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
   
   // Biometric (for future implementation)
   biometricId: String,

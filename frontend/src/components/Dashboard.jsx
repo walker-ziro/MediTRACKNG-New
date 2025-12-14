@@ -596,7 +596,11 @@ const Dashboard = () => {
                     </div>
                   );
                 }) : (
-                  ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'].map((month) => (
+                  Array.from({ length: 6 }, (_, i) => {
+                    const d = new Date();
+                    d.setMonth(d.getMonth() - (5 - i));
+                    return d.toLocaleString('default', { month: 'short' });
+                  }).map((month) => (
                     <div key={month} className="flex-1 flex flex-col items-center gap-2">
                       <div className="w-full flex gap-1 items-end" style={{ height: '200px' }}>
                         <div className="flex-1 bg-gray-200 rounded-t" style={{ height: '20%' }}></div>

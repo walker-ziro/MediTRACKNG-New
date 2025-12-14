@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useSettings } from '../context/SettingsContext';
 import { useApp } from '../context/AppContext';
+import { useNotification } from '../context/NotificationContext';
 import Layout from './Layout';
 
 const Settings = () => {
   const { darkMode, toggleDarkMode } = useApp();
+  const { showNotification } = useNotification();
   const [activeTab, setActiveTab] = useState('profile');
   const [settings, setSettings] = useState({
     // Profile Settings
@@ -34,7 +36,7 @@ const Settings = () => {
   };
 
   const handleSave = () => {
-    alert('Settings saved successfully!');
+    showNotification('Settings saved successfully!', 'success');
   };
 
   return (

@@ -1,9 +1,11 @@
 const express = require('express');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
+const auth = require('../middleware/auth');
 const ProviderAuth = require('../models/ProviderAuth');
 const PatientAuth = require('../models/PatientAuth');
 const AdminAuth = require('../models/AdminAuth');
+const { sendOTP } = require('../utils/emailService');
 
 // Generate JWT token
 const generateToken = (user, userType) => {
@@ -60,6 +62,10 @@ router.post('/provider/register', async (req, res) => {
       });
     }
 
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
     // Create new provider with all fields
     const providerData = {
       firstName,
@@ -68,7 +74,9 @@ router.post('/provider/register', async (req, res) => {
       phone,
       password,
       licenseNumber,
-      role: role || 'Doctor'
+      role: role || 'Doctor',
+      otp,
+      otpExpires
     };
 
     // Add optional fields if provided
@@ -87,10 +95,15 @@ router.post('/provider/register', async (req, res) => {
     provider.setRolePermissions();
     await provider.save();
 
+    // Send OTP Email
+    await sendOTP(email, otp);
+
     res.status(201).json({
-      message: 'Provider registered successfully. Awaiting approval.',
+      message: 'Provider registered successfully. Please verify your email.',
       providerId: provider.providerId,
-      userType: 'provider'
+      userType: 'provider',
+      requiresVerification: true,
+      email: email
     });
   } catch (error) {
     console.error('Provider registration error:', error);
@@ -209,13 +222,19 @@ router.post('/patient/register', async (req, res) => {
       });
     }
 
+    // Generate OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
     // Create patient data object
     const patientData = {
       firstName,
       lastName,
       email,
       phone,
-      password
+      password,
+      otp,
+      otpExpires
     };
 
     // Add optional fields if provided
@@ -231,18 +250,14 @@ router.post('/patient/register', async (req, res) => {
     // Create new patient
     const patient = await PatientAuth.create(patientData);
 
-    // Generate token
-    const token = generateToken(patient, 'patient');
+    // Send OTP Email
+    await sendOTP(email, otp);
 
     res.status(201).json({
-      message: 'Patient registered successfully',
-      token,
+      message: 'Patient registered successfully. Please verify your email.',
       userType: 'patient',
-      user: {
-        healthId: patient.healthId,
-        name: `${patient.firstName} ${patient.lastName}`,
-        email: patient.email
-      }
+      requiresVerification: true,
+      email: email
     });
   } catch (error) {
     console.error('Patient registration error:', error);
@@ -677,6 +692,180 @@ router.patch('/admin/activate/admin/:email', async (req, res) => {
   } catch (error) {
     console.error('Admin activation error:', error);
     res.status(500).json({ message: 'Error activating admin', error: error.message });
+  }
+});
+
+// ========== PROFILE ROUTES ==========
+
+// Get current user profile
+router.get('/profile', auth, async (req, res) => {
+  try {
+    const { id, userType } = req.user;
+    let user;
+
+    if (userType === 'admin') {
+      user = await AdminAuth.findById(id).select('-password');
+    } else if (userType === 'provider') {
+      user = await ProviderAuth.findById(id).select('-password');
+    } else if (userType === 'patient') {
+      user = await PatientAuth.findById(id).select('-password');
+    }
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error('Get profile error:', error);
+    res.status(500).json({ message: 'Error fetching profile', error: error.message });
+  }
+});
+
+// Update current user profile
+router.put('/profile', auth, async (req, res) => {
+  try {
+    const { id, userType } = req.user;
+    const updates = req.body;
+    let user;
+    let Model;
+
+    if (userType === 'admin') {
+      Model = AdminAuth;
+    } else if (userType === 'provider') {
+      Model = ProviderAuth;
+    } else if (userType === 'patient') {
+      Model = PatientAuth;
+    } else {
+      return res.status(400).json({ message: 'Invalid user type' });
+    }
+
+    // Prevent updating sensitive fields
+    delete updates.password;
+    delete updates.adminId;
+    delete updates.providerId;
+    delete updates.healthId;
+    delete updates._id;
+    delete updates.role; // Prevent role escalation
+
+    user = await Model.findByIdAndUpdate(id, { $set: updates }, { new: true }).select('-password');
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    res.json(user);
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({ message: 'Error updating profile', error: error.message });
+  }
+});
+
+// Verify OTP
+router.post('/verify-otp', async (req, res) => {
+  try {
+    const { email, otp, userType } = req.body;
+
+    let user;
+    let Model;
+
+    if (userType === 'provider') {
+      Model = ProviderAuth;
+    } else if (userType === 'patient') {
+      Model = PatientAuth;
+    } else {
+      return res.status(400).json({ message: 'Invalid user type' });
+    }
+
+    user = await Model.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ message: 'User already verified' });
+    }
+
+    if (user.otp !== otp) {
+      return res.status(400).json({ message: 'Invalid OTP' });
+    }
+
+    if (user.otpExpires < Date.now()) {
+      return res.status(400).json({ message: 'OTP expired' });
+    }
+
+    // Verify user
+    user.isVerified = true;
+    user.otp = undefined;
+    user.otpExpires = undefined;
+    
+    await user.save();
+
+    // Generate token
+    const token = generateToken(user, userType);
+
+    res.json({
+      message: 'Verification successful',
+      token,
+      userType,
+      user: {
+        id: user._id,
+        name: `${user.firstName} ${user.lastName}`,
+        email: user.email,
+        healthId: user.healthId,
+        providerId: user.providerId
+      }
+    });
+
+  } catch (error) {
+    console.error('OTP verification error:', error);
+    res.status(500).json({ message: 'Server error during verification' });
+  }
+});
+
+// Resend OTP
+router.post('/resend-otp', async (req, res) => {
+  try {
+    const { email, userType } = req.body;
+
+    let user;
+    let Model;
+
+    if (userType === 'provider') {
+      Model = ProviderAuth;
+    } else if (userType === 'patient') {
+      Model = PatientAuth;
+    } else {
+      return res.status(400).json({ message: 'Invalid user type' });
+    }
+
+    user = await Model.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.isVerified) {
+      return res.status(400).json({ message: 'User already verified' });
+    }
+
+    // Generate new OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    user.otp = otp;
+    user.otpExpires = otpExpires;
+    await user.save();
+
+    // Send OTP Email
+    await sendOTP(email, otp);
+
+    res.json({ message: 'OTP resent successfully' });
+
+  } catch (error) {
+    console.error('Resend OTP error:', error);
+    res.status(500).json({ message: 'Server error during OTP resend' });
   }
 });
 

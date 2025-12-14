@@ -28,7 +28,7 @@ router.get('/overview', auth, async (req, res) => {
         { $group: { _id: '$type', count: { $sum: 1 } } }
       ]),
       Patient.aggregate([
-        { $group: { _id: '$contact.state', count: { $sum: 1 } } },
+        { $group: { _id: '$contact.address.state', count: { $sum: 1 } } },
         { $sort: { count: -1 } },
         { $limit: 10 }
       ])
@@ -88,7 +88,7 @@ router.get('/disease-surveillance', auth, async (req, res) => {
         $group: {
           _id: '$chronicConditions.condition',
           count: { $sum: 1 },
-          states: { $addToSet: '$contact.state' }
+          states: { $addToSet: '$contact.address.state' }
         }
       },
       { $sort: { count: -1 } },

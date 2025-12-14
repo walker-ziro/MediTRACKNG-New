@@ -1,12 +1,42 @@
+import { useState, useEffect } from 'react';
 import { useSettings } from '../../context/SettingsContext';
+import { useApi } from '../../hooks/useApi';
 
 const HealthRecords = () => {
   const { theme, t , darkMode } = useSettings();
-  const records = [
-    { id: 'REC-001', date: '2024-12-08', type: 'Consultation', provider: 'Dr. Sarah Johnson', diagnosis: 'Seasonal Allergies', notes: 'Prescribed antihistamines' },
-    { id: 'REC-002', date: '2024-11-25', type: 'Lab Results', provider: 'Dr. Sarah Johnson', diagnosis: 'Blood Work - Normal', notes: 'All values within normal range' },
-    { id: 'REC-003', date: '2024-10-15', type: 'Consultation', provider: 'Dr. Michael Chen', diagnosis: 'Annual Checkup', notes: 'Good health status' },
-  ];
+  const { fetchData } = useApi();
+  const [selectedRecord, setSelectedRecord] = useState(null);
+  const [records, setRecords] = useState([]);
+  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+
+  useEffect(() => {
+    const loadRecords = async () => {
+      if (!userData.healthId) return;
+      try {
+        const data = await fetchData(`/patient-portal/encounters/${userData.healthId}`);
+        if (data && data.encounters) {
+          const formattedRecords = data.encounters.map(enc => ({
+            id: enc.id,
+            date: new Date(enc.date).toLocaleDateString(),
+            type: enc.type,
+            provider: enc.provider ? `Dr. ${enc.provider.firstName} ${enc.provider.lastName}` : 'Unknown Provider',
+            diagnosis: (enc.diagnosis && enc.diagnosis.length > 0) 
+              ? enc.diagnosis.map(d => d.description || d.code).join(', ') 
+              : 'No diagnosis',
+            notes: enc.chiefComplaint || 'No notes'
+          }));
+          setRecords(formattedRecords);
+        }
+      } catch (error) {
+        console.error("Error loading health records", error);
+      }
+    };
+    loadRecords();
+  }, [userData.healthId, fetchData]);
+
+  const handleViewDetails = (record) => {
+    setSelectedRecord(record);
+  };
 
   return (
     <div className={`p-8 min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -22,7 +52,9 @@ const HealthRecords = () => {
         </div>
         <div className={`rounded-xl p-6 border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
           <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Last Visit</p>
-          <p className={`text-xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Dec 8, 2024</p>
+          <p className={`text-xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+            {records.length > 0 ? records[0].date : 'N/A'}
+          </p>
         </div>
         <div className={`rounded-xl p-6 border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
           <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Health Status</p>
@@ -47,12 +79,63 @@ const HealthRecords = () => {
                   <p className={`text-sm mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Provider: {record.provider}</p>
                   <p className={darkMode ? 'text-gray-300' : 'text-gray-700'}>{record.notes}</p>
                 </div>
-                <button className="text-blue-600 hover:text-blue-800 font-medium text-sm">{t('view')} Details</button>
+                <button 
+                  onClick={() => handleViewDetails(record)}
+                  className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                >
+                  {t('view')} Details
+                </button>
               </div>
             </div>
           ))}
         </div>
       </div>
+
+      {/* View Details Modal */}
+      {selectedRecord && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl max-w-md w-full m-4`}>
+            <div className={`p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'} flex items-center justify-between`}>
+              <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Record Details</h2>
+              <button onClick={() => setSelectedRecord(null)} className={`${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'}`}>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Diagnosis</p>
+                <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{selectedRecord.diagnosis}</p>
+              </div>
+              <div>
+                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Type</p>
+                <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{selectedRecord.type}</p>
+              </div>
+              <div>
+                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Date</p>
+                <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{selectedRecord.date}</p>
+              </div>
+              <div>
+                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Provider</p>
+                <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{selectedRecord.provider}</p>
+              </div>
+              <div>
+                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Notes</p>
+                <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{selectedRecord.notes}</p>
+              </div>
+            </div>
+            <div className={`p-6 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'} flex justify-end`}>
+              <button 
+                onClick={() => setSelectedRecord(null)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

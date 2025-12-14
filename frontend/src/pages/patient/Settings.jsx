@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useSettings } from '../../context/SettingsContext';
+import { useNotification } from '../../context/NotificationContext';
 
 const PatientSettings = () => {
-  
+  const { showNotification } = useNotification();
   const [userData, setUserData] = useState(null);
   const [activeTab, setActiveTab] = useState('profile');
   const [formData, setFormData] = useState({
@@ -54,14 +55,14 @@ const PatientSettings = () => {
     const updatedData = { ...userData, ...formData };
     localStorage.setItem('userData', JSON.stringify(updatedData));
     setUserData(updatedData);
-    alert(t('profileUpdated') || 'Profile updated successfully!');
+    showNotification(t('profileUpdated') || 'Profile updated successfully!', 'success');
   };
 
   const handleTwoFactorToggle = () => {
     if (twoFactorEnabled) {
       if (window.confirm(t('confirmDisable2FA') || 'Are you sure you want to disable Two-Factor Authentication?')) {
         disableTwoFactor();
-        alert(t('twoFactorDisabled') || 'Two-Factor Authentication disabled successfully!');
+        showNotification(t('twoFactorDisabled') || 'Two-Factor Authentication disabled successfully!', 'info');
       }
     } else {
       const code = Math.floor(100000 + Math.random() * 900000).toString();
@@ -75,9 +76,9 @@ const PatientSettings = () => {
       enableTwoFactor(generatedCode);
       setShowTwoFactorModal(false);
       setVerificationCode('');
-      alert(t('twoFactorEnabled') || 'Two-Factor Authentication enabled successfully!');
+      showNotification(t('twoFactorEnabledMsg') || 'Two-Factor Authentication enabled successfully!', 'success');
     } else {
-      alert(t('invalidCode') || 'Invalid code. Please try again.');
+      showNotification(t('invalidCode') || 'Invalid code. Please try again.', 'error');
     }
   };
 
@@ -300,7 +301,7 @@ const PatientSettings = () => {
                     value={theme}
                     onChange={(e) => {
                       updateTheme(e.target.value);
-                      alert(t('themeChanged') || `Theme changed to ${e.target.value}`);
+                      showNotification(t('themeChanged') || `Theme changed to ${e.target.value}`, 'success');
                     }}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200'}`}
                   >
@@ -316,7 +317,7 @@ const PatientSettings = () => {
                     value={language}
                     onChange={(e) => {
                       updateLanguage(e.target.value);
-                      alert(t('languageChanged') || `Language changed to ${e.target.value}`);
+                      showNotification(t('languageChanged') || `Language changed to ${e.target.value}`, 'success');
                     }}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200'}`}
                   >
@@ -333,7 +334,7 @@ const PatientSettings = () => {
                     value={timezone}
                     onChange={(e) => {
                       updateTimezone(e.target.value);
-                      alert(t('timezoneChanged') || `Timezone changed to ${e.target.value}`);
+                      showNotification(t('timezoneChanged') || `Timezone changed to ${e.target.value}`, 'success');
                     }}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200'}`}
                   >
@@ -350,7 +351,7 @@ const PatientSettings = () => {
                     value={dateFormat}
                     onChange={(e) => {
                       updateDateFormat(e.target.value);
-                      alert(t('dateFormatChanged') || `Date format changed to ${e.target.value}`);
+                      showNotification(t('dateFormatChanged') || `Date format changed to ${e.target.value}`, 'success');
                     }}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200'}`}
                   >
@@ -387,7 +388,7 @@ const PatientSettings = () => {
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(generatedCode);
-                    alert(t('codeCopied') || 'Code copied to clipboard!');
+                    showNotification(t('codeCopied') || 'Code copied to clipboard!', 'success');
                   }}
                   className="mt-3 text-sm text-blue-600 hover:text-blue-700"
                 >

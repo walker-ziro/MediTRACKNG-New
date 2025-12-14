@@ -7,7 +7,116 @@ const Bed = require('../models/Bed');
 const Room = require('../models/Room');
 const Appointment = require('../models/Appointment');
 const Transaction = require('../models/Transaction');
+const Prescription = require('../models/Prescription');
+const Laboratory = require('../models/Laboratory');
+const Facility = require('../models/Facility');
 const auth = require('../middleware/auth');
+
+// Get provider dashboard stats
+router.get('/provider-stats/:providerId', auth, async (req, res) => {
+  try {
+    const { providerId } = req.params;
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    // Try to find provider by ID or providerId string
+    let provider;
+    if (providerId.match(/^[0-9a-fA-F]{24}$/)) {
+       provider = await Provider.findById(providerId);
+    }
+    
+    if (!provider) {
+       provider = await Provider.findOne({ providerId: providerId });
+    }
+
+    if (!provider) {
+      return res.status(404).json({ message: 'Provider not found' });
+    }
+
+    const providerName = `${provider.firstName} ${provider.lastName}`;
+    const providerNameWithDr = `Dr. ${provider.lastName}`;
+
+    const [
+      totalPatients,
+      todayAppointments,
+      pendingPrescriptions,
+      labOrders,
+      upcomingAppointments
+    ] = await Promise.all([
+      // Total unique patients seen by this provider (via Encounters)
+      Encounter.distinct('patient', { provider: provider._id }).then(ids => ids.length),
+      
+      Appointment.countDocuments({ 
+        $or: [
+            { doctorId: provider._id },
+            { doctorName: providerName },
+            { doctorName: providerNameWithDr }
+        ],
+        date: { $gte: today, $lt: tomorrow } 
+      }),
+      
+      // Prescriptions pending (Active)
+      Prescription.countDocuments({ 
+        $or: [
+            { 'provider.providerId': provider.providerId },
+            { 'provider.name': providerName },
+            { 'provider.name': providerNameWithDr }
+        ],
+        status: 'Active'
+      }),
+      
+      // Lab orders
+      Laboratory.countDocuments({ 
+        $or: [
+            { orderedBy: provider._id },
+            { orderedBy: provider.providerId },
+            { orderedBy: providerName },
+            { orderedBy: providerNameWithDr }
+        ]
+      }),
+
+      // Upcoming appointments for today
+      Appointment.find({ 
+        $or: [
+            { doctorId: provider._id },
+            { doctorName: providerName },
+            { doctorName: providerNameWithDr }
+        ],
+        date: { $gte: today, $lt: tomorrow } 
+      })
+      .select('time patientName type status patientId')
+      .populate('patientId', 'firstName lastName')
+      .sort({ time: 1 })
+      .limit(5)
+    ]);
+
+    // Fix "undefined undefined" names in appointments
+    const sanitizedAppointments = upcomingAppointments.map(apt => {
+      let name = apt.patientName;
+      if ((!name || name.includes('undefined')) && apt.patientId) {
+        name = `${apt.patientId.firstName} ${apt.patientId.lastName}`;
+      }
+      return {
+        ...apt.toObject(),
+        patientName: name || 'Unknown Patient'
+      };
+    });
+
+    res.json({
+      totalPatients,
+      todayAppointments,
+      pendingPrescriptions,
+      labOrders,
+      upcomingAppointments: sanitizedAppointments
+    });
+
+  } catch (err) {
+    console.error('Error fetching provider stats:', err);
+    res.status(500).send('Server Error');
+  }
+});
 
 router.get('/stats', auth, async (req, res) => {
   try {
@@ -163,22 +272,28 @@ router.get('/patients/overview', auth, async (req, res) => {
 
     // Group by month and age category
     const monthlyData = {};
-    const months = ['Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov'];
+    // Generate last 6 months labels dynamically
+    const months = [];
+    for (let i = 5; i >= 0; i--) {
+      const d = new Date();
+      d.setMonth(d.getMonth() - i);
+      const monthName = d.toLocaleString('default', { month: 'short' });
+      months.push(monthName);
+      monthlyData[monthName] = { children: 0, adult: 0, elders: 0 };
+    }
     
     patients.forEach(patient => {
       const month = new Date(patient.createdAt).toLocaleString('default', { month: 'short' });
-      if (!monthlyData[month]) {
-        monthlyData[month] = { children: 0, adult: 0, elders: 0 };
+      if (monthlyData[month]) {
+        // Calculate age
+        const age = patient.dateOfBirth 
+          ? Math.floor((new Date() - new Date(patient.dateOfBirth)) / (365.25 * 24 * 60 * 60 * 1000))
+          : 30; // Default age if not provided
+
+        if (age < 18) monthlyData[month].children++;
+        else if (age < 60) monthlyData[month].adult++;
+        else monthlyData[month].elders++;
       }
-
-      // Calculate age
-      const age = patient.dateOfBirth 
-        ? Math.floor((new Date() - new Date(patient.dateOfBirth)) / (365.25 * 24 * 60 * 60 * 1000))
-        : 30; // Default age if not provided
-
-      if (age < 18) monthlyData[month].children++;
-      else if (age < 60) monthlyData[month].adult++;
-      else monthlyData[month].elders++;
     });
 
     // Format response
@@ -250,6 +365,38 @@ router.get('/financials/overview', auth, async (req, res) => {
     });
   } catch (err) {
     console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// Get admin dashboard stats
+router.get('/admin-stats', auth, async (req, res) => {
+  try {
+    const [
+      totalPatients,
+      totalProviders,
+      totalFacilities,
+      pendingProviders,
+      maintenanceBeds,
+      maintenanceRooms
+    ] = await Promise.all([
+      Patient.countDocuments(),
+      Provider.countDocuments(),
+      Facility.countDocuments(),
+      Provider.countDocuments({ status: 'Pending' }),
+      Bed.countDocuments({ status: 'Under Maintenance' }),
+      Room.countDocuments({ status: 'Under Maintenance' })
+    ]);
+
+    res.json({
+      totalUsers: totalPatients + totalProviders,
+      activeFacilities: totalFacilities,
+      pendingApprovals: pendingProviders,
+      systemAlerts: maintenanceBeds + maintenanceRooms
+    });
+
+  } catch (err) {
+    console.error('Error fetching admin stats:', err);
     res.status(500).send('Server Error');
   }
 });

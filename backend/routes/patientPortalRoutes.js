@@ -24,7 +24,7 @@ router.get('/profile/:healthId', async (req, res) => {
     }
 
     // Log patient accessing own record
-    await logPatientAccess(req.params.healthId, 'View Profile', req.ip);
+    await logPatientAccess(req.params.healthId, 'View', 'Demographics', req.ip);
 
     res.json({
       profile: {
@@ -59,7 +59,7 @@ router.get('/medical-history/:healthId', async (req, res) => {
       return res.status(404).json({ message: 'Patient not found' });
     }
 
-    await logPatientAccess(req.params.healthId, 'View Medical History', req.ip);
+    await logPatientAccess(req.params.healthId, 'View', 'Medical History', req.ip);
 
     res.json({
       chronicConditions: patient.chronicConditions || [],
@@ -85,7 +85,7 @@ router.get('/medications/:healthId', async (req, res) => {
       return res.status(404).json({ message: 'Patient not found' });
     }
 
-    await logPatientAccess(req.params.healthId, 'View Medications', req.ip);
+    await logPatientAccess(req.params.healthId, 'View', 'Medications', req.ip);
 
     res.json({
       currentMedications: patient.currentMedications || []
@@ -109,7 +109,7 @@ router.get('/immunizations/:healthId', async (req, res) => {
       return res.status(404).json({ message: 'Patient not found' });
     }
 
-    await logPatientAccess(req.params.healthId, 'View Immunizations', req.ip);
+    await logPatientAccess(req.params.healthId, 'View', 'Immunizations', req.ip);
 
     res.json({
       immunizations: patient.immunizations || []
@@ -138,7 +138,7 @@ router.get('/encounters/:healthId', async (req, res) => {
       .sort({ date: -1 })
       .limit(50);
 
-    await logPatientAccess(req.params.healthId, 'View Encounters', req.ip);
+    await logPatientAccess(req.params.healthId, 'View', 'Clinical Notes', req.ip);
 
     res.json({
       encounters: encounters.map(e => ({
@@ -171,24 +171,23 @@ router.get('/lab-results/:healthId', async (req, res) => {
       return res.status(404).json({ message: 'Patient not found' });
     }
 
-    const labResults = await Laboratory.find({ patient: patient._id })
-      .populate('orderedBy', 'firstName lastName specialization')
-      .sort({ dateOrdered: -1 })
+    const labResults = await Laboratory.find({ healthId: req.params.healthId })
+      .sort({ orderDate: -1 })
       .limit(50);
 
-    await logPatientAccess(req.params.healthId, 'View Lab Results', req.ip);
+    await logPatientAccess(req.params.healthId, 'View', 'Lab Results', req.ip);
 
     res.json({
       labResults: labResults.map(lab => ({
         id: lab._id,
         testType: lab.testType,
-        testName: lab.testName,
-        dateOrdered: lab.dateOrdered,
-        dateCompleted: lab.dateCompleted,
+        testName: lab.testType, // Using testType as testName
+        dateOrdered: lab.orderDate,
+        dateCompleted: lab.resultDate,
         status: lab.status,
         results: lab.results,
         orderedBy: lab.orderedBy,
-        urgency: lab.urgency
+        urgency: lab.priority
       }))
     });
   } catch (error) {
@@ -209,19 +208,19 @@ router.get('/appointments/:healthId', async (req, res) => {
       return res.status(404).json({ message: 'Patient not found' });
     }
 
-    const appointments = await Appointment.find({ patient: patient._id })
-      .populate('doctor', 'firstName lastName specialization')
+    const appointments = await Appointment.find({ healthId: req.params.healthId })
+      .populate('doctorId', 'firstName lastName specialization')
       .sort({ date: -1, time: -1 })
       .limit(50);
 
-    await logPatientAccess(req.params.healthId, 'View Appointments', req.ip);
+    await logPatientAccess(req.params.healthId, 'View', 'Full Record', req.ip);
 
     res.json({
       appointments: appointments.map(appt => ({
         id: appt._id,
         date: appt.date,
         time: appt.time,
-        doctor: appt.doctor,
+        doctor: appt.doctorName,
         department: appt.department,
         status: appt.status,
         reason: appt.reason
@@ -250,7 +249,7 @@ router.get('/consents/:healthId', async (req, res) => {
       .populate('provider', 'firstName lastName specialization')
       .sort({ createdAt: -1 });
 
-    await logPatientAccess(req.params.healthId, 'View Consents', req.ip);
+    await logPatientAccess(req.params.healthId, 'View', 'Full Record', req.ip);
 
     res.json({
       consents: consents.map(c => ({
@@ -297,7 +296,7 @@ router.get('/access-log/:healthId', async (req, res) => {
       .sort({ timestamp: -1 })
       .limit(parseInt(limit));
 
-    await logPatientAccess(req.params.healthId, 'View Access Log', req.ip);
+    await logPatientAccess(req.params.healthId, 'View', 'Full Record', req.ip);
 
     res.json({
       accessLogs: accessLogs.map(log => ({
@@ -346,7 +345,7 @@ router.post('/revoke-consent/:consentId', async (req, res) => {
 
     await consent.save();
 
-    await logPatientAccess(healthId, 'Revoke Consent', req.ip);
+    await logPatientAccess(healthId, 'Update', 'Full Record', req.ip);
 
     res.json({
       message: 'Consent revoked successfully',
@@ -386,7 +385,7 @@ router.get('/download/:healthId', async (req, res) => {
         .populate('facility', 'name facilityId')
     ]);
 
-    await logPatientAccess(req.params.healthId, 'Download Full Record', req.ip);
+    await logPatientAccess(req.params.healthId, 'Export', 'Full Record', req.ip);
 
     const fullRecord = {
       profile: {
@@ -433,19 +432,20 @@ router.get('/download/:healthId', async (req, res) => {
 });
 
 // Helper function to log patient's own access
-async function logPatientAccess(healthId, action, ipAddress) {
+async function logPatientAccess(healthId, actionType, resourceType, ipAddress) {
   try {
     const patient = await Patient.findOne({ healthId });
     if (!patient) return;
 
     const auditLog = new AuditLog({
       patient: patient._id,
-      accessedBy: patient._id, // Patient accessing own record
-      actionType: action,
-      resourceType: 'Full Record',
+      accessedBy: patient._id,
+      accessorModel: 'Patient',
+      actionType: actionType,
+      resourceType: resourceType,
       accessResult: 'Success',
       ipAddress,
-      dataAccessed: action
+      dataAccessed: `${actionType} ${resourceType}`
     });
 
     await auditLog.save();

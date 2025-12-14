@@ -1,10 +1,41 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useSettings } from '../../context/SettingsContext';
+import { useApi } from '../../hooks/useApi';
 
 const ProviderDashboard = () => {
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
   const { theme, t , darkMode } = useSettings();
+  const { fetchData } = useApi();
+  const [stats, setStats] = useState({
+    totalPatients: 0,
+    todayAppointments: 0,
+    pendingPrescriptions: 0,
+    labOrders: 0,
+    upcomingAppointments: []
+  });
+
+  useEffect(() => {
+    const loadStats = async () => {
+      // Prefer providerId (string) over _id (ObjectId) if available, as backend handles both but providerId is cleaner
+      // Also check userData.id as some auth responses return 'id' instead of '_id'
+      const id = userData.providerId || userData._id || userData.id;
+      if (id) {
+        try {
+          const data = await fetchData(`/dashboard/provider-stats/${id}`);
+          if (data) {
+            setStats(data);
+          }
+        } catch (error) {
+          console.error('Failed to load provider stats', error);
+        }
+      } else {
+        console.warn('No provider ID found in user data', userData);
+      }
+    };
+    loadStats();
+  }, []);
+
   return (
     <div className={`p-8 min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       {/* Top Header */}
@@ -19,7 +50,7 @@ const ProviderDashboard = () => {
           <div className="flex justify-between items-start">
             <div>
               <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Total {t('patients')}</p>
-              <h3 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>247</h3>
+              <h3 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{stats.totalPatients}</h3>
             </div>
             <i className="fas fa-users text-blue-500 text-2xl"></i>
           </div>
@@ -29,7 +60,7 @@ const ProviderDashboard = () => {
           <div className="flex justify-between items-start">
             <div>
               <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Today's {t('appointments')}</p>
-              <h3 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>12</h3>
+              <h3 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{stats.todayAppointments}</h3>
             </div>
             <i className="fas fa-calendar-check text-green-500 text-2xl"></i>
           </div>
@@ -39,7 +70,7 @@ const ProviderDashboard = () => {
           <div className="flex justify-between items-start">
             <div>
               <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Pending {t('prescriptions')}</p>
-              <h3 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>8</h3>
+              <h3 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{stats.pendingPrescriptions}</h3>
             </div>
             <i className="fas fa-prescription text-purple-500 text-2xl"></i>
           </div>
@@ -49,7 +80,7 @@ const ProviderDashboard = () => {
           <div className="flex justify-between items-start">
             <div>
               <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{t('labOrders')}</p>
-              <h3 className="text-3xl font-bold text-gray-800">15</h3>
+              <h3 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{stats.labOrders}</h3>
             </div>
             <i className="fas fa-flask text-orange-500 text-2xl"></i>
           </div>
@@ -107,24 +138,24 @@ const ProviderDashboard = () => {
         <div className={`p-6 rounded-lg shadow-sm ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
           <h3 className={`text-lg font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Today's Schedule</h3>
           <div className="space-y-3">
-            {[
-              { time: '09:00 AM', patient: 'John Doe', type: 'Consultation' },
-              { time: '10:30 AM', patient: 'Jane Smith', type: 'Follow-up' },
-              { time: '02:00 PM', patient: 'Mike Johnson', type: 'Check-up' },
-            ].map((apt, idx) => (
-              <div key={idx} className={`flex items-center justify-between p-3 rounded-lg transition-colors ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-50 hover:bg-gray-100'}`}>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
-                    <i className="fas fa-user text-purple-600"></i>
+            {stats.upcomingAppointments && stats.upcomingAppointments.length > 0 ? (
+              stats.upcomingAppointments.map((apt, idx) => (
+                <div key={idx} className={`flex items-center justify-between p-3 rounded-lg transition-colors ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-50 hover:bg-gray-100'}`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 bg-purple-100 rounded-full flex items-center justify-center">
+                      <i className="fas fa-user text-purple-600"></i>
+                    </div>
+                    <div>
+                      <p className="font-semibold text-sm">{apt.patientName}</p>
+                      <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{apt.type}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-semibold text-sm">{apt.patient}</p>
-                    <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{apt.type}</p>
-                  </div>
+                  <span className="text-sm font-medium text-purple-600">{apt.time}</span>
                 </div>
-                <span className="text-sm font-medium text-purple-600">{apt.time}</span>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No appointments for today.</p>
+            )}
           </div>
         </div>
       </div>

@@ -1,16 +1,59 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSettings } from '../../context/SettingsContext';
+import VideoCallModal from '../../components/VideoCallModal';
+import { useApi } from '../../hooks/useApi';
 
 const Telemedicine = () => {
   const { theme, t , darkMode } = useSettings();
+  const { fetchData, postData } = useApi();
   const [showVideoModal, setShowVideoModal] = useState(false);
   const [showScheduleModal, setShowScheduleModal] = useState(false);
   const [activeCall, setActiveCall] = useState(null);
-  const [appointments, setAppointments] = useState([
-    { id: 'TM-001', patient: 'John Doe', healthId: 'HID-20241208-001', date: '2024-12-08', time: '02:00 PM', duration: '30 mins', status: 'Scheduled', type: 'Video Call' },
-    { id: 'TM-002', patient: 'Jane Smith', healthId: 'HID-20241208-002', date: '2024-12-08', time: '03:30 PM', duration: '20 mins', status: 'Completed', type: 'Video Call' },
-    { id: 'TM-003', patient: 'Michael Johnson', healthId: 'HID-20241207-003', date: '2024-12-09', time: '10:00 AM', duration: '30 mins', status: 'Scheduled', type: 'Phone Call' },
-  ]);
+  const [appointments, setAppointments] = useState([]);
+  const [userData, setUserData] = useState(null);
+  const [patients, setPatients] = useState([]);
+
+  useEffect(() => {
+    const userStr = localStorage.getItem('userData');
+    if (userStr) {
+      setUserData(JSON.parse(userStr));
+    }
+  }, []);
+
+  useEffect(() => {
+    const loadData = async () => {
+      if (!userData?.providerId) return;
+
+      try {
+        const [appointmentsData, patientsData] = await Promise.all([
+          fetchData(`/telemedicine/provider/${userData.providerId}`),
+          fetchData('/patients')
+        ]);
+
+        if (appointmentsData) {
+          const formattedAppointments = appointmentsData.map(apt => ({
+            id: apt._id,
+            patient: apt.patient?.name || 'Unknown',
+            healthId: apt.patient?.healthId || 'N/A',
+            date: new Date(apt.scheduledDate).toLocaleDateString(),
+            time: new Date(apt.scheduledDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+            duration: `${apt.duration} mins`,
+            status: apt.status,
+            type: apt.consultationType || 'Video Call',
+            meetingUrl: apt.meetingRoom?.meetingUrl
+          }));
+          setAppointments(formattedAppointments);
+        }
+
+        if (patientsData) {
+          setPatients(patientsData);
+        }
+      } catch (error) {
+        console.error('Failed to load data', error);
+      }
+    };
+    loadData();
+  }, [userData]);
 
   const handleStartCall = (appointment) => {
     setActiveCall(appointment);
@@ -28,21 +71,42 @@ const Telemedicine = () => {
     setActiveCall(null);
   };
 
-  const handleScheduleSubmit = (e) => {
+  const handleScheduleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    const newAppointment = {
-      id: `TM-${String(appointments.length + 1).padStart(3, '0')}`,
-      patient: formData.get('patient'),
-      healthId: formData.get('healthId'),
-      date: formData.get('date'),
-      time: formData.get('time'),
-      duration: formData.get('duration'),
-      type: formData.get('type'),
+    const patientId = formData.get('patientId');
+    const selectedPatient = patients.find(p => p.healthId === patientId);
+
+    const payload = {
+      providerId: userData.providerId,
+      healthId: patientId,
+      patientName: selectedPatient ? `${selectedPatient.firstName} ${selectedPatient.lastName}` : '',
+      scheduledDate: `${formData.get('date')}T${formData.get('time')}`,
+      duration: parseInt(formData.get('duration')),
+      consultationType: formData.get('type'),
       status: 'Scheduled'
     };
-    setAppointments([...appointments, newAppointment]);
-    setShowScheduleModal(false);
+
+    try {
+      const response = await postData('/telemedicine/schedule', payload);
+      if (response) {
+        const apt = response.appointment || response; // Adjust based on API response
+        const newAppointment = {
+          id: apt._id,
+          patient: payload.patientName,
+          healthId: payload.healthId,
+          date: new Date(payload.scheduledDate).toLocaleDateString(),
+          time: new Date(payload.scheduledDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          duration: `${payload.duration} mins`,
+          status: 'Scheduled',
+          type: payload.consultationType
+        };
+        setAppointments([...appointments, newAppointment]);
+        setShowScheduleModal(false);
+      }
+    } catch (error) {
+      console.error('Failed to schedule appointment', error);
+    }
   };
 
   return (
@@ -164,85 +228,11 @@ const Telemedicine = () => {
       </div>
 
       {/* Video Call Modal */}
-      {showVideoModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-90 flex items-center justify-center z-50">
-          <div className="bg-gray-900 rounded-xl shadow-xl w-full max-w-6xl h-[80vh] m-4 flex flex-col">
-            <div className="p-4 border-b border-gray-700 flex items-center justify-between">
-              <div className="text-white">
-                <h2 className="text-xl font-bold">Video Consultation</h2>
-                {activeCall && (
-                  <p className="text-sm text-gray-400">With {activeCall.patient} - {activeCall.healthId}</p>
-                )}
-              </div>
-              <div className="flex items-center gap-2">
-                <span className="px-3 py-1 bg-red-600 text-white text-sm rounded-full animate-pulse">● LIVE</span>
-                <span className="text-white text-sm">15:34</span>
-              </div>
-            </div>
-            
-            <div className="flex-1 relative bg-gray-800">
-              {/* Main Video Display */}
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-32 h-32 bg-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-16 h-16 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                  </div>
-                  <p className="text-white text-lg">{activeCall ? activeCall.patient : 'Patient'}</p>
-                  <p className="text-gray-400 text-sm">Camera is connected</p>
-                </div>
-              </div>
-              
-              {/* Self Video (Small) */}
-              <div className="absolute bottom-4 right-4 w-48 h-36 bg-gray-700 rounded-lg border-2 border-gray-600 flex items-center justify-center">
-                <div className="text-center">
-                  <div className="w-16 h-16 bg-gray-600 rounded-full flex items-center justify-center mx-auto mb-2">
-                    <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                    </svg>
-                  </div>
-                  <p className="text-gray-400 text-xs">You</p>
-                </div>
-              </div>
-            </div>
-
-            {/* Controls */}
-            <div className="p-6 bg-gray-900 border-t border-gray-700">
-              <div className="flex items-center justify-center gap-4">
-                <button className="p-4 bg-gray-700 hover:bg-gray-600 rounded-full transition-colors">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z" />
-                  </svg>
-                </button>
-                <button className="p-4 bg-gray-700 hover:bg-gray-600 rounded-full transition-colors">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                  </svg>
-                </button>
-                <button 
-                  onClick={handleEndCall}
-                  className="p-4 bg-red-600 hover:bg-red-700 rounded-full transition-colors"
-                >
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 8l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M5 3a2 2 0 00-2 2v1c0 8.284 6.716 15 15 15h1a2 2 0 002-2v-3.28a1 1 0 00-.684-.948l-4.493-1.498a1 1 0 00-1.21.502l-1.13 2.257a11.042 11.042 0 01-5.516-5.517l2.257-1.128a1 1 0 00.502-1.21L9.228 3.683A1 1 0 008.279 3H5z" />
-                  </svg>
-                </button>
-                <button className="p-4 bg-gray-700 hover:bg-gray-600 rounded-full transition-colors">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.684 13.342C8.886 12.938 9 12.482 9 12c0-.482-.114-.938-.316-1.342m0 2.684a3 3 0 110-2.684m0 2.684l6.632 3.316m-6.632-6l6.632-3.316m0 0a3 3 0 105.367-2.684 3 3 0 00-5.367 2.684zm0 9.316a3 3 0 105.368 2.684 3 3 0 00-5.368-2.684z" />
-                  </svg>
-                </button>
-                <button className="p-4 bg-gray-700 hover:bg-gray-600 rounded-full transition-colors">
-                  <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4" />
-                  </svg>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      <VideoCallModal 
+        isOpen={showVideoModal} 
+        onClose={handleEndCall} 
+        remoteName={activeCall?.patient} 
+      />
 
       {/* Schedule Appointment Modal */}
       {showScheduleModal && (
@@ -258,24 +248,19 @@ const Telemedicine = () => {
             </div>
             <form className="p-6 space-y-4" onSubmit={handleScheduleSubmit}>
               <div>
-                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Patient Name *</label>
-                <input 
-                  name="patient"
-                  type="text" 
+                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Patient *</label>
+                <select 
+                  name="patientId"
                   required 
-                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`} 
-                  placeholder="Patient name"
-                />
-              </div>
-              <div>
-                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Health ID *</label>
-                <input 
-                  name="healthId"
-                  type="text" 
-                  required 
-                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`} 
-                  placeholder="HID-YYYYMMDD-XXX"
-                />
+                  className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`}
+                >
+                  <option value="">Select Patient</option>
+                  {patients.map(p => (
+                    <option key={p.healthId} value={p.healthId}>
+                      {p.firstName} {p.lastName} ({p.healthId})
+                    </option>
+                  ))}
+                </select>
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div>

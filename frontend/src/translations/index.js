@@ -84,6 +84,56 @@ export const translations = {
     dateFormat: 'Date Format',
     saveChanges: 'Save Changes',
     
+    // Patient Settings
+    manageAccount: 'Manage your account and preferences',
+    fullName: 'Full Name',
+    dateOfBirth: 'Date of Birth',
+    bloodType: 'Blood Type',
+    healthId: 'Health ID',
+    selectBloodType: 'Select Blood Type',
+    securitySettings: 'Security Settings',
+    
+    // Admin Settings
+    adminSettings: 'Admin Settings',
+    manageAdminAccount: 'Manage your administrative account',
+    accountStatus: 'Account Status',
+    adminId: 'Admin ID',
+    firstName: 'First Name',
+    lastName: 'Last Name',
+    email: 'Email',
+    phone: 'Phone Number',
+    role: 'Role',
+    department: 'Department',
+    
+    // Security
+    changePassword: 'Change Password',
+    currentPassword: 'Current Password',
+    newPassword: 'New Password',
+    confirmPassword: 'Confirm New Password',
+    updatePassword: 'Update Password',
+    twoFactorAuth: 'Two-Factor Authentication',
+    twoFactorDesc: 'Add an extra layer of security to your account',
+    twoFactorEnabled: '2FA Enabled',
+    enable: 'Enable',
+    disable: 'Disable',
+    enabled: 'Enabled',
+    disabled: 'Disabled',
+    lastLogin: 'Last Login',
+    yes: 'Yes',
+    no: 'No',
+    inactive: 'Inactive',
+    memberSince: 'Member Since',
+    
+    // Danger Zone
+    dangerZone: 'Danger Zone',
+    dangerZoneDesc: 'Administrative actions with serious consequences',
+    revokeAdminAccess: 'Revoke Admin Access',
+    
+    // Preferences
+    sessionTimeout: 'Session Timeout',
+    autoLogout: 'Auto Logout',
+    minutes: 'minutes',
+    
     // Theme
     light: 'Light',
     dark: 'Dark',
@@ -94,6 +144,14 @@ export const translations = {
     settingsSaved: 'Settings saved successfully!',
     themeChanged: 'Theme changed successfully!',
     languageChanged: 'Language changed successfully!',
+    confirmDisable2FA: 'Are you sure you want to disable Two-Factor Authentication?',
+    twoFactorDisabled: 'Two-Factor Authentication disabled successfully!',
+    twoFactorEnabledMsg: 'Two-Factor Authentication enabled successfully!',
+    invalidCode: 'Invalid code. Please try again.',
+    passwordsDoNotMatch: 'Passwords do not match!',
+    passwordUpdated: 'Password updated successfully!',
+    preferencesSaved: 'Preferences saved successfully! Changes applied.',
+    loading: 'Loading...',
   },
   
   ha: { // Hausa

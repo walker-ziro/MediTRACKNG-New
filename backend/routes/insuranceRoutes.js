@@ -20,6 +20,27 @@ const createNotification = async (healthId, title, message, type = 'Info') => {
   }
 };
 
+// Get all insurance policies (Admin only)
+router.get('/', auth, async (req, res) => {
+  try {
+    const { status, provider, type } = req.query;
+    
+    let query = {};
+    if (status) query.status = status;
+    if (provider) query['provider.name'] = { $regex: provider, $options: 'i' };
+    if (type) query.policyType = type;
+
+    const policies = await Insurance.find(query)
+      .sort({ createdAt: -1 })
+      .limit(100);
+
+    res.json(policies);
+  } catch (error) {
+    console.error('Error fetching all policies:', error);
+    res.status(500).json({ message: 'Error fetching policies', error: error.message });
+  }
+});
+
 // Create insurance policy
 router.post('/', auth, async (req, res) => {
   try {

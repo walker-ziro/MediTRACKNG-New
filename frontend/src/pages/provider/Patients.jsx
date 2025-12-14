@@ -1,8 +1,10 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSettings } from '../../context/SettingsContext';
+import { useApi } from '../../hooks/useApi';
 
 const Patients = () => {
   const { theme, t , darkMode } = useSettings();
+  const { fetchData, postData, putData } = useApi();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
   const [showModal, setShowModal] = useState(false);
@@ -22,13 +24,33 @@ const Patients = () => {
   });
 
   // Sample patient data
-  const [patients, setPatients] = useState([
-    { id: 'HID-20241208-001', name: 'John Doe', age: 45, gender: 'Male', bloodType: 'O+', lastVisit: '2024-12-01', status: 'Active', email: 'john@example.com', phone: '555-0101', address: '123 Main St' },
-    { id: 'HID-20241208-002', name: 'Jane Smith', age: 32, gender: 'Female', bloodType: 'A+', lastVisit: '2024-12-05', status: 'Active', email: 'jane@example.com', phone: '555-0102', address: '456 Oak Ave' },
-    { id: 'HID-20241207-003', name: 'Michael Johnson', age: 58, gender: 'Male', bloodType: 'B+', lastVisit: '2024-11-28', status: 'Follow-up', email: 'michael@example.com', phone: '555-0103', address: '789 Pine Rd' },
-    { id: 'HID-20241206-004', name: 'Sarah Williams', age: 28, gender: 'Female', bloodType: 'AB+', lastVisit: '2024-12-06', status: 'Active', email: 'sarah@example.com', phone: '555-0104', address: '321 Elm St' },
-    { id: 'HID-20241205-005', name: 'Robert Brown', age: 62, gender: 'Male', bloodType: 'O-', lastVisit: '2024-11-15', status: 'Inactive', email: 'robert@example.com', phone: '555-0105', address: '654 Maple Dr' },
-  ]);
+  const [patients, setPatients] = useState([]);
+
+  useEffect(() => {
+    const loadPatients = async () => {
+      try {
+        const data = await fetchData('/patients');
+        if (data) {
+          const formattedPatients = data.map(p => ({
+            id: p.healthId,
+            name: `${p.firstName} ${p.lastName}`,
+            age: p.dateOfBirth ? new Date().getFullYear() - new Date(p.dateOfBirth).getFullYear() : 'N/A',
+            gender: p.gender,
+            bloodType: p.bloodGroup || 'N/A',
+            lastVisit: p.lastVisit ? new Date(p.lastVisit).toLocaleDateString() : 'No visits yet',
+            status: p.status,
+            email: p.contact?.email || '',
+            phone: p.contact?.phone || '',
+            address: p.contact?.address ? `${p.contact.address.street || ''}, ${p.contact.address.city || ''}` : ''
+          }));
+          setPatients(formattedPatients);
+        }
+      } catch (error) {
+        console.error('Failed to load patients', error);
+      }
+    };
+    loadPatients();
+  }, []);
 
   const filteredPatients = patients.filter(patient => {
     const matchesSearch = patient.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -41,35 +63,53 @@ const Patients = () => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const newPatient = {
-      id: `HID-${new Date().toISOString().split('T')[0].replace(/-/g, '')}-${String(patients.length + 1).padStart(3, '0')}`,
-      name: `${formData.firstName} ${formData.lastName}`,
-      age: new Date().getFullYear() - new Date(formData.dateOfBirth).getFullYear(),
-      gender: formData.gender,
-      bloodType: formData.bloodType || 'N/A',
-      lastVisit: new Date().toISOString().split('T')[0],
-      status: 'Active',
-      email: formData.email,
-      phone: formData.phone,
-      address: formData.address,
-      emergencyContact: formData.emergencyContact,
-      dateOfBirth: formData.dateOfBirth
-    };
-    setPatients([newPatient, ...patients]);
-    setFormData({
-      firstName: '',
-      lastName: '',
-      dateOfBirth: '',
-      gender: '',
-      email: '',
-      phone: '',
-      address: '',
-      bloodType: '',
-      emergencyContact: ''
-    });
-    setShowModal(false);
+    try {
+      const payload = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        dateOfBirth: formData.dateOfBirth,
+        gender: formData.gender,
+        email: formData.email,
+        phone: formData.phone,
+        address: formData.address,
+        bloodGroup: formData.bloodType,
+        emergencyContact: formData.emergencyContact
+      };
+
+      const response = await postData('/patients', payload);
+      if (response && response.patient) {
+        const p = response.patient;
+        const newPatient = {
+          id: p.healthId,
+          name: `${p.firstName} ${p.lastName}`,
+          age: p.dateOfBirth ? new Date().getFullYear() - new Date(p.dateOfBirth).getFullYear() : 'N/A',
+          gender: p.gender,
+          bloodType: p.bloodGroup || 'N/A',
+          lastVisit: 'N/A',
+          status: p.status,
+          email: p.contact?.email || '',
+          phone: p.contact?.phone || '',
+          address: p.contact?.address?.street || ''
+        };
+        setPatients([newPatient, ...patients]);
+        setFormData({
+          firstName: '',
+          lastName: '',
+          dateOfBirth: '',
+          gender: '',
+          email: '',
+          phone: '',
+          address: '',
+          bloodType: '',
+          emergencyContact: ''
+        });
+        setShowModal(false);
+      }
+    } catch (error) {
+      console.error('Failed to create patient', error);
+    }
   };
 
   const handleView = (patient) => {
@@ -94,25 +134,42 @@ const Patients = () => {
     setShowEditModal(true);
   };
 
-  const handleUpdate = (e) => {
+  const handleUpdate = async (e) => {
     e.preventDefault();
-    const updatedPatients = patients.map(p => 
-      p.id === selectedPatient.id ? {
-        ...p,
-        name: `${formData.firstName} ${formData.lastName}`,
+    try {
+      const payload = {
+        firstName: formData.firstName,
+        lastName: formData.lastName,
+        dateOfBirth: formData.dateOfBirth,
         gender: formData.gender,
         email: formData.email,
         phone: formData.phone,
         address: formData.address,
-        bloodType: formData.bloodType,
-        emergencyContact: formData.emergencyContact,
-        dateOfBirth: formData.dateOfBirth,
-        age: new Date().getFullYear() - new Date(formData.dateOfBirth).getFullYear()
-      } : p
-    );
-    setPatients(updatedPatients);
-    setShowEditModal(false);
-    setSelectedPatient(null);
+        bloodGroup: formData.bloodType,
+        emergencyContact: formData.emergencyContact
+      };
+
+      const response = await putData(`/patients/${selectedPatient.id}`, payload);
+      if (response && response.patient) {
+        const p = response.patient;
+        const updatedPatients = patients.map(pat => pat.id === selectedPatient.id ? {
+          ...pat,
+          name: `${p.firstName} ${p.lastName}`,
+          age: p.dateOfBirth ? new Date().getFullYear() - new Date(p.dateOfBirth).getFullYear() : 'N/A',
+          gender: p.gender,
+          bloodType: p.bloodGroup || 'N/A',
+          email: p.contact?.email || '',
+          phone: p.contact?.phone || '',
+          address: p.contact?.address?.street || '',
+          status: p.status
+        } : pat);
+        setPatients(updatedPatients);
+        setShowEditModal(false);
+        setSelectedPatient(null);
+      }
+    } catch (error) {
+      console.error('Failed to update patient', error);
+    }
   };
 
   return (

@@ -16,9 +16,21 @@ router.post('/', auth, async (req, res) => {
       notes
     } = req.body;
 
-    if (!healthId || !patientName || !testType || !orderDate || !orderedBy) {
+    // Determine who ordered it
+    let orderer = orderedBy;
+    if (!orderer && req.user) {
+        if (req.user.firstName && req.user.lastName) {
+            orderer = `${req.user.firstName} ${req.user.lastName}`;
+        } else if (req.user.username) {
+            orderer = req.user.username;
+        } else {
+            orderer = req.user.id;
+        }
+    }
+
+    if (!healthId || !patientName || !testType || !orderer) {
       return res.status(400).json({
-        message: 'Please provide all required fields'
+        message: 'Please provide all required fields (healthId, patientName, testType, orderedBy)'
       });
     }
 
@@ -26,9 +38,9 @@ router.post('/', auth, async (req, res) => {
       healthId,
       patientName,
       testType,
-      orderDate,
+      orderDate: orderDate || new Date(),
       priority: priority || 'Routine',
-      orderedBy,
+      orderedBy: orderer,
       notes,
       status: 'Pending'
     });

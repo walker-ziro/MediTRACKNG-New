@@ -86,6 +86,8 @@ const providerAuthSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  otp: String,
+  otpExpires: Date,
   verificationToken: String,
   verificationExpiry: Date,
   

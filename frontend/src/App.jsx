@@ -52,12 +52,17 @@ import ProviderSettings from './pages/provider/Settings';
 import PatientHealthRecords from './pages/patient/HealthRecords';
 import PatientAppointments from './pages/patient/Appointments';
 import PatientPrescriptions from './pages/patient/Prescriptions';
+import PatientTelemedicine from './pages/patient/Telemedicine';
 import PatientFamilyHealth from './pages/patient/FamilyHealth';
 import PatientSettings from './pages/patient/Settings';
 
 // Admin Pages
 import AdminUserManagement from './pages/admin/UserManagement';
 import AdminProviderManagement from './pages/admin/ProviderManagement';
+import AdminFacilityManagement from './pages/admin/FacilityManagement';
+import AdminAnalytics from './pages/admin/Analytics';
+import AdminAuditLogs from './pages/admin/AuditLogs';
+import AdminInsuranceManagement from './pages/admin/InsuranceManagement';
 import AdminSettings from './pages/admin/Settings';
 import AdminLayout from './layouts/AdminLayout';
 
@@ -253,7 +258,7 @@ function App() {
             <Route path="health-records" element={<PatientHealthRecords />} />
             <Route path="appointments" element={<PatientAppointments />} />
             <Route path="prescriptions" element={<PatientPrescriptions />} />
-            <Route path="telemedicine" element={<ProviderTelemedicine />} />
+            <Route path="telemedicine" element={<PatientTelemedicine />} />
             <Route path="family-health" element={<PatientFamilyHealth />} />
             <Route path="settings" element={<PatientSettings />} />
           </Route>
@@ -269,10 +274,10 @@ function App() {
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="users" element={<AdminUserManagement />} />
             <Route path="providers" element={<AdminProviderManagement />} />
-            <Route path="facilities" element={<div className="p-8 bg-gray-900 min-h-screen"><h1 className="text-3xl font-bold text-white">Facilities</h1><p className="text-gray-400 mt-4">Facilities management page - Feature in development</p></div>} />
-            <Route path="analytics" element={<div className="p-8 bg-gray-900 min-h-screen"><h1 className="text-3xl font-bold text-white">Analytics</h1><p className="text-gray-400 mt-4">System analytics - Feature in development</p></div>} />
-            <Route path="audit-logs" element={<div className="p-8 bg-gray-900 min-h-screen"><h1 className="text-3xl font-bold text-white">Audit Logs</h1><p className="text-gray-400 mt-4">Security audit logs - Feature in development</p></div>} />
-            <Route path="insurance" element={<div className="p-8 bg-gray-900 min-h-screen"><h1 className="text-3xl font-bold text-white">Insurance</h1><p className="text-gray-400 mt-4">Insurance management - Feature in development</p></div>} />
+            <Route path="facilities" element={<AdminFacilityManagement />} />
+            <Route path="analytics" element={<AdminAnalytics />} />
+            <Route path="audit-logs" element={<AdminAuditLogs />} />
+            <Route path="insurance" element={<AdminInsuranceManagement />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
           

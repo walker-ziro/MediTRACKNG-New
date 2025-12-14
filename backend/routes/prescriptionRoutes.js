@@ -140,6 +140,27 @@ router.post('/check-interactions', auth, async (req, res) => {
   }
 });
 
+// @desc    Get all prescriptions (for provider/admin)
+// @route   GET /api/prescriptions
+// @access  Private
+router.get('/', auth, async (req, res) => {
+  try {
+    const prescriptions = await Prescription.find()
+      .sort({ createdAt: -1 });
+    
+    res.json({
+      success: true,
+      data: prescriptions
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Error fetching prescriptions',
+      error: error.message
+    });
+  }
+});
+
 // @desc    Get prescriptions for a patient
 // @route   GET /api/prescriptions/patient/:healthId
 // @access  Private

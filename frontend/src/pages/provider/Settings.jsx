@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useSettings } from '../../context/SettingsContext';
+import { useNotification } from '../../context/NotificationContext';
 
 const Settings = () => {
+  const { showNotification } = useNotification();
   const [activeTab, setActiveTab] = useState('profile');
   const [userData, setUserData] = useState(null);
   const [showTwoFactorModal, setShowTwoFactorModal] = useState(false);
@@ -84,20 +86,20 @@ const Settings = () => {
     const updatedData = { ...userData, ...formData };
     localStorage.setItem('userData', JSON.stringify(updatedData));
     setUserData(updatedData);
-    alert(t('profileUpdated') || 'Profile updated successfully!');
+    showNotification(t('profileUpdated') || 'Profile updated successfully!', 'success');
   };
 
   const handleSecuritySubmit = (e) => {
     e.preventDefault();
     if (securityData.newPassword && securityData.newPassword !== securityData.confirmPassword) {
-      alert(t('passwordsDoNotMatch') || 'Passwords do not match!');
+      showNotification(t('passwordsDoNotMatch') || 'Passwords do not match!', 'error');
       return;
     }
     if (securityData.newPassword) {
       // Update password logic here
       const updatedUserData = { ...userData, password: securityData.newPassword };
       localStorage.setItem('userData', JSON.stringify(updatedUserData));
-      alert(t('passwordUpdated') || 'Password updated successfully!');
+      showNotification(t('passwordUpdated') || 'Password updated successfully!', 'success');
       setSecurityData({ currentPassword: '', newPassword: '', confirmPassword: '' });
     }
   };
@@ -106,7 +108,7 @@ const Settings = () => {
     if (twoFactorEnabled) {
       if (window.confirm(t('confirmDisable2FA') || 'Are you sure you want to disable Two-Factor Authentication?')) {
         disableTwoFactor();
-        alert(t('twoFactorDisabled') || 'Two-Factor Authentication disabled');
+        showNotification(t('twoFactorDisabled') || 'Two-Factor Authentication disabled', 'info');
       }
     } else {
       // Generate a random 6-digit code
@@ -122,9 +124,9 @@ const Settings = () => {
       enableTwoFactor(generatedCode);
       setShowTwoFactorModal(false);
       setVerificationCode('');
-      alert(t('twoFactorEnabled') || 'Two-Factor Authentication enabled successfully!');
+      showNotification(t('twoFactorEnabledMsg') || 'Two-Factor Authentication enabled successfully!', 'success');
     } else {
-      alert(t('invalidCode') || 'Invalid code. Please try again.');
+      showNotification(t('invalidCode') || 'Invalid code. Please try again.', 'error');
     }
   };
 
@@ -136,7 +138,7 @@ const Settings = () => {
 
   const handlePreferencesSubmit = (e) => {
     e.preventDefault();
-    alert(t('preferencesSaved') || 'Preferences saved successfully! Changes applied.');
+    showNotification(t('preferencesSaved') || 'Preferences saved successfully! Changes applied.', 'success');
   };
 
   if (!userData) {
@@ -196,7 +198,7 @@ const Settings = () => {
             
             <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('providerId') || 'Provider ID'}</label>
+                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Provider ID</label>
                 <input
                   type="text"
                   value={formData.providerId}
@@ -206,7 +208,7 @@ const Settings = () => {
               </div>
 
               <div>
-                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('fullName') || 'Full Name'}</label>
+                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Full Name</label>
                 <input
                   type="text"
                   name="name"
@@ -218,7 +220,7 @@ const Settings = () => {
               </div>
 
               <div>
-                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('email') || 'Email'}</label>
+                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Email</label>
                 <input
                   type="email"
                   name="email"
@@ -230,7 +232,7 @@ const Settings = () => {
               </div>
 
               <div>
-                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('phone') || 'Phone Number'}</label>
+                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Phone Number</label>
                 <input
                   type="tel"
                   name="phone"
@@ -242,7 +244,7 @@ const Settings = () => {
               </div>
 
               <div>
-                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('specialization') || 'Specialization'}</label>
+                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Specialization</label>
                 <select 
                   name="specialization"
                   value={formData.specialization}
@@ -258,7 +260,7 @@ const Settings = () => {
               </div>
 
               <div>
-                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('licenseNumber') || 'License Number'}</label>
+                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>License Number</label>
                 <input
                   type="text"
                   name="licenseNumber"
@@ -270,7 +272,7 @@ const Settings = () => {
               </div>
 
               <div>
-                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('facilityId') || 'Facility ID'}</label>
+                <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Facility ID</label>
                 <input
                   type="text"
                   name="facilityId"
@@ -283,7 +285,7 @@ const Settings = () => {
 
               <div className="pt-4">
                 <button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                  {t('saveChanges') || 'Save Changes'}
+                  Save Changes
                 </button>
               </div>
             </form>
@@ -297,7 +299,7 @@ const Settings = () => {
                 <h2 className={`text-xl font-semibold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('securitySettings') || 'Security Settings'}</h2>
                 <form onSubmit={handleSecuritySubmit} className="space-y-6">
                   <div>
-                    <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('currentPassword') || 'Current Password'}</label>
+                    <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Current Password</label>
                     <input
                       type="password"
                       value={securityData.currentPassword}
@@ -307,7 +309,7 @@ const Settings = () => {
                     />
                   </div>
                   <div>
-                    <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('newPassword') || 'New Password'}</label>
+                    <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>New Password</label>
                     <input
                       type="password"
                       value={securityData.newPassword}
@@ -317,7 +319,7 @@ const Settings = () => {
                     />
                   </div>
                   <div>
-                    <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('confirmPassword') || 'Confirm New Password'}</label>
+                    <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Confirm New Password</label>
                     <input
                       type="password"
                       value={securityData.confirmPassword}
@@ -328,14 +330,14 @@ const Settings = () => {
                   </div>
                   <div className={`flex items-center justify-between p-4 rounded-lg ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
                     <div>
-                      <h3 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('twoFactorAuth') || 'Two-Factor Authentication'}</h3>
-                      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('twoFactorDesc') || 'Add an extra layer of security'}</p>
+                      <h3 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>Two-Factor Authentication</h3>
+                      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Add an extra layer of security</p>
                       {twoFactorEnabled && (
                         <span className="inline-flex items-center mt-2 px-2 py-1 bg-green-100 text-green-700 text-xs font-medium rounded">
                           <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
                             <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                           </svg>
-                          {t('enabled') || 'Enabled'}
+                          Enabled
                         </span>
                       )}
                     </div>
@@ -348,26 +350,26 @@ const Settings = () => {
                           : 'bg-blue-600 hover:bg-blue-700 text-white'
                       }`}
                     >
-                      {twoFactorEnabled ? (t('disable') || 'Disable') : (t('enable') || 'Enable')}
+                      {twoFactorEnabled ? 'Disable' : 'Enable'}
                     </button>
                   </div>
                   <div>
-                    <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('sessionTimeout') || 'Session Timeout (minutes)'}</label>
+                    <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Session Timeout (minutes)</label>
                     <select
                       value={sessionTimeout}
                       onChange={(e) => updateSessionTimeout(e.target.value)}
                       className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200'}`}
                     >
-                      <option value="15">15 {t('minutes') || 'minutes'}</option>
-                      <option value="30">30 {t('minutes') || 'minutes'}</option>
-                      <option value="60">1 {t('hour') || 'hour'}</option>
-                      <option value="120">2 {t('hours') || 'hours'}</option>
+                      <option value="15">15 minutes</option>
+                      <option value="30">30 minutes</option>
+                      <option value="60">1 hour</option>
+                      <option value="120">2 hours</option>
                     </select>
-                    <p className="mt-2 text-sm text-green-600">✓ {t('sessionTimeoutUpdated') || 'Session timeout updated'}</p>
+                    <p className="mt-2 text-sm text-green-600">✓ Session timeout updated</p>
                   </div>
                   <div className="pt-4">
                     <button type="submit" className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium">
-                      {t('updateSecuritySettings') || 'Update Security Settings'}
+                      Update Security Settings
                     </button>
                   </div>
                 </form>
@@ -381,12 +383,12 @@ const Settings = () => {
               <h2 className={`text-xl font-semibold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('notificationPreferences') || 'Notification Preferences'}</h2>
               <div className="space-y-4">
                 {[
-                  { key: 'emailNotifications', label: t('emailNotifications') || 'Email Notifications', desc: t('emailNotificationsDesc') || 'Receive notifications via email' },
-                  { key: 'smsNotifications', label: t('smsNotifications') || 'SMS Notifications', desc: t('smsNotificationsDesc') || 'Receive notifications via SMS' },
-                  { key: 'appointmentReminders', label: t('appointmentReminders') || 'Appointment Reminders', desc: t('appointmentRemindersDesc') || 'Get reminders for upcoming appointments' },
-                  { key: 'patientUpdates', label: t('patientUpdates') || 'Patient Updates', desc: t('patientUpdatesDesc') || 'Notifications when patients update their info' },
-                  { key: 'systemAlerts', label: t('systemAlerts') || 'System Alerts', desc: t('systemAlertsDesc') || 'Important system notifications' },
-                  { key: 'marketingEmails', label: t('marketingEmails') || 'Marketing Emails', desc: t('marketingEmailsDesc') || 'Receive updates about new features' }
+                  { key: 'emailNotifications', label: 'Email Notifications', desc: 'Receive notifications via email' },
+                  { key: 'smsNotifications', label: 'SMS Notifications', desc: 'Receive notifications via SMS' },
+                  { key: 'appointmentReminders', label: 'Appointment Reminders', desc: 'Get reminders for upcoming appointments' },
+                  { key: 'patientUpdates', label: 'Patient Updates', desc: 'Notifications when patients update their info' },
+                  { key: 'systemAlerts', label: 'System Alerts', desc: 'Important system notifications' },
+                  { key: 'marketingEmails', label: 'Marketing Emails', desc: 'Receive updates about new features' }
                 ].map(item => (
                   <div key={item.key} className={`flex items-center justify-between p-4 border rounded-lg ${darkMode ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-200 hover:bg-gray-50'}`}>
                     <div>
@@ -411,10 +413,10 @@ const Settings = () => {
           {/* Preferences Tab */}
           {activeTab === 'preferences' && (
             <div className={`rounded-xl shadow-sm border p-6 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-              <h2 className={`text-xl font-semibold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('applicationPreferences') || 'Application Preferences'}</h2>
+              <h2 className={`text-xl font-semibold mb-6 ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('preferences') || 'Preferences'}</h2>
               <form onSubmit={handlePreferencesSubmit} className="space-y-6">
                 <div>
-                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('language') || 'Language'}</label>
+                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Language</label>
                   <select
                     value={language}
                     onChange={(e) => {
@@ -430,7 +432,7 @@ const Settings = () => {
                   </select>
                 </div>
                 <div>
-                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('timezone') || 'Timezone'}</label>
+                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Timezone</label>
                   <select
                     value={timezone}
                     onChange={(e) => {
@@ -445,7 +447,7 @@ const Settings = () => {
                   </select>
                 </div>
                 <div>
-                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('dateFormat') || 'Date Format'}</label>
+                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Date Format</label>
                   <select
                     value={dateFormat}
                     onChange={(e) => {
@@ -459,7 +461,7 @@ const Settings = () => {
                   </select>
                 </div>
                 <div>
-                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{t('theme') || 'Theme'}</label>
+                  <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Theme</label>
                   <select
                     value={theme}
                     onChange={(e) => {
@@ -499,35 +501,35 @@ const Settings = () => {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className={`rounded-xl shadow-xl max-w-md w-full m-4 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
             <div className={`p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-              <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('enableTwoFactor') || 'Enable Two-Factor Authentication'}</h2>
+              <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Enable Two-Factor Authentication</h2>
             </div>
             <div className="p-6 space-y-4">
               {twoFactorStep === 'setup' && (
                 <>
                   <div className={`p-4 rounded-lg ${darkMode ? 'bg-blue-900/20' : 'bg-blue-50'}`}>
-                    <h3 className={`font-medium mb-2 ${darkMode ? 'text-blue-400' : 'text-blue-900'}`}>{t('setupInstructions') || 'Setup Instructions'}</h3>
+                    <h3 className={`font-medium mb-2 ${darkMode ? 'text-blue-400' : 'text-blue-900'}`}>Setup Instructions</h3>
                     <ol className={`text-sm space-y-2 list-decimal list-inside ${darkMode ? 'text-blue-300' : 'text-blue-800'}`}>
-                      <li>{t('saveBackupCode') || 'Save this backup code in a secure location'}</li>
-                      <li>{t('needItToLogin') || "You'll need it to log in along with your password"}</li>
-                      <li>{t('enterCodeToVerify') || 'Enter the code below to verify and enable 2FA'}</li>
+                      <li>Save this backup code in a secure location</li>
+                      <li>You'll need it to log in along with your password</li>
+                      <li>Enter the code below to verify and enable 2FA</li>
                     </ol>
                   </div>
                   <div className={`p-6 rounded-lg text-center ${darkMode ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                    <p className={`text-sm mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('yourBackupCode') || 'Your backup code:'}</p>
+                    <p className={`text-sm mb-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Your backup code:</p>
                     <p className={`text-3xl font-mono font-bold tracking-wider ${darkMode ? 'text-white' : 'text-gray-900'}`}>{generatedCode}</p>
                     <button
                       onClick={() => {
                         navigator.clipboard.writeText(generatedCode);
-                        alert(t('codeCopied') || 'Code copied to clipboard!');
+                        showNotification('Code copied to clipboard!', 'success');
                       }}
                       className="mt-3 text-sm text-blue-600 hover:text-blue-700"
                     >
-                      📋 {t('copyToClipboard') || 'Copy to clipboard'}
+                      📋 Copy to clipboard
                     </button>
                   </div>
                   <div>
                     <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                      {t('enterCodeToVerify') || 'Enter the code to verify'}
+                      Enter the code to verify
                     </label>
                     <input
                       type="text"
@@ -546,14 +548,14 @@ const Settings = () => {
                       }}
                       className={`px-4 py-2 border rounded-lg ${darkMode ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
                     >
-                      {t('cancel') || 'Cancel'}
+                      Cancel
                     </button>
                     <button
                       onClick={handleVerifyTwoFactor}
                       disabled={verificationCode.length !== 6}
                       className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
-                      {t('verifyAndEnable') || 'Verify & Enable'}
+                      Verify & Enable
                     </button>
                   </div>
                 </>

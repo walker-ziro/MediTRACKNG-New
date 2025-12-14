@@ -8,13 +8,19 @@ const auditLogSchema = new mongoose.Schema({
   },
   accessedBy: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Provider',
+    refPath: 'accessorModel', // Dynamic reference
     required: true
+  },
+  accessorModel: {
+    type: String,
+    required: true,
+    enum: ['Provider', 'Patient', 'Admin'],
+    default: 'Provider'
   },
   facility: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Facility',
-    required: true
+    required: false // Made optional for patient portal access
   },
   actionType: {
     type: String,

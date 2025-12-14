@@ -23,16 +23,29 @@ router.get('/', auth, async (req, res) => {
     if (search) {
       query.$or = [
         { healthId: { $regex: search, $options: 'i' } },
-        { 'demographics.firstName': { $regex: search, $options: 'i' } },
-        { 'demographics.lastName': { $regex: search, $options: 'i' } }
+        { firstName: { $regex: search, $options: 'i' } },
+        { lastName: { $regex: search, $options: 'i' } }
       ];
     }
 
     const patients = await Patient.find(query)
       .sort({ createdAt: -1 })
-      .select('-__v');
+      .select('-__v')
+      .lean();
 
-    res.json(patients);
+    // Fetch last visit date for each patient
+    const patientsWithLastVisit = await Promise.all(patients.map(async (patient) => {
+      const lastEncounter = await Encounter.findOne({ patient: patient._id })
+        .sort({ date: -1 })
+        .select('date');
+      
+      return {
+        ...patient,
+        lastVisit: lastEncounter ? lastEncounter.date : null
+      };
+    }));
+
+    res.json(patientsWithLastVisit);
   } catch (error) {
     console.error('Error fetching patients:', error);
     res.status(500).json({
@@ -45,10 +58,20 @@ router.get('/', auth, async (req, res) => {
 // POST /api/patients - Create a new patient
 router.post('/', auth, async (req, res) => {
   try {
-    const { demographics, medicalHistory, medicationHistory, immunizationRecords } = req.body;
+    const { 
+      firstName, 
+      lastName, 
+      dateOfBirth, 
+      gender, 
+      email, 
+      phone, 
+      address, 
+      bloodGroup, 
+      emergencyContact 
+    } = req.body;
 
     // Validation
-    if (!demographics || !demographics.name || !demographics.dateOfBirth || !demographics.gender) {
+    if (!firstName || !lastName || !dateOfBirth || !gender) {
       return res.status(400).json({ message: 'Please provide required demographic information' });
     }
 
@@ -64,10 +87,24 @@ router.post('/', auth, async (req, res) => {
     // Create new patient
     const patient = new Patient({
       healthId,
-      demographics,
-      medicalHistory: medicalHistory || [],
-      medicationHistory: medicationHistory || [],
-      immunizationRecords: immunizationRecords || []
+      firstName,
+      lastName,
+      dateOfBirth,
+      gender,
+      bloodGroup,
+      contact: {
+        email,
+        phone,
+        address: {
+          street: address // Simplified for now
+        }
+      },
+      emergencyContact: {
+        name: emergencyContact, // Simplified mapping
+        relationship: 'Unknown',
+        phone: ''
+      },
+      status: 'Active'
     });
 
     await patient.save();
@@ -133,11 +170,34 @@ router.get('/:healthId/encounters', auth, async (req, res) => {
 router.put('/:healthId', auth, async (req, res) => {
   try {
     const { healthId } = req.params;
-    const updates = req.body;
+    const { 
+      firstName, 
+      lastName, 
+      dateOfBirth, 
+      gender, 
+      email, 
+      phone, 
+      address, 
+      bloodGroup, 
+      emergencyContact 
+    } = req.body;
+
+    const updateFields = {};
+    if (firstName) updateFields.firstName = firstName;
+    if (lastName) updateFields.lastName = lastName;
+    if (dateOfBirth) updateFields.dateOfBirth = dateOfBirth;
+    if (gender) updateFields.gender = gender;
+    if (bloodGroup) updateFields.bloodGroup = bloodGroup;
+    
+    if (email) updateFields['contact.email'] = email;
+    if (phone) updateFields['contact.phone'] = phone;
+    if (address) updateFields['contact.address.street'] = address;
+    
+    if (emergencyContact) updateFields['emergencyContact.name'] = emergencyContact;
 
     const patient = await Patient.findOneAndUpdate(
       { healthId },
-      { ...updates, updatedAt: Date.now() },
+      { $set: updateFields },
       { new: true, runValidators: true }
     );
 

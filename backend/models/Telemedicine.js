@@ -125,9 +125,9 @@ const telemedicineSchema = new mongoose.Schema({
   
   // Follow-up
   followUp: {
-    required: Boolean,
+    required: { type: Boolean },
     scheduledDate: Date,
-    type: String, // 'Telemedicine', 'In-Person'
+    type: { type: String }, // 'Telemedicine', 'In-Person'
     instructions: String
   },
   

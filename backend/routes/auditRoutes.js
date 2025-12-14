@@ -144,6 +144,41 @@ router.get('/suspicious', auth, async (req, res) => {
   }
 });
 
+// Get all audit logs (for admin)
+router.get('/all', auth, async (req, res) => {
+  try {
+    const { facilityId, startDate, endDate, limit = 100 } = req.query;
+    
+    let filter = {};
+    
+    if (facilityId) {
+      const facility = await Facility.findOne({ facilityId });
+      if (facility) filter.facility = facility._id;
+    }
+    
+    if (startDate) filter.timestamp = { $gte: new Date(startDate) };
+    if (endDate) filter.timestamp = { ...filter.timestamp, $lte: new Date(endDate) };
+
+    const logs = await AuditLog.find(filter)
+      .populate('patient', 'healthId firstName lastName')
+      .populate('accessedBy', 'firstName lastName specialization providerId')
+      .populate('facility', 'name facilityId type')
+      .sort({ timestamp: -1 })
+      .limit(parseInt(limit));
+
+    res.json({
+      count: logs.length,
+      logs: logs
+    });
+  } catch (error) {
+    console.error('Error fetching all logs:', error);
+    res.status(500).json({
+      message: 'Failed to fetch logs',
+      error: error.message
+    });
+  }
+});
+
 // Mark suspicious activity as reviewed
 router.post('/:id/review', auth, async (req, res) => {
   try {

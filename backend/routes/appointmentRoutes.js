@@ -9,6 +9,7 @@ router.post('/', auth, async (req, res) => {
     const {
       healthId,
       patientName,
+      doctorId, // Changed from doctorName to doctorId (or support both)
       doctorName,
       department,
       date,
@@ -19,18 +20,44 @@ router.post('/', auth, async (req, res) => {
     } = req.body;
 
     // Validate required fields
-    if (!healthId || !patientName || !doctorName || !department || !date || !time || !type) {
+    if (!healthId || !date || !time || !type) {
       return res.status(400).json({
-        message: 'Please provide all required fields: healthId, patientName, doctorName, department, date, time, and type'
+        message: 'Please provide required fields'
       });
     }
 
+    // Find Patient
+    const Patient = require('../models/Patient');
+    const patient = await Patient.findOne({ healthId });
+    if (!patient) {
+      return res.status(404).json({ message: 'Patient not found' });
+    }
+
+    // Find Doctor (Provider)
+    const Provider = require('../models/Provider');
+    let doctor;
+    if (doctorId) {
+      doctor = await Provider.findById(doctorId);
+    } else if (doctorName) {
+      // Fallback search by name (risky if duplicates)
+      const nameParts = doctorName.split(' ');
+      const lastName = nameParts[nameParts.length - 1];
+      doctor = await Provider.findOne({ lastName: new RegExp(lastName, 'i') });
+    }
+
     // Create appointment
+    let finalPatientName = patientName;
+    if (!finalPatientName || finalPatientName.includes('undefined')) {
+        finalPatientName = `${patient.firstName} ${patient.lastName}`;
+    }
+
     const appointment = new Appointment({
       healthId,
-      patientName,
-      doctorName,
-      department,
+      patientId: patient._id,
+      patientName: finalPatientName,
+      doctorId: doctor ? doctor._id : null,
+      doctorName: doctorName || (doctor ? `${doctor.firstName} ${doctor.lastName}` : 'Unknown'),
+      department: department || (doctor ? doctor.specialization : 'General'),
       date,
       time,
       type,

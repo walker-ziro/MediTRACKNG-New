@@ -2,13 +2,30 @@ const express = require('express');
 const router = express.Router();
 const Encounter = require('../models/Encounter');
 const Patient = require('../models/Patient');
+const Provider = require('../models/Provider');
 const auth = require('../middleware/auth');
+const { v4: uuidv4 } = require('uuid');
+
+// GET /api/encounters - Get all encounters
+router.get('/', auth, async (req, res) => {
+  try {
+    const encounters = await Encounter.find()
+      .populate('patient', 'firstName lastName healthId')
+      .populate('provider', 'firstName lastName')
+      .sort({ createdAt: -1 });
+    
+    res.json(encounters);
+  } catch (error) {
+    console.error('Error fetching encounters:', error);
+    res.status(500).json({ message: 'Server error fetching encounters' });
+  }
+});
 
 // POST /api/encounters - Create a new encounter
 router.post('/', auth, async (req, res) => {
   try {
-    const { healthId, patientId, clinicalNotes, labResults, dischargeSummary } = req.body;
-    const { facilityName, id: providerId } = req.user;
+    const { healthId, patientId, type, date, time, status, clinicalNotes } = req.body;
+    const { id: providerId } = req.user;
 
     // Find patient by healthId or patientId
     let patient;
@@ -22,17 +39,28 @@ router.post('/', auth, async (req, res) => {
       return res.status(404).json({ message: 'Patient not found' });
     }
 
+    // Get Provider to find Facility
+    const provider = await Provider.findById(providerId);
+    if (!provider) {
+      return res.status(404).json({ message: 'Provider not found' });
+    }
+
     // Create new encounter
     const encounter = new Encounter({
-      patientId: patient._id,
-      providerName: facilityName,
-      providerId: providerId,
-      clinicalNotes: clinicalNotes || '',
-      labResults: labResults || [],
-      dischargeSummary: dischargeSummary || ''
+      encounterId: `ENC-${uuidv4().split('-')[0].toUpperCase()}`,
+      patient: patient._id,
+      facility: provider.primaryFacility,
+      provider: provider._id,
+      encounterType: type || 'Outpatient Visit',
+      encounterDate: date ? new Date(`${date}T${time || '00:00'}`) : new Date(),
+      status: status || 'Scheduled',
+      clinicalNotes: clinicalNotes || ''
     });
 
     await encounter.save();
+
+    // Populate for response
+    await encounter.populate('patient', 'firstName lastName healthId');
 
     res.status(201).json({
       message: 'Encounter created successfully',

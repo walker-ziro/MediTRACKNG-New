@@ -1,10 +1,53 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useSettings } from '../../context/SettingsContext';
+import { useApi } from '../../hooks/useApi';
 
 const PatientDashboard = () => {
-  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
+  const [userData, setUserData] = useState(JSON.parse(localStorage.getItem('userData') || '{}'));
+  const [stats, setStats] = useState({
+    appointments: 0,
+    prescriptions: 0
+  });
+  const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const { theme, t , darkMode } = useSettings();
+  const { fetchData } = useApi();
+
+  useEffect(() => {
+    const loadDashboardData = async () => {
+      if (!userData.healthId) return;
+
+      try {
+        // Fetch Profile for latest info (genotype, etc)
+        const profileData = await fetchData(`/patient-portal/profile/${userData.healthId}`);
+        if (profileData && profileData.profile) {
+          setUserData(prev => ({ ...prev, ...profileData.profile }));
+        }
+
+        // Fetch Appointments
+        const appointmentsData = await fetchData(`/patient-portal/appointments/${userData.healthId}`);
+        if (appointmentsData && appointmentsData.appointments) {
+          const allAppointments = appointmentsData.appointments;
+          const upcoming = allAppointments.filter(a => a.status === 'Scheduled');
+          setStats(prev => ({ ...prev, appointments: upcoming.length }));
+          setUpcomingAppointments(upcoming.slice(0, 3)); // Top 3
+        }
+
+        // Fetch Prescriptions
+        const prescriptionsData = await fetchData(`/prescriptions/patient/${userData.healthId}`);
+        if (prescriptionsData && prescriptionsData.data) {
+           const activePrescriptions = prescriptionsData.data.filter(p => p.status === 'Active');
+           setStats(prev => ({ ...prev, prescriptions: activePrescriptions.length }));
+        }
+
+      } catch (error) {
+        console.error("Error loading dashboard data", error);
+      }
+    };
+
+    loadDashboardData();
+  }, [userData.healthId, fetchData]);
+
   return (
     <div className={`p-8 min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       {/* Top Header */}
@@ -39,7 +82,7 @@ const PatientDashboard = () => {
           <div className="flex justify-between items-start">
             <div>
               <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{t('appointments')}</p>
-              <h3 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>3</h3>
+              <h3 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{stats.appointments}</h3>
             </div>
             <i className="fas fa-calendar-alt text-blue-500 text-2xl"></i>
           </div>
@@ -49,7 +92,7 @@ const PatientDashboard = () => {
           <div className="flex justify-between items-start">
             <div>
               <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{t('prescriptions')}</p>
-              <h3 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>5</h3>
+              <h3 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{stats.prescriptions}</h3>
             </div>
             <i className="fas fa-pills text-purple-500 text-2xl"></i>
           </div>
@@ -107,24 +150,26 @@ const PatientDashboard = () => {
         <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} p-6 rounded-lg shadow-sm`}>
           <h3 className="text-lg font-bold mb-4">Upcoming Appointments</h3>
           <div className="space-y-3">
-            {[
-              { date: 'Dec 12, 2025', doctor: 'Dr. Sarah Johnson', specialty: 'Cardiologist', time: '10:00 AM' },
-              { date: 'Dec 15, 2025', doctor: 'Dr. Mike Brown', specialty: 'General', time: '02:30 PM' },
-              { date: 'Dec 20, 2025', doctor: 'Dr. Lisa White', specialty: 'Dermatologist', time: '11:00 AM' },
-            ].map((apt, idx) => (
+            {upcomingAppointments.length > 0 ? (
+              upcomingAppointments.map((apt, idx) => (
               <div key={idx} className={`flex items-center justify-between p-3 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} rounded-lg hover:bg-gray-100 transition-colors`}>
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                     <i className="fas fa-user-md text-green-600"></i>
                   </div>
                   <div>
-                    <p className="font-semibold text-sm">{apt.doctor}</p>
-                    <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{apt.specialty}</p>
-                    <p className="text-xs text-gray-400">{apt.date} at {apt.time}</p>
+                    <p className="font-semibold text-sm">
+                      {typeof apt.doctor === 'string' ? apt.doctor : (apt.doctor?.firstName ? `Dr. ${apt.doctor.firstName} ${apt.doctor.lastName}` : 'Doctor')}
+                    </p>
+                    <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{apt.department || 'General'}</p>
+                    <p className="text-xs text-gray-400">{new Date(apt.date).toLocaleDateString()} at {apt.time}</p>
                   </div>
                 </div>
               </div>
-            ))}
+            ))
+            ) : (
+              <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No upcoming appointments.</p>
+            )}
           </div>
         </div>
       </div>

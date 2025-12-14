@@ -1,29 +1,125 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSettings } from '../../context/SettingsContext';
+import { useNotification } from '../../context/NotificationContext';
+import { useApi } from '../../hooks/useApi';
 
 const Appointments = () => {
   const { theme, t , darkMode } = useSettings();
+  const { showNotification } = useNotification();
+  const { fetchData, postData, putData, loading } = useApi();
   const [showModal, setShowModal] = useState(false);
-  const [appointments, setAppointments] = useState([
-    { id: 'APT-001', date: '2024-12-15', time: '10:00 AM', doctor: 'Dr. Sarah Johnson', specialization: 'General Practice', type: 'Consultation', status: 'Scheduled' },
-    { id: 'APT-002', date: '2024-12-08', time: '02:00 PM', doctor: 'Dr. Michael Chen', specialization: 'Cardiology', type: 'Follow-up', status: 'Completed' },
-    { id: 'APT-003', date: '2024-11-25', time: '11:30 AM', doctor: 'Dr. Sarah Johnson', specialization: 'General Practice', type: 'Checkup', status: 'Completed' },
-  ]);
+  const [appointments, setAppointments] = useState([]);
+  const [doctors, setDoctors] = useState([]);
+  const [userData, setUserData] = useState(null);
 
-  const handleSubmit = (e) => {
+  useEffect(() => {
+    const userStr = localStorage.getItem('userData');
+    if (userStr) {
+      setUserData(JSON.parse(userStr));
+    }
+  }, []);
+
+  useEffect(() => {
+    const loadDoctors = async () => {
+      try {
+        const data = await fetchData('/auth/providers');
+        if (data) {
+          setDoctors(data);
+        }
+      } catch (error) {
+        console.error('Failed to load doctors', error);
+      }
+    };
+    loadDoctors();
+  }, []);
+
+  useEffect(() => {
+    const loadAppointments = async () => {
+      if (!userData?.healthId) return;
+      
+      try {
+        const response = await fetchData(`/patient-portal/appointments/${userData.healthId}`);
+        if (response?.appointments) {
+          const formattedAppointments = response.appointments.map(apt => ({
+            id: apt.id,
+            date: new Date(apt.date).toLocaleDateString(),
+            time: apt.time,
+            doctor: typeof apt.doctor === 'string' ? apt.doctor : (apt.doctor ? `Dr. ${apt.doctor.firstName} ${apt.doctor.lastName}` : 'Unknown Doctor'),
+            specialization: apt.doctor?.specialization || apt.department || 'General',
+            type: apt.reason || 'Consultation',
+            status: apt.status.charAt(0).toUpperCase() + apt.status.slice(1)
+          }));
+          setAppointments(formattedAppointments);
+        }
+      } catch (error) {
+        console.error('Error loading appointments:', error);
+        showNotification('Failed to load appointments', 'error');
+      }
+    };
+
+    loadAppointments();
+  }, [userData]);
+
+  const [selectedAppointment, setSelectedAppointment] = useState(null);
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
-    const newAppointment = {
-      id: `APT-${String(appointments.length + 1).padStart(3, '0')}`,
+    const doctorId = formData.get('doctor');
+    const selectedDoctor = doctors.find(d => d.id === doctorId);
+
+    const payload = {
+      healthId: userData.healthId,
+      patientName: userData.name,
+      doctorId: doctorId,
+      doctorName: selectedDoctor ? selectedDoctor.name : '',
+      department: selectedDoctor ? selectedDoctor.specialization : formData.get('specialization'),
       date: formData.get('date'),
       time: formData.get('time'),
-      doctor: formData.get('doctor'),
-      specialization: formData.get('specialization'),
       type: formData.get('type'),
-      status: 'Scheduled'
+      reason: formData.get('reason') || 'Consultation'
     };
-    setAppointments([newAppointment, ...appointments]);
-    setShowModal(false);
+
+    try {
+      const response = await postData('/appointments', payload);
+      if (response && response.appointment) {
+        const apt = response.appointment;
+        const newApt = {
+          id: apt._id,
+          date: new Date(apt.date).toLocaleDateString(),
+          time: apt.time,
+          doctor: apt.doctorName,
+          specialization: apt.department,
+          type: apt.type,
+          status: 'Scheduled'
+        };
+        setAppointments([newApt, ...appointments]);
+        setShowModal(false);
+        showNotification('Appointment booked successfully!', 'success');
+      }
+    } catch (error) {
+      console.error('Failed to book appointment', error);
+      showNotification('Failed to book appointment', 'error');
+    }
+  };
+
+  const handleCancel = async (id) => {
+    if (window.confirm('Are you sure you want to cancel this appointment?')) {
+      try {
+        await putData(`/appointments/${id}`, { status: 'cancelled' });
+        setAppointments(appointments.map(apt => 
+          apt.id === id ? { ...apt, status: 'Cancelled' } : apt
+        ));
+        showNotification('Appointment cancelled successfully', 'info');
+      } catch (error) {
+        console.error('Failed to cancel appointment', error);
+        showNotification('Failed to cancel appointment', 'error');
+      }
+    }
+  };
+
+  const handleViewDetails = (apt) => {
+    setSelectedAppointment(apt);
   };
 
   return (
@@ -53,7 +149,11 @@ const Appointments = () => {
         </div>
         <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl p-6 border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
           <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} text-sm`}>Next Appointment</p>
-          <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'} mt-1`}>Dec 15</p>
+          <p className={`text-lg font-bold ${darkMode ? 'text-white' : 'text-gray-900'} mt-1`}>
+            {appointments.filter(a => a.status === 'Scheduled').length > 0 
+              ? appointments.filter(a => a.status === 'Scheduled').sort((a, b) => new Date(a.date) - new Date(b.date))[0].date 
+              : 'None'}
+          </p>
         </div>
       </div>
 
@@ -91,9 +191,19 @@ const Appointments = () => {
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     {apt.status === 'Scheduled' ? (
-                      <button className="text-red-600 hover:text-red-800 font-medium text-sm">Cancel</button>
+                      <button 
+                        onClick={() => handleCancel(apt.id)}
+                        className="text-red-600 hover:text-red-800 font-medium text-sm"
+                      >
+                        Cancel
+                      </button>
                     ) : (
-                      <button className="text-blue-600 hover:text-blue-800 font-medium text-sm">View Details</button>
+                      <button 
+                        onClick={() => handleViewDetails(apt)}
+                        className="text-blue-600 hover:text-blue-800 font-medium text-sm"
+                      >
+                        View Details
+                      </button>
                     )}
                   </td>
                 </tr>
@@ -132,9 +242,11 @@ const Appointments = () => {
                 <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Doctor *</label>
                 <select name="doctor" required className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`}>
                   <option value="">Select Doctor</option>
-                  <option value="dr-johnson">Dr. Sarah Johnson - General Practice</option>
-                  <option value="dr-chen">Dr. Michael Chen - Cardiology</option>
-                  <option value="dr-williams">Dr. Emily Williams - Pediatrics</option>
+                  {doctors.map(doc => (
+                    <option key={doc.id} value={doc.id}>
+                      {doc.name} - {doc.specialization}
+                    </option>
+                  ))}
                 </select>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -182,6 +294,64 @@ const Appointments = () => {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+
+      {/* View Details Modal */}
+      {selectedAppointment && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl max-w-md w-full m-4`}>
+            <div className={`p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'} flex items-center justify-between`}>
+              <h2 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Appointment Details</h2>
+              <button onClick={() => setSelectedAppointment(null)} className={`${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'}`}>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Doctor</p>
+                <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{selectedAppointment.doctor}</p>
+              </div>
+              <div>
+                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Specialization</p>
+                <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{selectedAppointment.specialization}</p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Date</p>
+                  <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{selectedAppointment.date}</p>
+                </div>
+                <div>
+                  <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Time</p>
+                  <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{selectedAppointment.time}</p>
+                </div>
+              </div>
+              <div>
+                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Type</p>
+                <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{selectedAppointment.type}</p>
+              </div>
+              <div>
+                <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Status</p>
+                <span className={`inline-block mt-1 px-3 py-1 rounded-full text-xs font-medium ${
+                  selectedAppointment.status === 'Scheduled' ? 'bg-blue-100 text-blue-700' : 
+                  selectedAppointment.status === 'Completed' ? 'bg-green-100 text-green-700' :
+                  'bg-red-100 text-red-700'
+                }`}>
+                  {selectedAppointment.status}
+                </span>
+              </div>
+            </div>
+            <div className={`p-6 border-t ${darkMode ? 'border-gray-700' : 'border-gray-200'} flex justify-end`}>
+              <button 
+                onClick={() => setSelectedAppointment(null)}
+                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+              >
+                Close
+              </button>
+            </div>
           </div>
         </div>
       )}

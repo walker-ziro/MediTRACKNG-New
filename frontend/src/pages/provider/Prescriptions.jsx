@@ -1,43 +1,114 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useSettings } from '../../context/SettingsContext';
+import { useApi } from '../../hooks/useApi';
 
 const Prescriptions = () => {
+  const userData = JSON.parse(localStorage.getItem('userData') || '{}');
   const { theme, t , darkMode } = useSettings();
+  const { fetchData, postData } = useApi();
   const [showModal, setShowModal] = useState(false);
   const [formData, setFormData] = useState({
-    patientName: '',
+    patientId: '',
     medication: '',
     dosage: '',
     frequency: 'Once daily',
     duration: '',
     notes: ''
   });
+  const [prescriptions, setPrescriptions] = useState([]);
+  const [patients, setPatients] = useState([]);
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [prescriptionsData, patientsData] = await Promise.all([
+          fetchData('/prescriptions'),
+          fetchData('/patients')
+        ]);
+
+        if (prescriptionsData?.data) {
+          const flattenedPrescriptions = prescriptionsData.data.flatMap(rx => 
+            rx.medications.map((med, index) => ({
+              id: `${rx.prescriptionId || rx._id}-${index}`,
+              patient: rx.patient?.name || 'Unknown',
+              healthId: rx.patient?.healthId || 'N/A',
+              medication: med.drugName,
+              dosage: `${med.dosage || ''} ${med.frequency || ''}`.trim(),
+              duration: typeof med.duration === 'object' ? `${med.duration.value} ${med.duration.unit}` : med.duration,
+              date: new Date(rx.createdAt).toLocaleDateString(),
+              status: rx.status
+            }))
+          );
+          setPrescriptions(flattenedPrescriptions);
+        }
+
+        if (patientsData) {
+          setPatients(patientsData);
+        }
+      } catch (error) {
+        console.error('Failed to load data', error);
+      }
+    };
+    loadData();
+  }, []);
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('New Prescription:', formData);
-    setShowModal(false);
-    // Reset form
-    setFormData({
-      patientName: '',
-      medication: '',
-      dosage: '',
-      frequency: 'Once daily',
-      duration: '',
-      notes: ''
-    });
-  };
+    try {
+      const selectedPatient = patients.find(p => p.healthId === formData.patientId);
+      const payload = {
+        healthId: formData.patientId,
+        patientName: selectedPatient ? `${selectedPatient.firstName} ${selectedPatient.lastName}` : '',
+        provider: {
+            providerId: userData.providerId || userData.id || userData._id,
+            name: `${userData.firstName} ${userData.lastName}`,
+            licenseNumber: userData.licenseNumber || 'N/A',
+            specialization: userData.specialization || 'General'
+        },
+        medications: [{
+          drugName: formData.medication,
+          dosage: formData.dosage,
+          frequency: formData.frequency,
+          duration: formData.duration,
+          notes: formData.notes
+        }],
+        status: 'Active'
+      };
 
-  const prescriptions = [
-    { id: 'RX-001', patient: 'John Doe', healthId: 'HID-20241208-001', medication: 'Amoxicillin 500mg', dosage: '1 tablet, 3 times daily', duration: '7 days', date: '2024-12-08', status: 'Active' },
-    { id: 'RX-002', patient: 'Jane Smith', healthId: 'HID-20241208-002', medication: 'Lisinopril 10mg', dosage: '1 tablet, once daily', duration: '30 days', date: '2024-12-05', status: 'Active' },
-    { id: 'RX-003', patient: 'Michael Johnson', healthId: 'HID-20241207-003', medication: 'Metformin 500mg', dosage: '1 tablet, twice daily', duration: '30 days', date: '2024-11-28', status: 'Dispensed' },
-  ];
+      const response = await postData('/prescriptions', payload);
+      if (response) {
+        const rx = response.prescription || response; // Adjust based on API response
+        const newPrescriptions = rx.medications.map((med, index) => ({
+          id: `${rx.prescriptionId || rx._id}-${index}`,
+          patient: payload.patientName,
+          healthId: payload.healthId,
+          medication: med.drugName,
+          dosage: `${med.dosage} ${med.frequency}`.trim(),
+          duration: med.duration,
+          date: new Date().toLocaleDateString(),
+          status: 'Active'
+        }));
+        
+        setPrescriptions([...newPrescriptions, ...prescriptions]);
+        setShowModal(false);
+        setFormData({
+          patientId: '',
+          medication: '',
+          dosage: '',
+          frequency: 'Once daily',
+          duration: '',
+          notes: ''
+        });
+      }
+    } catch (error) {
+      console.error('Failed to create prescription', error);
+    }
+  };
 
   return (
     <div className={`p-8 min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -101,7 +172,11 @@ const Prescriptions = () => {
                     <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{prescription.dosage}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{prescription.duration}</span>
+                    <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                      {typeof prescription.duration === 'object' && prescription.duration !== null 
+                        ? `${prescription.duration.value} ${prescription.duration.unit}` 
+                        : prescription.duration}
+                    </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>{prescription.date}</span>
@@ -138,16 +213,21 @@ const Prescriptions = () => {
             <div className="p-6">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Patient Name</label>
-                  <input
-                    type="text"
-                    name="patientName"
-                    value={formData.patientName}
+                  <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Patient</label>
+                  <select
+                    name="patientId"
+                    value={formData.patientId}
                     onChange={handleInputChange}
                     className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`}
-                    placeholder="Enter patient name"
                     required
-                  />
+                  >
+                    <option value="">Select Patient</option>
+                    {patients.map(p => (
+                      <option key={p.healthId} value={p.healthId}>
+                        {p.firstName} {p.lastName} ({p.healthId})
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

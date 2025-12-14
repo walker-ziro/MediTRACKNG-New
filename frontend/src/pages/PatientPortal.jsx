@@ -432,7 +432,13 @@ const PatientPortal = () => {
                     </div>
                     <div className="encounter-body">
                       <p><strong>Chief Complaint:</strong> {encounter.chiefComplaint}</p>
-                      {encounter.diagnosis && <p><strong>Diagnosis:</strong> {encounter.diagnosis}</p>}
+                      {encounter.diagnosis && (
+                        <p><strong>Diagnosis:</strong> {
+                          Array.isArray(encounter.diagnosis) 
+                            ? encounter.diagnosis.map(d => d.description || d.code).join(', ') 
+                            : encounter.diagnosis
+                        }</p>
+                      )}
                       <p><strong>Provider:</strong> Dr. {encounter.provider?.firstName} {encounter.provider?.lastName}</p>
                       {encounter.prescriptions?.length > 0 && (
                         <div className="prescriptions">
