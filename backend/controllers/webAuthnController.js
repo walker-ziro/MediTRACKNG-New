@@ -33,7 +33,7 @@ const generateRegistrationOptions = async (req, res) => {
       authenticatorSelection: {
         residentKey: 'preferred',
         userVerification: 'preferred',
-        authenticatorAttachment: 'platform', // Use platform authenticator (TouchID, FaceID, Windows Hello)
+        // authenticatorAttachment: 'platform', // Allow any authenticator (Platform or Cross-Platform)
       },
     });
 

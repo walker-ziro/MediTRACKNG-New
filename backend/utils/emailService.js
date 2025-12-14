@@ -1,5 +1,16 @@
 const nodemailer = require('nodemailer');
 
+// Gmail Configuration
+const transporter = nodemailer.createTransport({
+  service: 'gmail',
+  auth: {
+    user: process.env.GMAIL_USER,
+    pass: process.env.GMAIL_PASS,
+  },
+});
+
+// Brevo Configuration (Commented out)
+/*
 const transporter = nodemailer.createTransport({
   host: 'smtp-relay.brevo.com',
   port: 587,
@@ -9,11 +20,15 @@ const transporter = nodemailer.createTransport({
     pass: process.env.BREVO_SMTP_PASS, // generated ethereal password
   },
 });
+*/
 
 const sendOTP = async (email, otp) => {
   try {
+    // Use the authenticated user as the sender
+    const senderEmail = process.env.GMAIL_USER;
+    
     const info = await transporter.sendMail({
-      from: '"MediTRACKNG" <no-reply@meditrackng.com>', // sender address
+      from: `"MediTRACKNG" <${senderEmail}>`, // sender address
       replyTo: "walkertech001@gmail.com", // reply address
       to: email, // list of receivers
       subject: "Your Verification Code", // Subject line

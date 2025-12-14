@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useSettings } from '../../context/SettingsContext';
 import { useNavigate, Link } from 'react-router-dom';
 
@@ -36,6 +36,20 @@ const ProviderSignup = ({ isEmbedded = false }) => {
   // OTP State
   const [showOTP, setShowOTP] = useState(false);
   const [otp, setOtp] = useState('');
+  const [resendTimer, setResendTimer] = useState(30);
+  const [canResend, setCanResend] = useState(false);
+
+  useEffect(() => {
+    let interval;
+    if (showOTP && resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer((prev) => prev - 1);
+      }, 1000);
+    } else if (resendTimer === 0) {
+      setCanResend(true);
+    }
+    return () => clearInterval(interval);
+  }, [showOTP, resendTimer]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -137,6 +151,30 @@ const ProviderSignup = ({ isEmbedded = false }) => {
     }
   };
 
+  const handleResendOTP = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const response = await fetch('http://localhost:5000/api/multi-auth/resend-otp', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: formData.email, userType: 'provider' })
+      });
+      
+      if (response.ok) {
+        setResendTimer(30);
+        setCanResend(false);
+      } else {
+        const data = await response.json();
+        setError(data.message || 'Failed to resend OTP');
+      }
+    } catch (err) {
+      setError('Network error');
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (showOTP) {
     return (
       <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} px-4 py-8 flex items-center justify-center`}>
@@ -179,6 +217,21 @@ const ProviderSignup = ({ isEmbedded = false }) => {
             >
               {loading ? 'Verifying...' : 'Verify Account'}
             </button>
+
+            <div className="text-center mt-4">
+              <button
+                type="button"
+                onClick={handleResendOTP}
+                disabled={!canResend || loading}
+                className={`text-sm font-medium ${
+                  canResend 
+                    ? (darkMode ? 'text-blue-400 hover:text-blue-300' : 'text-blue-600 hover:text-blue-700') 
+                    : (darkMode ? 'text-gray-500' : 'text-gray-400')
+                }`}
+              >
+                {canResend ? 'Resend Code' : `Resend Code in ${resendTimer}s`}
+              </button>
+            </div>
           </form>
         </div>
       </div>

@@ -52,14 +52,19 @@ router.post('/provider/register', async (req, res) => {
     }
 
     // Check if provider already exists
-    const existingProvider = await ProviderAuth.findOne({ 
+    let existingProvider = await ProviderAuth.findOne({ 
       $or: [{ email }, { licenseNumber }] 
     });
     
     if (existingProvider) {
-      return res.status(400).json({ 
-        message: 'Provider with this email or license number already exists' 
-      });
+      if (existingProvider.isVerified) {
+        return res.status(400).json({ 
+          message: 'Provider with this email or license number already exists' 
+        });
+      } else {
+        // If unverified, delete the old record and allow re-registration
+        await ProviderAuth.findByIdAndDelete(existingProvider._id);
+      }
     }
 
     // Generate OTP
@@ -96,7 +101,12 @@ router.post('/provider/register', async (req, res) => {
     await provider.save();
 
     // Send OTP Email
-    await sendOTP(email, otp);
+    const emailSent = await sendOTP(email, otp);
+
+    if (!emailSent) {
+      await ProviderAuth.findByIdAndDelete(provider._id);
+      return res.status(500).json({ message: 'Failed to send verification email. Please check your email address or try again later.' });
+    }
 
     res.status(201).json({
       message: 'Provider registered successfully. Please verify your email.',
@@ -220,14 +230,19 @@ router.post('/patient/register', async (req, res) => {
     }
 
     // Check if patient already exists
-    const existingPatient = await PatientAuth.findOne({ 
+    let existingPatient = await PatientAuth.findOne({ 
       $or: [{ email }, { phone }] 
     });
     
     if (existingPatient) {
-      return res.status(400).json({ 
-        message: 'Patient with this email or phone already exists' 
-      });
+      if (existingPatient.isVerified) {
+        return res.status(400).json({ 
+          message: 'Patient with this email or phone already exists' 
+        });
+      } else {
+        // If unverified, delete the old record and allow re-registration
+        await PatientAuth.findByIdAndDelete(existingPatient._id);
+      }
     }
 
     // Generate OTP
@@ -259,7 +274,12 @@ router.post('/patient/register', async (req, res) => {
     const patient = await PatientAuth.create(patientData);
 
     // Send OTP Email
-    await sendOTP(email, otp);
+    const emailSent = await sendOTP(email, otp);
+
+    if (!emailSent) {
+      await PatientAuth.findByIdAndDelete(patient._id);
+      return res.status(500).json({ message: 'Failed to send verification email. Please check your email address or try again later.' });
+    }
 
     res.status(201).json({
       message: 'Patient registered successfully. Please verify your email.',

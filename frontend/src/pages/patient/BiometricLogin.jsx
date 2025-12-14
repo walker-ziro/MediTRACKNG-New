@@ -15,15 +15,19 @@ const BiometricLogin = () => {
     setMessage('Scanning... Please verify your identity.');
 
     try {
+      console.log('Starting biometric authentication...');
       // 1. Get options from server
       const resp = await api.get('/webauthn/login-options');
+      console.log('Authentication options:', resp.data);
       const options = resp.data;
 
       // 2. Pass options to browser
       let asseResp;
       try {
         asseResp = await startAuthentication(options);
+        console.log('Authentication response:', asseResp);
       } catch (error) {
+        console.error('startAuthentication error:', error);
         throw error;
       }
 

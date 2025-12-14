@@ -86,19 +86,23 @@ const PatientSettings = () => {
 
   const handleRegisterBiometrics = async () => {
     try {
+      console.log('Starting biometric registration...');
       // 1. Get options from server
       const resp = await api.get('/webauthn/register-options');
+      console.log('Registration options received:', resp.data);
       const options = resp.data;
 
       // 2. Pass options to browser
       let attResp;
       try {
         attResp = await startRegistration(options);
+        console.log('Registration response:', attResp);
       } catch (error) {
+        console.error('startRegistration error:', error);
         if (error.name === 'InvalidStateError') {
           showNotification('Authenticator already registered.', 'error');
         } else {
-          showNotification(error.message, 'error');
+          showNotification(`Biometric Error: ${error.message}`, 'error');
         }
         throw error;
       }
