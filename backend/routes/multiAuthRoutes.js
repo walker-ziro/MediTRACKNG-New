@@ -101,7 +101,12 @@ router.post('/provider/register', async (req, res) => {
     await provider.save();
 
     // Send OTP Email
-    const emailSent = await sendOTP(email, otp);
+    let emailSent = false;
+    try {
+      emailSent = await sendOTP(email, otp);
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+    }
 
     if (!emailSent) {
       await ProviderAuth.findByIdAndDelete(provider._id);
@@ -274,7 +279,12 @@ router.post('/patient/register', async (req, res) => {
     const patient = await PatientAuth.create(patientData);
 
     // Send OTP Email
-    const emailSent = await sendOTP(email, otp);
+    let emailSent = false;
+    try {
+      emailSent = await sendOTP(email, otp);
+    } catch (emailError) {
+      console.error('Email sending failed:', emailError);
+    }
 
     if (!emailSent) {
       await PatientAuth.findByIdAndDelete(patient._id);
