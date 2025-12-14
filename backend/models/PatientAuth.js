@@ -52,12 +52,16 @@ const patientAuthSchema = new mongoose.Schema({
     default: false
   },
   
-  // Biometric (for future implementation)
-  biometricId: String,
-  biometricType: {
-    type: String,
-    enum: ['Fingerprint', 'Face', 'Iris']
-  },
+  // WebAuthn Credentials
+  authenticators: [{
+    credentialID: { type: String, required: true },
+    credentialPublicKey: { type: Buffer, required: true },
+    counter: { type: Number, required: true },
+    credentialDeviceType: { type: String, required: true },
+    credentialBackedUp: { type: Boolean, required: true },
+    transports: [String],
+  }],
+  currentChallenge: { type: String },
   
   // Contact
   address: {

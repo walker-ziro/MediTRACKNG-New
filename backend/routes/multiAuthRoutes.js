@@ -162,6 +162,14 @@ router.post('/provider/login', async (req, res) => {
     // Generate token
     const token = generateToken(provider, 'provider');
 
+    // Set cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+
     res.json({
       message: 'Login successful',
       token,
@@ -310,6 +318,14 @@ router.post('/patient/login', async (req, res) => {
 
     // Generate token
     const token = generateToken(patient, 'patient');
+
+    // Set cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
 
     res.json({
       message: 'Login successful',
@@ -480,6 +496,14 @@ router.post('/admin/login', async (req, res) => {
     // Generate full token if 2FA not enabled
     const token = generateToken(admin, 'admin');
 
+    // Set cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
+
     res.json({
       message: 'Login successful',
       token,
@@ -578,6 +602,14 @@ router.post('/admin/verify-2fa', async (req, res) => {
 
     // Generate final token
     const finalToken = generateToken(admin, 'admin');
+
+    // Set cookie
+    res.cookie('token', finalToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+    });
 
     res.json({
       message: '2FA verification successful',

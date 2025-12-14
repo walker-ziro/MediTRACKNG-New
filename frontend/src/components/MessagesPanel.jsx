@@ -45,12 +45,12 @@ const MessagesPanel = ({ isOpen, onClose }) => {
                 <div
                   key={message._id || message.id}
                   className={`p-4 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer transition-colors ${
-                    !message.read ? 'bg-blue-50 dark:bg-blue-900/20' : ''
+                    !message.read ? 'bg-gray-100 dark:bg-gray-800' : ''
                   }`}
                   onClick={() => handleMessageClick(message)}
                 >
                   <div className="flex gap-3">
-                    <div className="w-10 h-10 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white font-semibold">
+                    <div className={`w-10 h-10 ${darkMode ? 'bg-gray-700 text-white' : 'bg-gray-200 text-gray-700'} rounded-full flex items-center justify-center font-semibold`}>
                       {(message.sender?.name || message.from)?.split(' ').map(n => n[0]).join('')}
                     </div>
                     <div className="flex-1 min-w-0">

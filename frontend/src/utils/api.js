@@ -1,16 +1,17 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:5000/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000/api';
 
 // Create axios instance
-const api = axios.create({
+export const api = axios.create({
   baseURL: API_BASE_URL,
+  withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-// Add token to requests
+// Add token to requests (Legacy support or if using localStorage)
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('token');
@@ -29,9 +30,15 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('provider');
-      window.location.href = '/login';
+      // Only redirect if we are not already on the login page to avoid loops
+      if (!window.location.pathname.includes('/login')) {
+         // Clear local storage just in case
+         localStorage.removeItem('token');
+         localStorage.removeItem('provider');
+         localStorage.removeItem('userData');
+         localStorage.removeItem('userType');
+         window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
@@ -41,9 +48,12 @@ api.interceptors.response.use(
 export const authAPI = {
   register: (data) => api.post('/auth/register', data),
   login: (data) => api.post('/auth/login', data),
+  logout: () => api.post('/auth/logout'),
 };
 
-// Patient API
+
+
+// Patient API (General)
 export const patientAPI = {
   getAll: (params) => api.get('/patients', { params }),
   create: (data) => api.post('/patients', data),
@@ -77,12 +87,16 @@ export const messageAPI = {
 // Dashboard API
 export const dashboardAPI = {
   getStats: () => api.get('/dashboard/stats'),
+  getProviderStats: (providerId) => api.get(`/dashboard/provider-stats/${providerId}`),
+  getAdminStats: () => api.get('/dashboard/admin-stats'),
   getTodayAppointments: () => api.get('/dashboard/appointments/today'),
   getDoctorsSchedule: () => api.get('/dashboard/doctors/schedule'),
   getPatientOverview: () => api.get('/dashboard/patients/overview'),
   getDepartmentOverview: () => api.get('/dashboard/departments/overview'),
   getFinancialOverview: () => api.get('/dashboard/financials/overview'),
 };
+
+
 
 // AI API
 export const aiAPI = {
@@ -193,6 +207,7 @@ export const consentAPI = {
 
 // Audit API (National System)
 export const auditAPI = {
+  getLogs: (params) => api.get('/audit/all', { params }),
   logAccess: (data) => api.post('/audit/log', data),
   getByPatient: (healthId, params) => api.get(`/audit/patient/${healthId}`, { params }),
   getSuspicious: (params) => api.get('/audit/suspicious', { params }),
@@ -229,6 +244,7 @@ export const analyticsAPI = {
 // Patient Portal API (National System - Citizens)
 export const patientPortalAPI = {
   getProfile: (healthId) => api.get(`/patient-portal/profile/${healthId}`),
+  getPrescriptions: (healthId) => api.get(`/prescriptions/patient/${healthId}`),
   getMedicalHistory: (healthId) => api.get(`/patient-portal/medical-history/${healthId}`),
   getMedications: (healthId) => api.get(`/patient-portal/medications/${healthId}`),
   getImmunizations: (healthId) => api.get(`/patient-portal/immunizations/${healthId}`),

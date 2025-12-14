@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
+const cookieParser = require('cookie-parser');
 
 // Import routes
 const authRoutes = require('./routes/authRoutes');
@@ -32,11 +33,16 @@ const telemedicineRoutes = require('./routes/telemedicineRoutes');
 const insuranceRoutes = require('./routes/insuranceRoutes');
 const familyLinkRoutes = require('./routes/familyLinkRoutes');
 const emergencyAccessRoutes = require('./routes/emergencyAccessRoutes');
+const webAuthnRoutes = require('./routes/webAuthnRoutes');
 
 const app = express();
 
 // Middleware
-app.use(cors());
+app.use(cors({
+  origin: ['http://localhost:5173', 'http://localhost:3000'], // Allow frontend origins
+  credentials: true
+}));
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -74,6 +80,7 @@ app.use('/api/telemedicine', telemedicineRoutes);
 app.use('/api/insurance', insuranceRoutes);
 app.use('/api/family-links', familyLinkRoutes);
 app.use('/api/emergency-access', emergencyAccessRoutes);
+app.use('/api/webauthn', webAuthnRoutes);
 
 // Health check route
 app.get('/', (req, res) => {

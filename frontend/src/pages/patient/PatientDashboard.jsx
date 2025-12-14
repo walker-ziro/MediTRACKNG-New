@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useSettings } from '../../context/SettingsContext';
 import { useApi } from '../../hooks/useApi';
+import { patientPortalAPI } from '../../utils/api';
 
 const PatientDashboard = () => {
   const [userData, setUserData] = useState(JSON.parse(localStorage.getItem('userData') || '{}'));
@@ -11,7 +12,7 @@ const PatientDashboard = () => {
   });
   const [upcomingAppointments, setUpcomingAppointments] = useState([]);
   const { theme, t , darkMode } = useSettings();
-  const { fetchData } = useApi();
+  const { wrapRequest } = useApi();
 
   useEffect(() => {
     const loadDashboardData = async () => {
@@ -19,13 +20,13 @@ const PatientDashboard = () => {
 
       try {
         // Fetch Profile for latest info (genotype, etc)
-        const profileData = await fetchData(`/patient-portal/profile/${userData.healthId}`);
+        const profileData = await wrapRequest(patientPortalAPI.getProfile(userData.healthId));
         if (profileData && profileData.profile) {
           setUserData(prev => ({ ...prev, ...profileData.profile }));
         }
 
         // Fetch Appointments
-        const appointmentsData = await fetchData(`/patient-portal/appointments/${userData.healthId}`);
+        const appointmentsData = await wrapRequest(patientPortalAPI.getAppointments(userData.healthId));
         if (appointmentsData && appointmentsData.appointments) {
           const allAppointments = appointmentsData.appointments;
           const upcoming = allAppointments.filter(a => a.status === 'Scheduled');
@@ -34,7 +35,7 @@ const PatientDashboard = () => {
         }
 
         // Fetch Prescriptions
-        const prescriptionsData = await fetchData(`/prescriptions/patient/${userData.healthId}`);
+        const prescriptionsData = await wrapRequest(patientPortalAPI.getPrescriptions(userData.healthId));
         if (prescriptionsData && prescriptionsData.data) {
            const activePrescriptions = prescriptionsData.data.filter(p => p.status === 'Active');
            setStats(prev => ({ ...prev, prescriptions: activePrescriptions.length }));
@@ -46,7 +47,7 @@ const PatientDashboard = () => {
     };
 
     loadDashboardData();
-  }, [userData.healthId, fetchData]);
+  }, [userData.healthId, wrapRequest]);
 
   return (
     <div className={`p-8 min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -100,24 +101,24 @@ const PatientDashboard = () => {
       </div>
 
       {/* Patient Info Card */}
-      <div className="bg-gradient-to-r from-green-600 to-emerald-600 text-white p-6 rounded-lg mb-6">
-        <h2 className="text-xl font-bold mb-4">Your Health Profile</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+      <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border p-6 rounded-lg mb-6 shadow-sm`}>
+        <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Your Health Profile</h2>
+        <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
           <div>
             <p className="opacity-80">Age</p>
-            <p className="font-semibold">{userData.age || 'N/A'} years</p>
+            <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{userData.age || 'N/A'} years</p>
           </div>
           <div>
             <p className="opacity-80">Blood Type</p>
-            <p className="font-semibold">{userData.bloodType || 'N/A'}</p>
+            <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{userData.bloodType || 'N/A'}</p>
           </div>
           <div>
             <p className="opacity-80">Genotype</p>
-            <p className="font-semibold">{userData.genotype || 'N/A'}</p>
+            <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{userData.genotype || 'N/A'}</p>
           </div>
           <div>
             <p className="opacity-80">Health ID</p>
-            <p className="font-semibold">{userData.healthId || 'N/A'}</p>
+            <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{userData.healthId || 'N/A'}</p>
           </div>
         </div>
       </div>

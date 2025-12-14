@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
+import { api } from '../utils/api';
 import './EPrescription.css';
-
-const API_URL = 'http://localhost:5000/api';
 
 const EPrescription = () => {
   const [activeTab, setActiveTab] = useState('create');
@@ -37,17 +36,8 @@ const EPrescription = () => {
   const fetchPrescriptions = async (healthId) => {
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/prescriptions/patient/${healthId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        setPrescriptions(data);
-      }
+      const response = await api.get(`/prescriptions/patient/${healthId}`);
+      setPrescriptions(response.data);
     } catch (error) {
       console.error('Error fetching prescriptions:', error);
     } finally {
@@ -58,20 +48,12 @@ const EPrescription = () => {
   // Check drug interactions
   const checkInteractions = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/prescriptions/check-interactions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          patientHealthId: formData.patientHealthId,
-          medications: formData.medications.map(m => m.drugName)
-        })
+      const response = await api.post('/prescriptions/check-interactions', {
+        patientHealthId: formData.patientHealthId,
+        medications: formData.medications.map(m => m.drugName)
       });
       
-      const data = await response.json();
+      const data = response.data;
       
       if (data.interactions?.length > 0 || data.allergies?.length > 0 || data.contraindications?.length > 0) {
         const warnings = [
@@ -101,47 +83,36 @@ const EPrescription = () => {
 
     try {
       setLoading(true);
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/prescriptions`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(formData)
+      const response = await api.post('/prescriptions', formData);
+      
+      const data = response.data;
+      
+      setMessage({ text: '✓ Prescription created successfully', type: 'success' });
+      // Reset form
+      setFormData({
+        ...formData,
+        medications: [{
+          drugName: '',
+          genericName: '',
+          brandName: '',
+          dosage: { amount: '', unit: 'mg' },
+          form: 'Tablet',
+          frequency: 'Once Daily',
+          route: 'Oral',
+          duration: { value: '', unit: 'days' },
+          quantity: '',
+          refills: 0,
+          instructions: ''
+        }],
+        diagnosis: '',
+        notes: ''
       });
-      
-      const data = await response.json();
-      
-      if (response.ok) {
-        setMessage({ text: '✓ Prescription created successfully', type: 'success' });
-        // Reset form
-        setFormData({
-          ...formData,
-          medications: [{
-            drugName: '',
-            genericName: '',
-            brandName: '',
-            dosage: { amount: '', unit: 'mg' },
-            form: 'Tablet',
-            frequency: 'Once Daily',
-            route: 'Oral',
-            duration: { value: '', unit: 'days' },
-            quantity: '',
-            refills: 0,
-            instructions: ''
-          }],
-          diagnosis: '',
-          notes: ''
-        });
-        setInteractionCheck({ warnings: [], checked: false });
-        setActiveTab('view');
-        fetchPrescriptions(formData.patientHealthId);
-      } else {
-        setMessage({ text: data.message || 'Error creating prescription', type: 'error' });
-      }
+      setInteractionCheck({ warnings: [], checked: false });
+      setActiveTab('view');
+      fetchPrescriptions(formData.patientHealthId);
     } catch (error) {
-      setMessage({ text: 'Error creating prescription', type: 'error' });
+      const errorMessage = error.response?.data?.message || 'Error creating prescription';
+      setMessage({ text: errorMessage, type: 'error' });
     } finally {
       setLoading(false);
     }
@@ -193,20 +164,10 @@ const EPrescription = () => {
   // Send to pharmacy
   const sendToPharmacy = async (prescriptionId, pharmacyInfo) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await fetch(`${API_URL}/prescriptions/${prescriptionId}/send-to-pharmacy`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(pharmacyInfo)
-      });
+      await api.post(`/prescriptions/${prescriptionId}/send-to-pharmacy`, pharmacyInfo);
       
-      if (response.ok) {
-        setMessage({ text: '✓ Prescription sent to pharmacy', type: 'success' });
-        fetchPrescriptions(formData.patientHealthId);
-      }
+      setMessage({ text: '✓ Prescription sent to pharmacy', type: 'success' });
+      fetchPrescriptions(formData.patientHealthId);
     } catch (error) {
       setMessage({ text: 'Error sending to pharmacy', type: 'error' });
     }

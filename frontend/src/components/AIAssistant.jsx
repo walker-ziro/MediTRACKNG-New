@@ -131,7 +131,7 @@ Provide a helpful, specific response based on the MediTRACKNG platform features 
         {/* Header */}
         <div className={`flex items-center justify-between p-4 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-gradient-to-br from-purple-600 to-blue-600 rounded-lg flex items-center justify-center">
+            <div className={`w-10 h-10 ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded-lg flex items-center justify-center`}>
               <span className="text-2xl">✨</span>
             </div>
             <div>
@@ -159,7 +159,7 @@ Provide a helpful, specific response based on the MediTRACKNG platform features 
               <div
                 className={`max-w-[80%] rounded-lg p-3 ${
                   message.role === 'user'
-                    ? 'bg-purple-600 text-white'
+                    ? 'bg-gray-900 text-white dark:bg-white dark:text-gray-900'
                     : darkMode
                     ? 'bg-gray-800 text-gray-200'
                     : 'bg-white text-gray-800'
@@ -173,9 +173,9 @@ Provide a helpful, specific response based on the MediTRACKNG platform features 
             <div className="flex justify-start">
               <div className={`max-w-[80%] rounded-lg p-3 ${darkMode ? 'bg-gray-800' : 'bg-white'} shadow-sm`}>
                 <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce"></div>
-                  <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                  <div className="w-2 h-2 bg-purple-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+                  <div className={`w-2 h-2 ${darkMode ? 'bg-gray-400' : 'bg-gray-600'} rounded-full animate-bounce`}></div>
+                  <div className={`w-2 h-2 ${darkMode ? 'bg-gray-400' : 'bg-gray-600'} rounded-full animate-bounce`} style={{ animationDelay: '0.1s' }}></div>
+                  <div className={`w-2 h-2 ${darkMode ? 'bg-gray-400' : 'bg-gray-600'} rounded-full animate-bounce`} style={{ animationDelay: '0.2s' }}></div>
                 </div>
               </div>
             </div>
@@ -196,12 +196,12 @@ Provide a helpful, specific response based on the MediTRACKNG platform features 
                 darkMode 
                   ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
                   : 'bg-gray-50 border-gray-200'
-              } border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 disabled:opacity-50`}
+              } border rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-500 disabled:opacity-50`}
             />
             <button
               onClick={handleSend}
               disabled={!input.trim() || loading}
-              className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              className={`px-6 py-2 ${darkMode ? 'bg-white text-gray-900 hover:bg-gray-100' : 'bg-gray-900 text-white hover:bg-gray-800'} rounded-lg disabled:opacity-50 disabled:cursor-not-allowed transition-colors`}
             >
               Send
             </button>

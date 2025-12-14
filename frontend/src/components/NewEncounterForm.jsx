@@ -136,9 +136,9 @@ const NewEncounterForm = () => {
 
       <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
         {/* Patient Info Card */}
-        <div className="card mb-6 bg-gradient-to-r from-primary-50 to-blue-50">
+        <div className={`card mb-6 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border shadow-sm`}>
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-primary-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
+            <div className={`w-12 h-12 ${darkMode ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-900'} rounded-full flex items-center justify-center text-xl font-bold`}>
               {patient.demographics.name.charAt(0).toUpperCase()}
             </div>
             <div>

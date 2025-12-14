@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
+import { startRegistration } from '@simplewebauthn/browser';
 import { useSettings } from '../../context/SettingsContext';
 import { useNotification } from '../../context/NotificationContext';
+import { api } from '../../utils/api';
 
 const PatientSettings = () => {
   const { showNotification } = useNotification();
@@ -79,6 +81,40 @@ const PatientSettings = () => {
       showNotification(t('twoFactorEnabledMsg') || 'Two-Factor Authentication enabled successfully!', 'success');
     } else {
       showNotification(t('invalidCode') || 'Invalid code. Please try again.', 'error');
+    }
+  };
+
+  const handleRegisterBiometrics = async () => {
+    try {
+      // 1. Get options from server
+      const resp = await api.get('/webauthn/register-options');
+      const options = resp.data;
+
+      // 2. Pass options to browser
+      let attResp;
+      try {
+        attResp = await startRegistration(options);
+      } catch (error) {
+        if (error.name === 'InvalidStateError') {
+          showNotification('Authenticator already registered.', 'error');
+        } else {
+          showNotification(error.message, 'error');
+        }
+        throw error;
+      }
+
+      // 3. Send response to server
+      const verificationResp = await api.post('/webauthn/register-verify', attResp);
+      const verificationJSON = verificationResp.data;
+
+      if (verificationJSON && verificationJSON.verified) {
+        showNotification('Biometric registered successfully!', 'success');
+      } else {
+        showNotification('Registration failed.', 'error');
+      }
+    } catch (error) {
+      console.error(error);
+      showNotification('Biometric registration failed', 'error');
     }
   };
 
@@ -283,6 +319,21 @@ const PatientSettings = () => {
                         {twoFactorEnabled ? (t('disable') || 'Disable') : (t('enable') || 'Enable')}
                       </button>
                     </div>
+                  </div>
+                </div>
+
+                <div className={`border-t pt-6 ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <h3 className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>Biometric Authentication</h3>
+                      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Use your fingerprint or face to log in</p>
+                    </div>
+                    <button
+                      onClick={handleRegisterBiometrics}
+                      className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium"
+                    >
+                      Register Passkey
+                    </button>
                   </div>
                 </div>
               </div>

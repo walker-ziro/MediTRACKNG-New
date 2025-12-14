@@ -43,6 +43,14 @@ router.post('/register', async (req, res) => {
       { expiresIn: '24h' }
     );
 
+    // Set cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    });
+
     res.status(201).json({
       message: 'Provider registered successfully',
       token,
@@ -97,9 +105,17 @@ router.post('/login', async (req, res) => {
       { expiresIn: '24h' }
     );
 
+    // Set cookie
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    });
+
     res.json({
       message: 'Login successful',
-      token,
+      token, // Keep for backward compatibility if needed, but frontend should prefer cookie
       provider: {
         id: provider._id,
         username: provider.username,
@@ -329,6 +345,12 @@ router.put('/providers/:id/reject', async (req, res) => {
     console.error('Error rejecting provider:', error);
     res.status(500).json({ message: 'Server error rejecting provider' });
   }
+});
+
+// POST /api/auth/logout
+router.post('/logout', (req, res) => {
+  res.clearCookie('token');
+  res.json({ message: 'Logged out successfully' });
 });
 
 module.exports = router;

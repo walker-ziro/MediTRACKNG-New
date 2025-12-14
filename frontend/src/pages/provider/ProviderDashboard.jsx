@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useSettings } from '../../context/SettingsContext';
 import { useApi } from '../../hooks/useApi';
+import { dashboardAPI } from '../../utils/api';
 
 const ProviderDashboard = () => {
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
   const { theme, t , darkMode } = useSettings();
-  const { fetchData } = useApi();
+  const { wrapRequest } = useApi();
   const [stats, setStats] = useState({
     totalPatients: 0,
     todayAppointments: 0,
@@ -22,7 +23,7 @@ const ProviderDashboard = () => {
       const id = userData.providerId || userData._id || userData.id;
       if (id) {
         try {
-          const data = await fetchData(`/dashboard/provider-stats/${id}`);
+          const data = await wrapRequest(dashboardAPI.getProviderStats(id));
           if (data) {
             setStats(data);
           }
@@ -88,24 +89,24 @@ const ProviderDashboard = () => {
       </div>
 
       {/* Provider Info Card */}
-      <div className="bg-gradient-to-r from-purple-600 to-indigo-600 text-white p-6 rounded-lg mb-6">
-        <h2 className="text-xl font-bold mb-4">Your Profile</h2>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
+      <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border p-6 rounded-lg mb-6 shadow-sm`}>
+        <h2 className={`text-xl font-bold mb-4 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Your Profile</h2>
+        <div className={`grid grid-cols-2 md:grid-cols-4 gap-4 text-sm ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
           <div>
             <p className="opacity-80">Provider ID</p>
-            <p className="font-semibold">{userData.providerId || 'N/A'}</p>
+            <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{userData.providerId || 'N/A'}</p>
           </div>
           <div>
             <p className="opacity-80">Role</p>
-            <p className="font-semibold">{userData.role || 'N/A'}</p>
+            <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{userData.role || 'N/A'}</p>
           </div>
           <div>
             <p className="opacity-80">Specialization</p>
-            <p className="font-semibold">{userData.specialization || 'General'}</p>
+            <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{userData.specialization || 'General'}</p>
           </div>
           <div>
             <p className="opacity-80">Facility</p>
-            <p className="font-semibold">{userData.facilityName || 'Not assigned'}</p>
+            <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{userData.facilityName || 'Not assigned'}</p>
           </div>
         </div>
       </div>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useSettings } from '../../context/SettingsContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { api } from '../../utils/api';
 
 const AdminLogin = () => {
   const { theme , darkMode } = useSettings();
@@ -30,34 +31,25 @@ const AdminLogin = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/multi-auth/admin/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          email: formData.email,
-          password: formData.password
-        })
+      const response = await api.post('/multi-auth/admin/login', {
+        email: formData.email,
+        password: formData.password
       });
 
-      const data = await response.json();
+      const data = response.data;
 
-      if (response.ok) {
-        if (data.require2FA) {
-          setRequire2FA(true);
-          setTempToken(data.tempToken);
-        } else {
-          localStorage.setItem('token', data.token);
-          localStorage.setItem('userType', data.userType);
-          localStorage.setItem('userData', JSON.stringify(data.user));
-          navigate('/admin/dashboard');
-        }
+      if (data.require2FA) {
+        setRequire2FA(true);
+        setTempToken(data.tempToken);
       } else {
-        setError(data.message || 'Login failed');
+        // Token is now handled via httpOnly cookie
+        localStorage.setItem('userType', data.userType);
+        localStorage.setItem('userData', JSON.stringify(data.user));
+        navigate('/admin/dashboard');
       }
     } catch (err) {
-      setError('Unable to connect to server. Please try again.');
+      const errorMessage = err.response?.data?.message || 'Login failed';
+      setError(errorMessage);
       console.error('Login error:', err);
     } finally {
       setLoading(false);
@@ -70,27 +62,20 @@ const AdminLogin = () => {
     setError('');
 
     try {
-      const response = await fetch('http://localhost:5000/api/multi-auth/admin/verify-2fa', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${tempToken}`
-        },
-        body: JSON.stringify({ code: formData.twoFactorCode })
-      });
+      const response = await api.post('/multi-auth/admin/verify-2fa', 
+        { code: formData.twoFactorCode },
+        { headers: { Authorization: `Bearer ${tempToken}` } }
+      );
 
-      const data = await response.json();
+      const data = response.data;
 
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('userType', data.userType);
-        localStorage.setItem('userData', JSON.stringify(data.user));
-        navigate('/admin/dashboard');
-      } else {
-        setError(data.message || '2FA verification failed');
-      }
+      // Token is now handled via httpOnly cookie
+      localStorage.setItem('userType', data.userType);
+      localStorage.setItem('userData', JSON.stringify(data.user));
+      navigate('/admin/dashboard');
     } catch (err) {
-      setError('Unable to verify code. Please try again.');
+      const errorMessage = err.response?.data?.message || '2FA verification failed';
+      setError(errorMessage);
       console.error('2FA error:', err);
     } finally {
       setLoading(false);
@@ -98,16 +83,21 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-black px-4 py-8">
+    <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} px-4 py-8`}>
       <div className="w-full max-w-md">
-        <div className="bg-gradient-to-b from-gray-800 to-gray-900 rounded-2xl shadow-2xl overflow-hidden border border-gray-700">
+        <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl shadow-xl overflow-hidden border`}>
           {/* Header */}
-          <div className="bg-gradient-to-r from-gray-900 to-black px-8 py-10 text-white text-center border-b border-red-900">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-gradient-to-br from-red-900 to-red-700 rounded-full mb-4 shadow-lg">
-              <i className="fas fa-shield-alt text-4xl text-red-200"></i>
+          <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} px-8 py-8 text-center border-b`}>
+            <div className="flex items-center justify-center gap-3 mb-6">
+              <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20">
+                <i className="fas fa-heartbeat text-xl text-white"></i>
+              </div>
+              <span className={`text-2xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                Medi<span className="text-blue-600">TRACKNG</span>
+              </span>
             </div>
-            <h1 className="text-3xl font-bold mb-2">Administrator Portal</h1>
-            <p className="text-gray-400 text-sm">Secure System Access - Enhanced Security Required</p>
+            <h1 className={`text-2xl font-bold mb-2 ${darkMode ? 'text-white' : 'text-gray-900'}`}>Administrator Portal</h1>
+            <p className={`${darkMode ? 'text-gray-400' : 'text-gray-500'} text-sm`}>Secure System Access - Enhanced Security Required</p>
           </div>
 
           {/* Form */}
@@ -121,16 +111,16 @@ const AdminLogin = () => {
                   </div>
                 )}
 
-                <div className="bg-yellow-900 bg-opacity-20 border border-yellow-700 px-4 py-3 rounded-lg flex items-start">
-                  <i className="fas fa-lock text-yellow-500 mt-0.5 mr-3"></i>
-                  <div className="text-yellow-200 text-xs">
+                <div className={`bg-yellow-50 border border-yellow-200 px-4 py-3 rounded-lg flex items-start ${darkMode ? 'bg-yellow-900/20 border-yellow-700' : ''}`}>
+                  <i className="fas fa-lock text-yellow-600 mt-0.5 mr-3"></i>
+                  <div className={`${darkMode ? 'text-yellow-200' : 'text-yellow-800'} text-xs`}>
                     <strong>Security Notice:</strong> This is a restricted access area. All login attempts are logged and monitored.
                   </div>
                 </div>
 
                 <div>
-                  <label htmlFor="email" className="block text-sm font-semibold text-gray-300 mb-2">
-                    <i className="fas fa-envelope mr-2 text-red-400"></i>
+                  <label htmlFor="email" className={`block text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
+                    <i className={`fas fa-envelope mr-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}></i>
                     Administrator Email
                   </label>
                   <input
@@ -140,14 +130,14 @@ const AdminLogin = () => {
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="Enter your admin email"
-                    className="w-full px-4 py-3 bg-gray-900 border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all placeholder-gray-500"
+                    className={`w-full px-4 py-3 ${darkMode ? 'bg-gray-900 border-gray-700 text-white placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none transition-all`}
                     required
                   />
                 </div>
 
                 <div>
-                  <label htmlFor="password" className="block text-sm font-semibold text-gray-300 mb-2">
-                    <i className="fas fa-lock mr-2 text-red-400"></i>
+                  <label htmlFor="password" className={`block text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2`}>
+                    <i className={`fas fa-lock mr-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}></i>
                     Password
                   </label>
                   <div className="relative">
@@ -158,13 +148,13 @@ const AdminLogin = () => {
                       value={formData.password}
                       onChange={handleChange}
                       placeholder="Enter your password"
-                      className="w-full px-4 py-3 bg-gray-900 border border-gray-700 text-white rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent outline-none transition-all placeholder-gray-500"
+                      className={`w-full px-4 py-3 ${darkMode ? 'bg-gray-900 border-gray-700 text-white placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none transition-all`}
                       required
                     />
                     <button
                       type="button"
                       onClick={() => setShowPassword(!showPassword)}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-300"
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-500"
                     >
                       <i className={`fas ${showPassword ? 'fa-eye-slash' : 'fa-eye'}`}></i>
                     </button>
@@ -173,10 +163,10 @@ const AdminLogin = () => {
 
                 <div className="flex items-center justify-between text-sm">
                   <label className="flex items-center cursor-pointer">
-                    <input type="checkbox" className="mr-2 w-4 h-4 bg-gray-900 border-gray-600 rounded focus:ring-red-500" />
-                    <span className="text-gray-400">Remember this device</span>
+                    <input type="checkbox" className={`mr-2 w-4 h-4 ${darkMode ? 'bg-gray-900 border-gray-600' : 'bg-white border-gray-300'} rounded focus:ring-gray-500`} />
+                    <span className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Remember this device</span>
                   </label>
-                  <Link to="/admin/forgot-password" className="text-red-400 hover:text-red-300 font-medium">
+                  <Link to="/admin/forgot-password" className={`${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'} font-medium`}>
                     Forgot password?
                   </Link>
                 </div>
@@ -184,7 +174,7 @@ const AdminLogin = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-red-700 to-red-900 text-white font-semibold py-3 px-6 rounded-lg hover:from-red-600 hover:to-red-800 focus:outline-none focus:ring-4 focus:ring-red-900 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`w-full ${darkMode ? 'bg-white text-gray-900 hover:bg-gray-100' : 'bg-gray-900 text-white hover:bg-gray-800'} font-semibold py-3 px-6 rounded-lg focus:outline-none focus:ring-4 focus:ring-gray-500 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   {loading ? (
                     <>
@@ -199,9 +189,9 @@ const AdminLogin = () => {
                   )}
                 </button>
 
-                <div className="text-center text-sm text-gray-400">
+                <div className={`text-center text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                   Need admin access?{' '}
-                  <Link to="/admin/signup" className="text-red-400 hover:text-red-300 font-semibold">
+                  <Link to="/admin/signup" className={`${darkMode ? 'text-white hover:text-gray-200' : 'text-gray-900 hover:text-gray-700'} font-semibold`}>
                     Request registration
                   </Link>
                 </div>
@@ -209,23 +199,23 @@ const AdminLogin = () => {
             ) : (
               <form onSubmit={handleVerify2FA} className="space-y-5">
                 {error && (
-                  <div className="bg-red-900 bg-opacity-30 border-l-4 border-red-500 px-4 py-3 rounded-md flex items-start">
-                    <i className="fas fa-exclamation-triangle text-red-400 mt-0.5 mr-3"></i>
-                    <span className="text-red-300 text-sm">{error}</span>
+                  <div className="bg-red-50 border-l-4 border-red-500 px-4 py-3 rounded-md flex items-start">
+                    <i className="fas fa-exclamation-triangle text-red-500 mt-0.5 mr-3"></i>
+                    <span className="text-red-700 text-sm">{error}</span>
                   </div>
                 )}
 
                 <div className="text-center">
-                  <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-900 to-blue-700 rounded-full mb-4">
-                    <i className="fas fa-mobile-alt text-3xl text-blue-200"></i>
+                  <div className={`inline-flex items-center justify-center w-16 h-16 ${darkMode ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-900'} rounded-full mb-4`}>
+                    <i className="fas fa-mobile-alt text-3xl"></i>
                   </div>
-                  <h3 className="text-xl font-semibold text-white mb-2">Two-Factor Authentication</h3>
-                  <p className="text-gray-400 text-sm">Enter the 6-digit code from your authenticator app</p>
+                  <h3 className={`text-xl font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-2`}>Two-Factor Authentication</h3>
+                  <p className={`${darkMode ? 'text-gray-400' : 'text-gray-500'} text-sm`}>Enter the 6-digit code from your authenticator app</p>
                 </div>
 
                 <div>
-                  <label htmlFor="twoFactorCode" className="block text-sm font-semibold text-gray-300 mb-2 text-center">
-                    <i className="fas fa-key mr-2 text-blue-400"></i>
+                  <label htmlFor="twoFactorCode" className={`block text-sm font-semibold ${darkMode ? 'text-gray-300' : 'text-gray-700'} mb-2 text-center`}>
+                    <i className={`fas fa-key mr-2 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}></i>
                     Authentication Code
                   </label>
                   <input
@@ -236,7 +226,7 @@ const AdminLogin = () => {
                     onChange={handleChange}
                     placeholder="000000"
                     maxLength="6"
-                    className="w-full px-4 py-3 bg-gray-900 border border-gray-700 text-white text-center text-2xl tracking-widest rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all placeholder-gray-600"
+                    className={`w-full px-4 py-3 ${darkMode ? 'bg-gray-900 border-gray-700 text-white placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} border text-center text-2xl tracking-widest rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none transition-all`}
                     required
                   />
                 </div>
@@ -244,7 +234,7 @@ const AdminLogin = () => {
                 <button
                   type="submit"
                   disabled={loading}
-                  className="w-full bg-gradient-to-r from-blue-700 to-blue-900 text-white font-semibold py-3 px-6 rounded-lg hover:from-blue-600 hover:to-blue-800 focus:outline-none focus:ring-4 focus:ring-blue-900 transition-all shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  className={`w-full ${darkMode ? 'bg-white text-gray-900 hover:bg-gray-100' : 'bg-gray-900 text-white hover:bg-gray-800'} font-semibold py-3 px-6 rounded-lg focus:outline-none focus:ring-4 focus:ring-gray-500 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed`}
                 >
                   {loading ? (
                     <>
@@ -266,7 +256,7 @@ const AdminLogin = () => {
                     setTempToken('');
                     setFormData({ ...formData, twoFactorCode: '' });
                   }}
-                  className="w-full text-gray-400 hover:text-gray-300 text-sm font-medium"
+                  className={`w-full ${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'} text-sm font-medium`}
                 >
                   <i className="fas fa-arrow-left mr-2"></i>
                   Back to login
@@ -276,19 +266,19 @@ const AdminLogin = () => {
           </div>
 
           {/* Footer */}
-          <div className="bg-black px-8 py-6 border-t border-gray-800">
+          <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-gray-50 border-gray-200'} px-8 py-6 border-t`}>
             <div className="flex justify-center gap-6 mb-4">
-              <Link to="/provider/login" className="text-purple-400 hover:text-purple-300 font-medium text-sm flex items-center">
+              <Link to="/provider/login" className={`${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'} font-medium text-sm flex items-center`}>
                 <i className="fas fa-user-md mr-1"></i>
                 Provider Portal
               </Link>
-              <Link to="/patient/login" className="text-green-400 hover:text-green-300 font-medium text-sm flex items-center">
+              <Link to="/patient/login" className={`${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-600 hover:text-gray-800'} font-medium text-sm flex items-center`}>
                 <i className="fas fa-user mr-1"></i>
                 Patient Portal
               </Link>
             </div>
             <p className={`text-center text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} flex items-center justify-center`}>
-              <i className="fas fa-shield-alt mr-2 text-red-500"></i>
+              <i className={`fas fa-shield-alt mr-2 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}></i>
               Military-grade encryption • All activities monitored
             </p>
           </div>

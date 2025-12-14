@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { patientPortalAPI } from '../utils/api';
 import '../styles/PatientPortal.css';
 
@@ -183,7 +184,7 @@ const PatientPortal = () => {
             <div className="login-footer">
               <p>Don't have a PIN? <a href="#">Request one</a></p>
               <p>Forgot PIN? <a href="#">Reset it</a></p>
-              <p className="biometric-link">🔐 <a href="#">Login with Biometric</a></p>
+              <p className="biometric-link">🔐 <Link to="/patient/biometric-login">Login with Biometric</Link></p>
             </div>
           </form>
 

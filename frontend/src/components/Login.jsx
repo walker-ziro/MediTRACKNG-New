@@ -1,260 +1,131 @@
-import { useState } from 'react';
+import React, { useState } from 'react';
 import { useSettings } from '../context/SettingsContext';
-import { useNavigate } from 'react-router-dom';
-import { authAPI } from '../utils/api';
+import { Link } from 'react-router-dom';
+
+// Import Auth Components
+import PatientLogin from '../pages/patient/PatientLogin';
+import PatientSignup from '../pages/patient/PatientSignup';
+import ProviderLogin from '../pages/ProviderLogin';
+import ProviderSignup from '../pages/provider/ProviderSignup';
 
 const Login = () => {
-  const { theme , darkMode } = useSettings();
-  const navigate = useNavigate();
-  const [userType, setUserType] = useState('provider'); // 'provider' or 'patient'
-  const [isLogin, setIsLogin] = useState(true);
-  const [formData, setFormData] = useState({
-    username: '',
-    password: '',
-    facilityName: '',
-    healthId: '',
-    pin: ''
-  });
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(false);
+  const { theme } = useSettings();
+  const darkMode = theme === 'dark';
+  
+  // State for toggles
+  const [userType, setUserType] = useState('patient'); // 'patient' or 'provider'
+  const [authMode, setAuthMode] = useState('login'); // 'login' or 'signup'
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    });
-    setError('');
+  const toggleUserType = (type) => {
+    setUserType(type);
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setError('');
-    setLoading(true);
-
-    try {
-      let response;
-      
-      if (userType === 'patient') {
-        // Patient portal login - redirect to patient portal page
-        navigate('/patient-portal');
-        setLoading(false);
-        return;
-      }
-      
-      // Provider login/registration
-      if (isLogin) {
-        response = await authAPI.login({
-          username: formData.username,
-          password: formData.password
-        });
-      } else {
-        response = await authAPI.register(formData);
-      }
-
-      const { token, provider } = response.data;
-      localStorage.setItem('token', token);
-      localStorage.setItem('provider', JSON.stringify(provider));
-      navigate('/dashboard');
-    } catch (err) {
-      setError(err.response?.data?.message || 'Authentication failed. Please try again.');
-    } finally {
-      setLoading(false);
-    }
+  const toggleAuthMode = (mode) => {
+    setAuthMode(mode);
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary-50 to-primary-100 px-4">
-      <div className="max-w-md w-full">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-primary-700 mb-2">MediTRACKNG</h1>
-          <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>National Health Records System</p>
+    <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} flex flex-col items-center justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300`}>
+      
+      {/* Main Container */}
+      <div className="w-full max-w-md space-y-8">
+        
+        {/* Logo & Title */}
+        <div className="text-center">
+          <div className="flex items-center justify-center gap-3 mb-6">
+            <div className="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20">
+              <i className="fas fa-heartbeat text-2xl text-white"></i>
+            </div>
+            <span className={`text-3xl font-bold tracking-tight ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+              Medi<span className="text-blue-600">TRACKNG</span>
+            </span>
+          </div>
+          <p className={`mt-2 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+            Unified Healthcare Access
+          </p>
         </div>
 
         {/* User Type Toggle */}
-        <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-md p-2 mb-6 flex gap-2`}>
+        <div className={`flex p-1 space-x-1 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-md border ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
           <button
-            onClick={() => {
-              setUserType('provider');
-              setError('');
-              setFormData({ username: '', password: '', facilityName: '', healthId: '', pin: '' });
-            }}
-            className={`flex-1 py-3 px-4 rounded-md font-medium transition-all ${
-              userType === 'provider'
-                ? 'bg-primary-600 text-white shadow-md'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-            }`}
-          >
-            🏥 Healthcare Provider
-          </button>
-          <button
-            onClick={() => {
-              setUserType('patient');
-              setError('');
-              setFormData({ username: '', password: '', facilityName: '', healthId: '', pin: '' });
-            }}
-            className={`flex-1 py-3 px-4 rounded-md font-medium transition-all ${
+            onClick={() => toggleUserType('patient')}
+            className={`w-full py-2.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center justify-center ${
               userType === 'patient'
-                ? 'bg-primary-600 text-white shadow-md'
-                : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                ? `${darkMode ? 'bg-gray-700 text-white' : 'bg-gray-900 text-white'} shadow-md`
+                : `${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'} hover:bg-gray-100 dark:hover:bg-gray-700`
             }`}
           >
-            👤 Patient
+            <i className="fas fa-user mr-2"></i>
+            Patient
+          </button>
+          <button
+            onClick={() => toggleUserType('provider')}
+            className={`w-full py-2.5 text-sm font-medium rounded-lg transition-all duration-200 flex items-center justify-center ${
+              userType === 'provider'
+                ? `${darkMode ? 'bg-gray-700 text-white' : 'bg-gray-900 text-white'} shadow-md`
+                : `${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'} hover:bg-gray-100 dark:hover:bg-gray-700`
+            }`}
+          >
+            <i className="fas fa-user-md mr-2"></i>
+            Provider
           </button>
         </div>
 
-        {/* Login/Register Form */}
-        <div className="card">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6 text-center">
-            {userType === 'patient' 
-              ? 'Patient Portal Access' 
-              : (isLogin ? 'Provider Login' : 'Provider Registration')}
-          </h2>
-
-          {error && (
-            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4">
-              {error}
-            </div>
-          )}
-
-          <form onSubmit={handleSubmit} className="space-y-4">
-            {userType === 'patient' ? (
-              // Patient Login Fields
-              <>
-                <div>
-                  <label className="label">Health ID</label>
-                  <input
-                    type="text"
-                    name="healthId"
-                    value={formData.healthId}
-                    onChange={handleChange}
-                    className="input-field"
-                    placeholder="MTN-XXXXXXX"
-                    required
-                  />
-                  <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-1`}>Enter your National Health ID</p>
-                </div>
-
-                <div>
-                  <label className="label">PIN</label>
-                  <input
-                    type="password"
-                    name="pin"
-                    value={formData.pin}
-                    onChange={handleChange}
-                    className="input-field"
-                    placeholder="Enter your 6-digit PIN"
-                    maxLength="6"
-                    required
-                  />
-                </div>
-
-                <div className="flex items-center justify-between text-sm">
-                  <a href="#" className="text-primary-600 hover:text-primary-700">
-                    🔐 Use Biometric Login
-                  </a>
-                  <a href="#" className="text-primary-600 hover:text-primary-700">
-                    Forgot PIN?
-                  </a>
-                </div>
-              </>
-            ) : (
-              // Provider Login/Registration Fields
-              <>
-                <div>
-                  <label className="label">Username</label>
-                  <input
-                    type="text"
-                    name="username"
-                    value={formData.username}
-                    onChange={handleChange}
-                    className="input-field"
-                    placeholder="Enter your username"
-                    required
-                  />
-                </div>
-
-                <div>
-                  <label className="label">Password</label>
-                  <input
-                    type="password"
-                    name="password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="input-field"
-                    placeholder="Enter your password"
-                    required
-                  />
-                </div>
-
-                {!isLogin && (
-                  <div>
-                    <label className="label">Facility Name</label>
-                    <input
-                      type="text"
-                      name="facilityName"
-                      value={formData.facilityName}
-                      onChange={handleChange}
-                      className="input-field"
-                      placeholder="Enter your facility name"
-                      required
-                    />
-                  </div>
-                )}
-              </>
+        {/* Auth Mode Toggle (Login/Signup) */}
+        <div className="flex justify-center space-x-6 border-b border-gray-200 dark:border-gray-700 pb-1">
+          <button
+            onClick={() => toggleAuthMode('login')}
+            className={`pb-2 text-sm font-medium transition-colors duration-200 relative ${
+              authMode === 'login'
+                ? `${darkMode ? 'text-white' : 'text-gray-900'}`
+                : `${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'}`
+            }`}
+          >
+            Sign In
+            {authMode === 'login' && (
+              <div className={`absolute bottom-0 left-0 w-full h-0.5 rounded-t-full ${darkMode ? 'bg-white' : 'bg-gray-900'}`}></div>
             )}
-
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full btn-primary disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Processing...' : (userType === 'patient' ? 'Access Portal' : (isLogin ? 'Login' : 'Register'))}
-            </button>
-          </form>
-
-          {userType === 'provider' && (
-            <div className="mt-6 text-center">
-              <button
-                onClick={() => {
-                  setIsLogin(!isLogin);
-                  setError('');
-                  setFormData({ username: '', password: '', facilityName: '', healthId: '', pin: '' });
-                }}
-                className="text-primary-600 hover:text-primary-700 font-medium"
-              >
-                {isLogin
-                  ? "Don't have an account? Register"
-                  : 'Already have an account? Login'}
-              </button>
-            </div>
-          )}
+          </button>
+          <button
+            onClick={() => toggleAuthMode('signup')}
+            className={`pb-2 text-sm font-medium transition-colors duration-200 relative ${
+              authMode === 'signup'
+                ? `${darkMode ? 'text-white' : 'text-gray-900'}`
+                : `${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'}`
+            }`}
+          >
+            Create Account
+            {authMode === 'signup' && (
+              <div className={`absolute bottom-0 left-0 w-full h-0.5 rounded-t-full ${darkMode ? 'bg-white' : 'bg-gray-900'}`}></div>
+            )}
+          </button>
         </div>
 
-        {/* Info Box */}
-        <div className={`mt-6 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-4 text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+        {/* Content Area */}
+        <div className="transition-all duration-300 ease-in-out">
           {userType === 'patient' ? (
-            <>
-              <p className="font-semibold text-gray-800 mb-2">For Patients:</p>
-              <ul className="list-disc list-inside space-y-1">
-                <li>Access your complete medical history</li>
-                <li>View lab results and prescriptions</li>
-                <li>Manage consent for data sharing</li>
-                <li>Download your health records</li>
-              </ul>
-            </>
+            authMode === 'login' ? (
+              <PatientLogin isEmbedded={true} />
+            ) : (
+              <PatientSignup isEmbedded={true} />
+            )
           ) : (
-            <>
-              <p className="font-semibold text-gray-800 mb-2">For Healthcare Providers:</p>
-              <ul className="list-disc list-inside space-y-1">
-                <li>Secure access to patient records</li>
-                <li>Complete medical history tracking</li>
-                <li>Multi-facility collaboration</li>
-                <li>National health data integration</li>
-              </ul>
-            </>
+            authMode === 'login' ? (
+              <ProviderLogin isEmbedded={true} />
+            ) : (
+              <ProviderSignup isEmbedded={true} />
+            )
           )}
         </div>
+
+        {/* Footer Links */}
+        <div className="text-center mt-6">
+          <Link to="/admin/login" className={`text-xs font-medium ${darkMode ? 'text-gray-500 hover:text-gray-400' : 'text-gray-400 hover:text-gray-600'} transition-colors`}>
+            <i className="fas fa-shield-alt mr-1"></i>
+            Admin Access
+          </Link>
+        </div>
+
       </div>
     </div>
   );

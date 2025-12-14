@@ -2,11 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useSettings } from '../../context/SettingsContext';
 import { useApi } from '../../hooks/useApi';
+import { dashboardAPI, auditAPI } from '../../utils/api';
 
 const AdminDashboard = () => {
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
   const { theme, t , darkMode } = useSettings();
-  const { fetchData } = useApi();
+  const { wrapRequest } = useApi();
   const [stats, setStats] = useState({
     totalUsers: 0,
     activeFacilities: 0,
@@ -19,8 +20,8 @@ const AdminDashboard = () => {
     const loadStats = async () => {
       try {
         const [statsData, logsData] = await Promise.all([
-          fetchData('/dashboard/admin-stats'),
-          fetchData('/audit/all?limit=5')
+          wrapRequest(dashboardAPI.getAdminStats()),
+          wrapRequest(auditAPI.getLogs({ limit: 5 }))
         ]);
         
         if (statsData) {
@@ -118,7 +119,7 @@ const AdminDashboard = () => {
       </div>
 
       {/* Admin Info Card */}
-      <div className={`bg-gradient-to-r ${darkMode ? 'from-red-900 to-red-800 border-red-700 text-white' : 'from-red-100 to-red-50 border-red-200 text-gray-800'} p-6 rounded-lg mb-6 border`}>
+      <div className={`${darkMode ? 'bg-gray-800 border-gray-700 text-white' : 'bg-white border-gray-200 text-gray-800'} p-6 rounded-lg mb-6 border`}>
         <h2 className="text-xl font-bold mb-4">Administrator Profile</h2>
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
           <div>

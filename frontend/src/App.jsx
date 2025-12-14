@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import { useSettings } from './context/SettingsContext';
 
 import Login from './components/Login';
-import Dashboard from './components/Dashboard';
 import PatientRecord from './components/PatientRecord';
 import NewEncounterForm from './components/NewEncounterForm';
 import Laboratory from './components/Laboratory';
@@ -30,6 +29,7 @@ import ProviderSignup from './pages/provider/ProviderSignup';
 import ProviderDashboard from './pages/provider/ProviderDashboard';
 import PatientLogin from './pages/patient/PatientLogin';
 import PatientSignup from './pages/patient/PatientSignup';
+import BiometricLogin from './pages/patient/BiometricLogin';
 import PatientDashboard from './pages/patient/PatientDashboard';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminSignup from './pages/admin/AdminSignup';
@@ -75,14 +75,6 @@ function App() {
         <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
           <Routes>
           <Route path="/login" element={<Login />} />
-          <Route
-            path="/dashboard"
-            element={
-              <PrivateRoute>
-                <Dashboard />
-              </PrivateRoute>
-            }
-          />
           <Route
             path="/patient/:healthId"
             element={
@@ -248,6 +240,7 @@ function App() {
           
           {/* Patient Portal */}
           <Route path="/patient/login" element={<PatientLogin />} />
+          <Route path="/patient/biometric-login" element={<BiometricLogin />} />
           <Route path="/patient/signup" element={<PatientSignup />} />
           <Route path="/patient/*" element={
             <ProtectedPatientRoute>
