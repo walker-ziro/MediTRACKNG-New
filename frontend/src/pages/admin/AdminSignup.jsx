@@ -174,7 +174,10 @@ const AdminSignup = () => {
                       name="phone"
                       value={formData.phone}
                       onChange={handleChange}
-                      placeholder="+234 XXX XXX XXXX"
+                      onInput={(e) => e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 13)}
+                      maxLength={13}
+                      pattern="[0-9]*"
+                      placeholder="08012345678"
                       className={`w-full px-4 py-2.5 ${darkMode ? 'bg-gray-900 border-gray-700 text-white placeholder-gray-500' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} border rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                       required
                     />

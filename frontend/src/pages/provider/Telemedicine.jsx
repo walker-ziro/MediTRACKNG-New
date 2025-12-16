@@ -54,7 +54,7 @@ const Telemedicine = () => {
             id: apt._id,
             patient: apt.patient?.name || 'Unknown',
             healthId: apt.patient?.healthId || 'N/A',
-            date: new Date(apt.scheduledDate).toLocaleDateString(),
+            date: new Date(apt.scheduledDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }),
             time: new Date(apt.scheduledDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             duration: `${apt.duration} mins`,
             status: apt.status,
@@ -93,6 +93,17 @@ const Telemedicine = () => {
   const handleScheduleSubmit = async (e) => {
     e.preventDefault();
     const formData = new FormData(e.target);
+    
+    // Validate date range (max 6 months)
+    const selectedDate = new Date(formData.get('date'));
+    const maxDate = new Date();
+    maxDate.setMonth(maxDate.getMonth() + 6);
+    
+    if (selectedDate > maxDate) {
+      alert("Appointments cannot be scheduled more than 6 months in advance.");
+      return;
+    }
+
     const patientId = formData.get('patientId');
     const selectedPatient = patients.find(p => p.healthId === patientId);
 

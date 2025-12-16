@@ -403,7 +403,7 @@ const Patients = () => {
               </div>
               <div>
                 <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Phone Number *</label>
-                <input type="tel" name="phone" value={formData.phone} onChange={handleFormChange} required className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`} />
+                <input type="tel" name="phone" value={formData.phone} onInput={(e) => e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 13)} maxLength={13} pattern="[0-9]*" onChange={handleFormChange} required className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`} />
               </div>
               <div>
                 <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Address</label>
@@ -426,7 +426,7 @@ const Patients = () => {
                 </div>
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Emergency Contact</label>
-                  <input type="tel" name="emergencyContact" value={formData.emergencyContact} onChange={handleFormChange} className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`} />
+                  <input type="tel" name="emergencyContact" value={formData.emergencyContact} onInput={(e) => e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 13)} maxLength={13} pattern="[0-9]*" onChange={handleFormChange} className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`} />
                 </div>
               </div>
               <div className="flex justify-end gap-3 pt-4">
@@ -570,7 +570,7 @@ const Patients = () => {
               </div>
               <div>
                 <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Phone Number *</label>
-                <input type="tel" name="phone" value={formData.phone} onChange={handleFormChange} required className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`} />
+                <input type="tel" name="phone" value={formData.phone} onInput={(e) => e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 13)} maxLength={13} pattern="[0-9]*" onChange={handleFormChange} required className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`} />
               </div>
               <div>
                 <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Address</label>
@@ -593,7 +593,7 @@ const Patients = () => {
                 </div>
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Emergency Contact</label>
-                  <input type="tel" name="emergencyContact" value={formData.emergencyContact} onChange={handleFormChange} className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`} />
+                  <input type="tel" name="emergencyContact" value={formData.emergencyContact} onInput={(e) => e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 13)} maxLength={13} pattern="[0-9]*" onChange={handleFormChange} className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`} />
                 </div>
               </div>
               <div className="flex justify-end gap-3 pt-4">

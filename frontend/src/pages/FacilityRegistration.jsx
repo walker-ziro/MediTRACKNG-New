@@ -396,6 +396,9 @@ const FacilityRegistration = () => {
                     type="tel"
                     name="phone"
                     value={formData.phone}
+                    onInput={(e) => e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 13)}
+                    maxLength={13}
+                    pattern="[0-9]*"
                     onChange={handleInputChange}
                     placeholder="e.g., 08012345678"
                   />

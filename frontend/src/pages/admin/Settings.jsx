@@ -214,6 +214,9 @@ const AdminSettings = () => {
                   name="phone"
                   value={formData.phone}
                   onChange={handleChange}
+                  onInput={(e) => e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 13)}
+                  maxLength={13}
+                  pattern="[0-9]*"
                   className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200'}`}
                 />
               </div>

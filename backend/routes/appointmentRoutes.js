@@ -1,10 +1,12 @@
 const express = require('express');
 const router = express.Router();
+const mongoose = require('mongoose');
 const Appointment = require('../models/Appointment');
 const auth = require('../middleware/auth');
 
 // Create a new appointment
 router.post('/', auth, async (req, res) => {
+  console.log('Received appointment request:', req.body);
   try {
     const {
       healthId,
@@ -21,6 +23,7 @@ router.post('/', auth, async (req, res) => {
 
     // Validate required fields
     if (!healthId || !date || !time || !type) {
+      console.log('Missing required fields:', { healthId, date, time, type });
       return res.status(400).json({
         message: 'Please provide required fields'
       });
@@ -28,17 +31,42 @@ router.post('/', auth, async (req, res) => {
 
     // Find Patient
     const Patient = require('../models/Patient');
+    console.log('Finding patient with healthId:', healthId);
     const patient = await Patient.findOne({ healthId });
     if (!patient) {
+      console.log('Patient not found');
       return res.status(404).json({ message: 'Patient not found' });
     }
 
     // Find Doctor (Provider)
     const Provider = require('../models/Provider');
+    const ProviderAuth = require('../models/ProviderAuth');
     let doctor;
     if (doctorId) {
-      doctor = await Provider.findById(doctorId);
+      console.log('Finding doctor with ID:', doctorId);
+      try {
+        // Try finding in Provider collection
+        if (mongoose.Types.ObjectId.isValid(doctorId)) {
+          doctor = await Provider.findById(doctorId);
+        }
+        if (!doctor) {
+          doctor = await Provider.findOne({ providerId: doctorId });
+        }
+
+        // If not found, try ProviderAuth collection
+        if (!doctor) {
+          if (mongoose.Types.ObjectId.isValid(doctorId)) {
+            doctor = await ProviderAuth.findById(doctorId);
+          }
+          if (!doctor) {
+            doctor = await ProviderAuth.findOne({ providerId: doctorId });
+          }
+        }
+      } catch (err) {
+        console.log('Error finding doctor:', err.message);
+      }
     } else if (doctorName) {
+      console.log('Finding doctor by name:', doctorName);
       // Fallback search by name (risky if duplicates)
       const nameParts = doctorName.split(' ');
       const lastName = nameParts[nameParts.length - 1];
@@ -51,6 +79,7 @@ router.post('/', auth, async (req, res) => {
         finalPatientName = `${patient.firstName} ${patient.lastName}`;
     }
 
+    console.log('Creating appointment object');
     const appointment = new Appointment({
       healthId,
       patientId: patient._id,
@@ -63,11 +92,13 @@ router.post('/', auth, async (req, res) => {
       type,
       reason,
       notes,
-      status: 'scheduled',
+      status: req.body.status || 'scheduled',
       createdBy: req.user.id
     });
 
+    console.log('Saving appointment');
     await appointment.save();
+    console.log('Appointment saved successfully');
 
     res.status(201).json({
       message: 'Appointment created successfully',
@@ -85,12 +116,35 @@ router.post('/', auth, async (req, res) => {
 // Get all appointments
 router.get('/', auth, async (req, res) => {
   try {
-    const { status, healthId, department } = req.query;
+    const { status, healthId, department, doctorId } = req.query;
     
     let query = {};
     if (status) query.status = status;
     if (healthId) query.healthId = healthId;
     if (department) query.department = department;
+    
+    if (doctorId) {
+      if (mongoose.Types.ObjectId.isValid(doctorId)) {
+        query.doctorId = doctorId;
+      } else {
+        // Resolve custom providerId to _id
+        const Provider = require('../models/Provider');
+        const ProviderAuth = require('../models/ProviderAuth');
+        
+        let provider = await Provider.findOne({ providerId: doctorId });
+        if (!provider) {
+          provider = await ProviderAuth.findOne({ providerId: doctorId });
+        }
+        
+        if (provider) {
+          query.doctorId = provider._id;
+        } else {
+          // Provider not found, ensure query returns no results for this filter
+          // Using a random ObjectId that won't match
+          query.doctorId = new mongoose.Types.ObjectId();
+        }
+      }
+    }
 
     const appointments = await Appointment.find(query)
       .sort({ date: -1, time: -1 });

@@ -76,7 +76,7 @@ const NewStaffModal = ({ onClose, onSuccess }) => {
             </div>
             <div>
               <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Phone *</label>
-              <input type="tel" name="phone" value={formData.phone} onChange={handleChange} placeholder="+234 XXX XXX XXXX" className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'}`} required />
+              <input type="tel" name="phone" value={formData.phone} onInput={(e) => e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 13)} maxLength={13} pattern="[0-9]*" onChange={handleChange} placeholder="+234 XXX XXX XXXX" className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'}`} required />
             </div>
             <div>
               <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Email</label>

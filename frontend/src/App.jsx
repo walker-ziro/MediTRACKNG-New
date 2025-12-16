@@ -42,6 +42,7 @@ import PatientLayout from './layouts/PatientLayout';
 
 // Provider Pages
 import ProviderPatients from './pages/provider/Patients';
+import ProviderAppointments from './pages/provider/Appointments';
 import ProviderEncounters from './pages/provider/Encounters';
 import ProviderPrescriptions from './pages/provider/Prescriptions';
 import ProviderLabOrders from './pages/provider/LabOrders';
@@ -230,6 +231,7 @@ function App() {
             </ProtectedProviderRoute>
           }>
             <Route path="dashboard" element={<ProviderDashboard />} />
+            <Route path="appointments" element={<ProviderAppointments />} />
             <Route path="patients" element={<ProviderPatients />} />
             <Route path="encounters" element={<ProviderEncounters />} />
             <Route path="prescriptions" element={<ProviderPrescriptions />} />
