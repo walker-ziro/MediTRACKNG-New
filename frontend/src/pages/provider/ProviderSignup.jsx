@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSettings } from '../../context/SettingsContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { api } from '../../utils/api';
 
 const ProviderSignup = ({ isEmbedded = false }) => {
   const { theme , darkMode } = useSettings();
@@ -104,17 +105,11 @@ const ProviderSignup = ({ isEmbedded = false }) => {
       // Remove confirmPassword before sending
       const { confirmPassword, ...dataToSend } = formData;
       
-      const response = await fetch('http://localhost:5000/api/multi-auth/provider/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(dataToSend)
-      });
+      const response = await api.post('/multi-auth/provider/register', dataToSend);
 
-      const data = await response.json();
+      const data = response.data;
 
-      if (response.ok) {
+      if (response.status === 200 || response.status === 201) {
         if (data.requiresVerification) {
           setShowOTP(true);
         } else {
@@ -140,22 +135,19 @@ const ProviderSignup = ({ isEmbedded = false }) => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:5000/api/multi-auth/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email, otp, userType: 'provider' })
+      const response = await api.post('/multi-auth/verify-otp', { 
+        email: formData.email, 
+        otp, 
+        userType: 'provider' 
       });
-      const data = await response.json();
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('userType', data.userType);
-        localStorage.setItem('userData', JSON.stringify(data.user));
-        navigate('/provider/dashboard');
-      } else {
-        setError(data.message || 'Verification failed');
-      }
+      const data = response.data;
+      
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('userType', data.userType);
+      localStorage.setItem('userData', JSON.stringify(data.user));
+      navigate('/provider/dashboard');
     } catch (err) {
-      setError('Network error');
+      setError(err.response?.data?.message || 'Verification failed');
     } finally {
       setLoading(false);
     }
@@ -165,21 +157,15 @@ const ProviderSignup = ({ isEmbedded = false }) => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:5000/api/multi-auth/resend-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email, userType: 'provider' })
+      await api.post('/multi-auth/resend-otp', { 
+        email: formData.email, 
+        userType: 'provider' 
       });
       
-      if (response.ok) {
-        setResendTimer(30);
-        setCanResend(false);
-      } else {
-        const data = await response.json();
-        setError(data.message || 'Failed to resend OTP');
-      }
+      setResendTimer(30);
+      setCanResend(false);
     } catch (err) {
-      setError('Network error');
+      setError(err.response?.data?.message || 'Failed to resend OTP');
     } finally {
       setLoading(false);
     }

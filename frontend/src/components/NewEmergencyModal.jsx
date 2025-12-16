@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import axios from 'axios';
+import { api } from '../utils/api';
 
 const NewEmergencyModal = ({ onClose, onSuccess }) => {
   const { darkMode } = useApp();
@@ -40,14 +40,10 @@ const NewEmergencyModal = ({ onClose, onSuccess }) => {
     setError('');
 
     try {
-      const response = await axios.post('http://localhost:5000/api/emergency', {
+      const response = await api.post('/emergency', {
         ...formData,
         arrivalTime: new Date().toISOString(),
         status: 'Waiting'
-      }, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
       });
       
       if (response.data && response.data.emergency) {

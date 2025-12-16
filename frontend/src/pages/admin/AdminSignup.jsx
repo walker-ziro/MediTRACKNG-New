@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useSettings } from '../../context/SettingsContext';
 import { useNavigate, Link } from 'react-router-dom';
+import { api } from '../../utils/api';
 
 const AdminSignup = () => {
   const { theme , darkMode } = useSettings();
@@ -58,27 +59,17 @@ const AdminSignup = () => {
       // Remove confirmPassword before sending
       const { confirmPassword, ...dataToSend } = formData;
       
-      const response = await fetch('http://localhost:5000/api/multi-auth/admin/register', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify(dataToSend)
-      });
+      const response = await api.post('/multi-auth/admin/register', dataToSend);
 
-      const data = await response.json();
+      const data = response.data;
 
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('userType', data.userType);
-        localStorage.setItem('userData', JSON.stringify(data.user));
-        navigate('/admin/dashboard');
-      } else {
-        setError(data.message || 'Registration failed');
-        console.error('Registration error:', data);
-      }
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('userType', data.userType);
+      localStorage.setItem('userData', JSON.stringify(data.user));
+      navigate('/admin/dashboard');
     } catch (err) {
-      setError('Unable to connect to server. Please try again.');
+      const errorMessage = err.response?.data?.message || 'Registration failed';
+      setError(errorMessage);
       console.error('Registration error:', err);
     } finally {
       setLoading(false);

@@ -134,22 +134,19 @@ const PatientSignup = ({ isEmbedded = false }) => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:5000/api/multi-auth/verify-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email, otp, userType: 'patient' })
+      const response = await api.post('/multi-auth/verify-otp', { 
+        email: formData.email, 
+        otp, 
+        userType: 'patient' 
       });
-      const data = await response.json();
-      if (response.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('userType', data.userType);
-        localStorage.setItem('userData', JSON.stringify(data.user));
-        navigate('/patient/dashboard');
-      } else {
-        setError(data.message || 'Verification failed');
-      }
+      const data = response.data;
+      
+      localStorage.setItem('token', data.token);
+      localStorage.setItem('userType', data.userType);
+      localStorage.setItem('userData', JSON.stringify(data.user));
+      navigate('/patient/dashboard');
     } catch (err) {
-      setError('Network error');
+      setError(err.response?.data?.message || 'Verification failed');
     } finally {
       setLoading(false);
     }
@@ -159,22 +156,16 @@ const PatientSignup = ({ isEmbedded = false }) => {
     setLoading(true);
     setError('');
     try {
-      const response = await fetch('http://localhost:5000/api/multi-auth/resend-otp', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: formData.email, userType: 'patient' })
+      await api.post('/multi-auth/resend-otp', { 
+        email: formData.email, 
+        userType: 'patient' 
       });
       
-      if (response.ok) {
-        setResendTimer(30);
-        setCanResend(false);
-        // Optional: show success message
-      } else {
-        const data = await response.json();
-        setError(data.message || 'Failed to resend OTP');
-      }
+      setResendTimer(30);
+      setCanResend(false);
+      // Optional: show success message
     } catch (err) {
-      setError('Network error');
+      setError(err.response?.data?.message || 'Failed to resend OTP');
     } finally {
       setLoading(false);
     }

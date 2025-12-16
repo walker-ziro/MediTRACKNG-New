@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useApp } from '../context/AppContext';
-import axios from 'axios';
+import { api } from '../utils/api';
 
 const NewAppointmentModal = ({ onClose, onSuccess }) => {
   const { darkMode } = useApp();
@@ -36,13 +36,9 @@ const NewAppointmentModal = ({ onClose, onSuccess }) => {
 
     try {
       // For now, simulate appointment creation
-      const response = await axios.post('http://localhost:5000/api/appointments', {
+      const response = await api.post('/appointments', {
         ...formData,
         status: 'scheduled'
-      }, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem('token')}`
-        }
       });
       
       onSuccess(response.data);
