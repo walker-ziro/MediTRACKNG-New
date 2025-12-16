@@ -111,20 +111,23 @@ router.post('/provider/register', async (req, res) => {
     provider.setRolePermissions();
     await provider.save();
 
+    console.log('Provider created successfully, checking email configuration...');
+    console.log('GMAIL_USER exists:', !!process.env.GMAIL_USER);
+    console.log('GMAIL_PASS exists:', !!process.env.GMAIL_PASS);
+
     // Check email configuration
     if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
       console.error('Email configuration missing: GMAIL_USER or GMAIL_PASS not set.');
-      // For development/testing without email, we might want to allow registration but warn
-      // But for security, we should probably fail or handle it differently.
-      // For now, let's fail with a clear message so the user knows what to fix.
       await ProviderAuth.findByIdAndDelete(provider._id);
       return res.status(503).json({ 
         message: 'Email service not configured. Please contact administrator to set GMAIL_USER and GMAIL_PASS.' 
       });
     }
 
+    console.log('Sending OTP email to:', email);
     // Send OTP Email
     const emailResult = await sendOTP(email, otp);
+    console.log('Email result:', emailResult);
 
     if (!emailResult.success) {
       console.error('Email sending failed:', emailResult.error);
@@ -145,9 +148,11 @@ router.post('/provider/register', async (req, res) => {
   } catch (error) {
     console.error('Provider registration error:', error);
     console.error('Error details:', error.stack);
+    console.error('Error name:', error.name);
     res.status(500).json({ 
-      message: 'Error registering provider', 
+      message: `Error registering provider: ${error.message}`,
       error: error.message,
+      errorType: error.name,
       details: process.env.NODE_ENV === 'development' ? error.stack : undefined
     });
   }
