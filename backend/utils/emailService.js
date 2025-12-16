@@ -3,6 +3,20 @@ const nodemailer = require('nodemailer');
 let transporter = null;
 
 const createTransporter = () => {
+  // Priority 1: Use SendGrid (works on Render)
+  if (process.env.SENDGRID_API_KEY) {
+    return nodemailer.createTransport({
+      host: 'smtp.sendgrid.net',
+      port: 587,
+      secure: false,
+      auth: {
+        user: 'apikey',
+        pass: process.env.SENDGRID_API_KEY,
+      },
+    });
+  }
+  
+  // Priority 2: Use Gmail (for local development only)
   if (process.env.GMAIL_USER && process.env.GMAIL_PASS) {
     return nodemailer.createTransport({
       service: 'gmail',
@@ -12,6 +26,7 @@ const createTransporter = () => {
       },
     });
   }
+  
   return null;
 };
 
@@ -24,13 +39,15 @@ const sendOTP = async (email, otp) => {
     if (!transporter) {
       transporter = createTransporter();
       if (!transporter) {
-        console.error("Email configuration missing: GMAIL_USER or GMAIL_PASS not set.");
-        return { success: false, error: "Server email configuration is missing." };
+        console.error("Email configuration missing: No email service configured (SENDGRID_API_KEY or GMAIL_USER/GMAIL_PASS).");
+        return { success: false, error: "Server email configuration is missing. Please contact administrator." };
       }
     }
 
     // Use the authenticated user as the sender
-    const senderEmail = process.env.GMAIL_USER;
+    const senderEmail = process.env.SENDGRID_API_KEY 
+      ? process.env.SENDGRID_FROM_EMAIL || 'noreply@meditrackng.com'
+      : process.env.GMAIL_USER;
     
     const info = await transporter.sendMail({
       from: `"MediTRACKNG" <${senderEmail}>`, // sender address

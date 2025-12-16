@@ -111,6 +111,15 @@ router.post('/provider/register', async (req, res) => {
     provider.setRolePermissions();
     await provider.save();
 
+    // TODO: Email verification temporarily disabled
+    // Automatically verify the provider for now
+    provider.isVerified = true;
+    provider.isActive = true;
+    provider.otp = undefined;
+    provider.otpExpires = undefined;
+    await provider.save();
+
+    /* EMAIL VERIFICATION DISABLED - UNCOMMENT WHEN EMAIL SERVICE IS CONFIGURED
     console.log('Provider created successfully, checking email configuration...');
     console.log('GMAIL_USER exists:', !!process.env.GMAIL_USER);
     console.log('GMAIL_PASS exists:', !!process.env.GMAIL_PASS);
@@ -137,13 +146,27 @@ router.post('/provider/register', async (req, res) => {
         error: emailResult.error 
       });
     }
+    */
+
+    // Generate token for immediate login (no email verification)
+    const token = generateToken(provider, 'provider');
 
     res.status(201).json({
-      message: 'Provider registered successfully. Please verify your email.',
+      message: 'Provider registered successfully.',
+      token,
       providerId: provider.providerId,
       userType: 'provider',
-      requiresVerification: true,
-      email: email
+      requiresVerification: false,
+      user: {
+        providerId: provider.providerId,
+        name: `${provider.firstName} ${provider.lastName}`,
+        email: provider.email,
+        role: provider.role,
+        specialization: provider.specialization,
+        facilityName: provider.facilityName,
+        permissions: provider.permissions,
+        photo: provider.photo
+      }
     });
   } catch (error) {
     console.error('Provider registration error:', error);
@@ -305,6 +328,20 @@ router.post('/patient/register', async (req, res) => {
     // Create new patient
     const patient = await PatientAuth.create(patientData);
 
+    // TODO: Email verification temporarily disabled
+    // Automatically verify the patient for now
+    patient.isVerified = true;
+    patient.isActive = true;
+    patient.otp = undefined;
+    patient.otpExpires = undefined;
+    
+    // Generate Health ID
+    if (!patient.healthId) {
+      patient.healthId = generateHealthId();
+    }
+    await patient.save();
+
+    /* EMAIL VERIFICATION DISABLED - UNCOMMENT WHEN EMAIL SERVICE IS CONFIGURED
     // Check email configuration
     if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
       console.error('Email configuration missing: GMAIL_USER or GMAIL_PASS not set.');
@@ -325,17 +362,25 @@ router.post('/patient/register', async (req, res) => {
         error: emailResult.error 
       });
     }
+    */
 
-    if (!emailSent) {
-      await PatientAuth.findByIdAndDelete(patient._id);
-      return res.status(500).json({ message: 'Failed to send verification email. Please check your email address or try again later.' });
-    }
+    // Generate token for immediate login (no email verification)
+    const token = generateToken(patient, 'patient');
 
     res.status(201).json({
-      message: 'Patient registered successfully. Please verify your email.',
+      message: 'Patient registered successfully.',
+      token,
       userType: 'patient',
-      requiresVerification: true,
-      email: email
+      requiresVerification: false,
+      user: {
+        healthId: patient.healthId,
+        name: `${patient.firstName} ${patient.lastName}`,
+        email: patient.email,
+        phone: patient.phone,
+        bloodType: patient.bloodType,
+        photo: patient.photo,
+        permissions: patient.permissions
+      }
     });
   } catch (error) {
     console.error('Patient registration error:', error);
