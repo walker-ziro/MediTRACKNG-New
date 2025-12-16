@@ -266,6 +266,57 @@ router.post('/provider/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
+    // Self-healing: Ensure Provider record exists (for accounts created before the fix)
+    try {
+      const existingProviderRecord = await Provider.findOne({ providerId: provider.providerId });
+      
+      if (!existingProviderRecord) {
+        console.log('Creating missing Provider record for:', provider.providerId);
+        
+        // Find or Create Facility
+        let facility = await Facility.findOne({ facilityId: provider.facilityId });
+        
+        if (!facility) {
+          facility = await Facility.create({
+            facilityId: provider.facilityId || `FAC-${Date.now()}`,
+            name: provider.facilityName || 'Unknown Facility',
+            type: 'General Hospital',
+            location: {
+              state: 'Lagos',
+              address: 'Unknown Address',
+              city: 'Unknown City'
+            },
+            contact: {
+              email: provider.email
+            }
+          });
+        }
+
+        const newProvider = new Provider({
+          providerId: provider.providerId,
+          firstName: provider.firstName,
+          lastName: provider.lastName,
+          specialization: provider.specialization,
+          providerType: provider.role,
+          licenseNumber: provider.licenseNumber,
+          licenseExpiry: provider.licenseExpiryDate,
+          primaryFacility: facility._id,
+          contact: {
+            email: provider.email,
+            phone: provider.phone
+          },
+          username: provider.email,
+          password: provider.password
+        });
+
+        await newProvider.save();
+        console.log('Provider record created successfully');
+      }
+    } catch (createError) {
+      console.error('Error creating provider record during login:', createError);
+      // Continue login even if profile creation fails
+    }
+
     // Reset login attempts and update last login
     provider.loginAttempts = 0;
     provider.lockUntil = undefined;
