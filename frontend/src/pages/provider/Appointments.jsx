@@ -130,7 +130,8 @@ const Appointments = () => {
       const twoHours = 2 * 60 * 60 * 1000; // 2 hours in milliseconds
       return (now - createdTime) < twoHours;
     }
-    return true;
+    // If created by patient (or anyone else), do not allow cancellation once confirmed
+    return false;
   };
 
   const getStatusColor = (status) => {
@@ -145,15 +146,15 @@ const Appointments = () => {
   };
 
   return (
-    <div className={`p-8 min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
-      <div className="mb-8 flex justify-between items-center">
+    <div className={`p-4 md:p-8 min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Appointments</h1>
           <p className={`mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Manage your patient appointments</p>
         </div>
         <button
           onClick={() => setShowCreateModal(true)}
-          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+          className="w-full md:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />

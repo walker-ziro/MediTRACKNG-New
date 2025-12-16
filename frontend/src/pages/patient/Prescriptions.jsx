@@ -68,7 +68,7 @@ const PatientPrescriptions = () => {
   };
 
   return (
-    <div className={`p-8 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} min-h-screen`}>
+    <div className={`p-4 md:p-8 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} min-h-screen`}>
       <div className="mb-8">
         <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>My Prescriptions</h1>
         <p className="text-gray-600 mt-2">View and manage your medications</p>

@@ -150,7 +150,7 @@ const Settings = () => {
   }
 
   return (
-    <div className={`p-8 min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <div className={`p-4 md:p-8 min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <div className="mb-8">
         <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{t('settings') || 'Settings'}</h1>
         <p className={`mt-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>{t('manageAccount') || 'Manage your account and preferences'}</p>

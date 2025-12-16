@@ -10,6 +10,7 @@ const PatientLayout = () => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showProfile, setShowProfile] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -48,10 +49,18 @@ const PatientLayout = () => {
 
   return (
     <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      {/* Mobile Sidebar Overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar */}
-      <aside className={`fixed inset-y-0 left-0 w-64 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-r transition-transform duration-300 z-50`}>
+      <aside className={`fixed inset-y-0 left-0 w-64 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-r transition-transform duration-300 z-50 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} md:translate-x-0`}>
         {/* Logo/Brand */}
-        <div className={`p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+        <div className={`p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'} flex justify-between items-center`}>
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-blue-600 rounded-xl flex items-center justify-center shadow-lg shadow-blue-600/20">
               <i className="fas fa-heartbeat text-xl text-white"></i>
@@ -60,7 +69,14 @@ const PatientLayout = () => {
               Medi<span className="text-blue-600">TRACKNG</span>
             </span>
           </div>
-          <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'} mt-2 ml-1`}>Patient Portal</p>
+          <button onClick={() => setIsSidebarOpen(false)} className="md:hidden text-gray-500">
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div className={`px-6 pb-2 pt-1 md:hidden`}>
+           <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Patient Portal</p>
         </div>
 
         {/* Navigation */}
@@ -181,10 +197,20 @@ const PatientLayout = () => {
       </aside>
 
       {/* Main Content Area */}
-      <div className="ml-64 flex flex-col min-h-screen">
+      <div className="ml-0 md:ml-64 flex flex-col min-h-screen transition-all duration-300">
         {/* Top Navigation Bar */}
-        <header className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-b px-8 py-4 sticky top-0 z-40`}>
-          <div className="flex items-center justify-between">
+        <header className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-b px-4 md:px-8 py-4 sticky top-0 z-40`}>
+          <div className="flex items-center justify-between gap-4">
+            {/* Hamburger Menu */}
+            <button
+              onClick={() => setIsSidebarOpen(true)}
+              className={`md:hidden p-2 rounded-lg ${darkMode ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-500 hover:bg-gray-100'}`}
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+              </svg>
+            </button>
+
             {/* Search Bar */}
             <div className="flex items-center flex-1 max-w-2xl">
               <div className="relative w-full">
@@ -229,7 +255,7 @@ const PatientLayout = () => {
               </button>
 
               {/* Time Display */}
-              <div className={`px-4 py-2 ${darkMode ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-700'} rounded-lg text-sm font-medium`}>
+              <div className={`hidden md:block px-4 py-2 ${darkMode ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-700'} rounded-lg text-sm font-medium`}>
                 {currentTime.toLocaleTimeString('en-US', { timeZone: timezone, hour: '2-digit', minute: '2-digit' })}
               </div>
 
@@ -244,7 +270,7 @@ const PatientLayout = () => {
                     alt="Profile"
                     className="w-10 h-10 rounded-full"
                   />
-                  <div className="text-left">
+                  <div className="text-left hidden md:block">
                     <p className={`font-semibold text-sm ${darkMode ? 'text-white' : 'text-gray-800'}`}>
                       {userData.name}
                     </p>

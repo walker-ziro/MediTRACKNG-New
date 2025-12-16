@@ -51,9 +51,9 @@ const ProviderDashboard = () => {
   }, []);
 
   return (
-    <div className={`p-8 min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+    <div className={`p-4 md:p-8 min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       {/* Top Header */}
-      <header className={`shadow-sm p-6 rounded-lg mb-6 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+      <header className={`shadow-sm p-4 md:p-6 rounded-lg mb-6 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
         <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Welcome, Dr. {providerName}</h1>
         <p className={`mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Here's what's happening with your practice today</p>
       </header>

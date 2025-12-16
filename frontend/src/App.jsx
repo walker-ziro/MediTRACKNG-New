@@ -230,6 +230,7 @@ function App() {
               <ProviderLayout />
             </ProtectedProviderRoute>
           }>
+            <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<ProviderDashboard />} />
             <Route path="appointments" element={<ProviderAppointments />} />
             <Route path="patients" element={<ProviderPatients />} />
@@ -249,6 +250,7 @@ function App() {
               <PatientLayout />
             </ProtectedPatientRoute>
           }>
+            <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<PatientDashboard />} />
             <Route path="health-records" element={<PatientHealthRecords />} />
             <Route path="appointments" element={<PatientAppointments />} />
@@ -266,6 +268,7 @@ function App() {
               <AdminLayout />
             </ProtectedAdminRoute>
           }>
+            <Route index element={<Navigate to="dashboard" replace />} />
             <Route path="dashboard" element={<AdminDashboard />} />
             <Route path="users" element={<AdminUserManagement />} />
             <Route path="providers" element={<AdminProviderManagement />} />
