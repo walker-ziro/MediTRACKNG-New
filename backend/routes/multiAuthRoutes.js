@@ -118,8 +118,8 @@ router.post('/provider/register', async (req, res) => {
       // But for security, we should probably fail or handle it differently.
       // For now, let's fail with a clear message so the user knows what to fix.
       await ProviderAuth.findByIdAndDelete(provider._id);
-      return res.status(500).json({ 
-        message: 'Server email configuration is missing. Please set GMAIL_USER and GMAIL_PASS environment variables.' 
+      return res.status(503).json({ 
+        message: 'Email service not configured. Please contact administrator to set GMAIL_USER and GMAIL_PASS.' 
       });
     }
 
@@ -305,8 +305,8 @@ router.post('/patient/register', async (req, res) => {
     if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
       console.error('Email configuration missing: GMAIL_USER or GMAIL_PASS not set.');
       await PatientAuth.findByIdAndDelete(patient._id);
-      return res.status(500).json({ 
-        message: 'Server email configuration is missing. Please set GMAIL_USER and GMAIL_PASS environment variables.' 
+      return res.status(503).json({ 
+        message: 'Email service not configured. Please contact administrator to set GMAIL_USER and GMAIL_PASS.' 
       });
     }
 
@@ -1089,8 +1089,8 @@ router.post('/resend-otp', async (req, res) => {
 
     // Check email configuration
     if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
-      return res.status(500).json({ 
-        message: 'Server email configuration is missing. Please set GMAIL_USER and GMAIL_PASS environment variables.' 
+      return res.status(503).json({ 
+        message: 'Email service not configured. Please contact administrator to set GMAIL_USER and GMAIL_PASS.' 
       });
     }
 

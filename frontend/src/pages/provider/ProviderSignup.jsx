@@ -123,7 +123,8 @@ const ProviderSignup = ({ isEmbedded = false }) => {
         console.error('Registration error:', data);
       }
     } catch (err) {
-      setError('Unable to connect to server. Please try again.');
+      const errorMessage = err.response?.data?.message || 'Unable to connect to server. Please try again.';
+      setError(errorMessage);
       console.error('Registration error:', err);
     } finally {
       setLoading(false);
