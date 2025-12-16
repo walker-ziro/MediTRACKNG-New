@@ -119,6 +119,54 @@ router.post('/provider/register', async (req, res) => {
     provider.otpExpires = undefined;
     await provider.save();
 
+    // Create Provider record (normally happens during verification)
+    try {
+      const existingProviderRecord = await Provider.findOne({ providerId: provider.providerId });
+      
+      if (!existingProviderRecord) {
+        // Find or Create Facility
+        let facility = await Facility.findOne({ facilityId: provider.facilityId });
+        
+        if (!facility) {
+          facility = await Facility.create({
+            facilityId: provider.facilityId || `FAC-${Date.now()}`,
+            name: provider.facilityName || 'Unknown Facility',
+            type: 'General Hospital',
+            location: {
+              state: 'Lagos',
+              address: 'Unknown Address',
+              city: 'Unknown City'
+            },
+            contact: {
+              email: provider.email
+            }
+          });
+        }
+
+        const newProvider = new Provider({
+          providerId: provider.providerId,
+          firstName: provider.firstName,
+          lastName: provider.lastName,
+          specialization: provider.specialization,
+          providerType: provider.role,
+          licenseNumber: provider.licenseNumber,
+          licenseExpiry: provider.licenseExpiryDate,
+          primaryFacility: facility._id,
+          contact: {
+            email: provider.email,
+            phone: provider.phone
+          },
+          username: provider.email,
+          password: provider.password
+        });
+
+        await newProvider.save();
+      }
+    } catch (createError) {
+      console.error('Error creating provider record:', createError);
+      // Continue anyway - the auth record is created
+    }
+
     /* EMAIL VERIFICATION DISABLED - UNCOMMENT WHEN EMAIL SERVICE IS CONFIGURED
     console.log('Provider created successfully, checking email configuration...');
     console.log('GMAIL_USER exists:', !!process.env.GMAIL_USER);
@@ -340,6 +388,41 @@ router.post('/patient/register', async (req, res) => {
       patient.healthId = generateHealthId();
     }
     await patient.save();
+
+    // Create Patient record (normally happens during verification)
+    try {
+      const existingPatientRecord = await Patient.findOne({ healthId: patient.healthId });
+      
+      if (!existingPatientRecord) {
+        const newPatient = new Patient({
+          healthId: patient.healthId,
+          firstName: patient.firstName,
+          lastName: patient.lastName,
+          dateOfBirth: patient.dateOfBirth,
+          gender: patient.gender,
+          ...(patient.bloodType && { bloodGroup: patient.bloodType }),
+          ...(patient.genotype && { genotype: patient.genotype }),
+          contact: {
+            phone: patient.phone,
+            email: patient.email,
+            address: {
+              street: patient.address?.street,
+              city: patient.address?.city,
+              state: patient.address?.state || 'Unknown',
+              country: patient.address?.country || 'Nigeria'
+            }
+          },
+          emergencyContact: patient.emergencyContact,
+          allergies: (patient.allergies || []).map(a => ({ allergen: a })),
+          chronicConditions: (patient.chronicConditions || []).map(c => ({ condition: c }))
+        });
+        
+        await newPatient.save();
+      }
+    } catch (createError) {
+      console.error('Error creating patient record:', createError);
+      // Continue anyway - the auth record is created
+    }
 
     /* EMAIL VERIFICATION DISABLED - UNCOMMENT WHEN EMAIL SERVICE IS CONFIGURED
     // Check email configuration
