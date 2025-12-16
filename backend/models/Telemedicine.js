@@ -5,7 +5,7 @@ const telemedicineSchema = new mongoose.Schema({
   consultationId: {
     type: String,
     unique: true,
-    required: true
+    required: false
   },
   
   // Patient Information
@@ -72,7 +72,7 @@ const telemedicineSchema = new mongoose.Schema({
     roomId: String,
     meetingUrl: String,
     joinToken: String,
-    provider: Object,
+    provider: String,
     password: String
   },
   
@@ -203,7 +203,8 @@ telemedicineSchema.pre('save', async function(next) {
   if (!this.consultationId) {
     const date = new Date();
     const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
-    const count = await mongoose.model('Telemedicine').countDocuments({
+    // Use this.constructor to access the model
+    const count = await this.constructor.countDocuments({
       consultationId: new RegExp(`^TLM-${dateStr}`)
     });
     this.consultationId = `TLM-${dateStr}-${String(count + 1).padStart(5, '0')}`;

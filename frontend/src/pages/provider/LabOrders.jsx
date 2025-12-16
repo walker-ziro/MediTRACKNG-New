@@ -16,6 +16,7 @@ const LabOrders = () => {
   });
   const [labOrders, setLabOrders] = useState([]);
   const [patients, setPatients] = useState([]);
+  const [selectedOrder, setSelectedOrder] = useState(null);
 
   useEffect(() => {
     const loadData = async () => {
@@ -177,9 +178,19 @@ const LabOrders = () => {
                     </span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <button className="text-blue-600 hover:text-blue-800 font-medium text-sm mr-2">View</button>
+                    <button 
+                      onClick={() => setSelectedOrder(order)}
+                      className="text-blue-600 hover:text-blue-800 font-medium text-sm mr-2"
+                    >
+                      View
+                    </button>
                     {order.status === 'Completed' && (
-                      <button className="text-green-600 hover:text-green-800 font-medium text-sm">Results</button>
+                      <button 
+                        onClick={() => setSelectedOrder(order)}
+                        className="text-green-600 hover:text-green-800 font-medium text-sm"
+                      >
+                        Results
+                      </button>
                     )}
                   </td>
                 </tr>
@@ -292,6 +303,70 @@ const LabOrders = () => {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* View Lab Order Modal */}
+      {selectedOrder && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className={`${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl max-w-lg w-full max-h-[90vh] overflow-y-auto m-4`}>
+            <div className={`p-6 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'} flex items-center justify-between`}>
+              <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>Lab Order Details</h2>
+              <button onClick={() => setSelectedOrder(null)} className={`${darkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'}`}>
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Order ID</label>
+                <p className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{selectedOrder.id}</p>
+              </div>
+              <div>
+                <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Patient</label>
+                <p className={`text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>{selectedOrder.patient} <span className="text-sm text-gray-500">({selectedOrder.healthId})</span></p>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Test Type</label>
+                  <p className={`text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>{selectedOrder.test}</p>
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Priority</label>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    selectedOrder.priority === 'Urgent' ? 'bg-red-100 text-red-700' : 'bg-gray-100 text-gray-700'
+                  }`}>
+                    {selectedOrder.priority}
+                  </span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Status</label>
+                  <span className={`px-3 py-1 rounded-full text-sm font-medium ${
+                    selectedOrder.status === 'Completed' ? 'bg-green-100 text-green-700' :
+                    selectedOrder.status === 'In Progress' ? 'bg-blue-100 text-blue-700' :
+                    'bg-yellow-100 text-yellow-700'
+                  }`}>
+                    {selectedOrder.status}
+                  </span>
+                </div>
+                <div>
+                  <label className={`block text-sm font-medium mb-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Order Date</label>
+                  <p className={`text-lg ${darkMode ? 'text-white' : 'text-gray-900'}`}>{selectedOrder.date}</p>
+                </div>
+              </div>
+              <div className="pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-end">
+                <button 
+                  onClick={() => setSelectedOrder(null)}
+                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>

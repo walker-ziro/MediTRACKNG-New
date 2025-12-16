@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const Prescription = require('../models/Prescription');
 const Patient = require('../models/Patient');
+const Provider = require('../models/Provider');
 const auth = require('../middleware/auth');
 
 // Drug Interaction Database (simplified - in production, use external API)
@@ -88,7 +89,22 @@ router.post('/', auth, async (req, res) => {
     // Ensure provider details are present
     // Fix: Use userId from token if providerId is missing
     const providerId = req.user.providerId || req.user.userId || 'UNKNOWN';
-    const providerName = `${req.user.firstName || 'Dr.'} ${req.user.lastName || 'Provider'}`;
+    
+    // Fetch provider details to get real name
+    let providerName = 'Dr. Provider';
+    let licenseNumber = 'N/A';
+    let specialization = 'General';
+    
+    try {
+        const providerDoc = await Provider.findOne({ providerId: providerId });
+        if (providerDoc) {
+            providerName = `Dr. ${providerDoc.firstName} ${providerDoc.lastName}`;
+            licenseNumber = providerDoc.licenseNumber || 'N/A';
+            specialization = providerDoc.specialization || 'General';
+        }
+    } catch (err) {
+        console.error('Error fetching provider details:', err);
+    }
     
     const prescription = await Prescription.create({
       prescriptionId: `RX-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${uuidv4().split('-')[0].toUpperCase()}`,
@@ -101,8 +117,8 @@ router.post('/', auth, async (req, res) => {
       provider: {
         providerId: providerId,
         name: providerName,
-        licenseNumber: req.user.licenseNumber || 'N/A',
-        specialization: req.user.specialization || 'General'
+        licenseNumber: licenseNumber,
+        specialization: specialization
       },
       medications: enhancedMedications,
       diagnosis,
@@ -117,10 +133,10 @@ router.post('/', auth, async (req, res) => {
       type: 'Prescription Ready',
       priority: 'Normal',
       title: 'New Prescription Available',
-      message: `Dr. ${req.user.lastName} has prescribed ${medications.length} medication(s) for you.`,
+      message: `${providerName} has prescribed ${medications.length} medication(s) for you.`,
       metadata: {
         prescriptionId: prescription.prescriptionId,
-        providerName: `Dr. ${req.user.lastName}`,
+        providerName: providerName,
         actionUrl: `/prescriptions/${prescription._id}`,
         actionText: 'View Prescription'
       }

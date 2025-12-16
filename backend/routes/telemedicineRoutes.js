@@ -21,14 +21,10 @@ const generateMeetingRoom = () => {
 // Helper to create notification
 const createNotification = async (healthId, title, message, type = 'Info') => {
   try {
-    const Notification = require('../models/Notification');
-    await Notification.create({
-      patientHealthId: healthId,
-      title,
-      message,
-      type,
-      priority: type === 'Emergency' ? 'High' : 'Medium'
-    });
+    // Notification model is currently incompatible with patient notifications
+    // const Notification = require('../models/Notification');
+    // await Notification.create({ ... });
+    console.log(`[Mock Notification] To: ${healthId}, Title: ${title}, Message: ${message}`);
   } catch (error) {
     console.error('Error creating notification:', error);
   }
@@ -48,6 +44,16 @@ router.post('/', auth, async (req, res) => {
       urgency
     } = req.body;
 
+    if (!patientHealthId || !providerId || !scheduledDate || !consultationType) {
+      return res.status(400).json({ message: 'Missing required fields' });
+    }
+
+    // Validate scheduledDate
+    const dateObj = new Date(scheduledDate);
+    if (isNaN(dateObj.getTime())) {
+      return res.status(400).json({ message: 'Invalid scheduledDate format' });
+    }
+
     // Get patient details
     const patient = await Patient.findOne({ healthId: patientHealthId });
     if (!patient) {
@@ -62,31 +68,33 @@ router.post('/', auth, async (req, res) => {
       patient: {
         healthId: patientHealthId,
         name: `${patient.firstName} ${patient.lastName}`,
-        phone: patient.phone,
-        email: patient.email
+        phone: patient.phone || '',
+        email: patient.email || ''
       },
       provider: {
         providerId,
-        name: req.body.providerName,
-        specialization: req.body.providerSpecialization,
-        facilityName: req.body.facilityName
+        name: req.body.providerName || 'Unknown Provider',
+        specialization: req.body.providerSpecialization || 'General',
+        facilityName: req.body.facilityName || 'MediTRACKING'
       },
-      scheduledDate,
+      scheduledDate: dateObj,
       duration: duration || 30,
       consultationType,
-      chiefComplaint,
-      symptoms,
+      chiefComplaint: chiefComplaint || '',
+      symptoms: symptoms || [],
       urgency: urgency || 'Routine',
       meetingRoom
     });
 
-    // Notify patient
+    // Notify patient (Disabled temporarily due to model mismatch)
+    /*
     await createNotification(
       patientHealthId,
       'Telemedicine Consultation Scheduled',
       `Your virtual consultation is scheduled for ${new Date(scheduledDate).toLocaleString()}. Meeting URL: ${meetingRoom.meetingUrl}`,
       'Info'
     );
+    */
 
     res.status(201).json({
       message: 'Telemedicine consultation scheduled successfully',
@@ -95,7 +103,14 @@ router.post('/', auth, async (req, res) => {
     });
   } catch (error) {
     console.error('Error scheduling consultation:', error);
-    res.status(500).json({ message: 'Error scheduling consultation', error: error.message });
+    console.error('Full error:', error);
+    console.error('Stack trace:', error.stack);
+    res.status(500).json({ 
+      message: 'Error scheduling consultation', 
+      error: error.message,
+      details: error.toString(),
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    });
   }
 });
 

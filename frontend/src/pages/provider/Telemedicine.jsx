@@ -14,10 +14,29 @@ const Telemedicine = () => {
   const [patients, setPatients] = useState([]);
 
   useEffect(() => {
-    const userStr = localStorage.getItem('userData');
-    if (userStr) {
-      setUserData(JSON.parse(userStr));
-    }
+    const loadUserData = async () => {
+      const userStr = localStorage.getItem('userData');
+      if (userStr) {
+        const localData = JSON.parse(userStr);
+        setUserData(localData);
+        
+        // Fetch full profile if firstName/lastName are missing or "undefined"
+        if (!localData.firstName || !localData.lastName || localData.firstName === 'undefined' || localData.lastName === 'undefined') {
+          try {
+            const { api } = await import('../../utils/api');
+            const profile = await api.get('/multi-auth/profile');
+            if (profile.data) {
+              const updatedData = { ...localData, ...profile.data };
+              localStorage.setItem('userData', JSON.stringify(updatedData));
+              setUserData(updatedData);
+            }
+          } catch (error) {
+            console.error('Failed to load provider profile', error);
+          }
+        }
+      }
+    };
+    loadUserData();
   }, []);
 
   useEffect(() => {
@@ -78,23 +97,27 @@ const Telemedicine = () => {
     const selectedPatient = patients.find(p => p.healthId === patientId);
 
     const payload = {
-      providerId: userData.providerId,
-      healthId: patientId,
+      providerId: userData.providerId || userData._id || userData.id,
+      patientHealthId: patientId,
       patientName: selectedPatient ? `${selectedPatient.firstName} ${selectedPatient.lastName}` : '',
+      providerName: `${(userData.firstName && userData.firstName !== 'undefined') ? userData.firstName : 'Dr.'} ${(userData.lastName && userData.lastName !== 'undefined') ? userData.lastName : 'Provider'}`,
+      providerSpecialization: userData.specialization || userData.specialty || 'General',
+      facilityName: userData.facilityName || 'MediTRACKING',
       scheduledDate: `${formData.get('date')}T${formData.get('time')}`,
       duration: parseInt(formData.get('duration')),
       consultationType: formData.get('type'),
+      chiefComplaint: formData.get('chiefComplaint'),
       status: 'Scheduled'
     };
 
     try {
-      const response = await postData('/telemedicine/schedule', payload);
+      const response = await postData('/telemedicine', payload);
       if (response) {
-        const apt = response.appointment || response; // Adjust based on API response
+        const apt = response.consultation || response.appointment || response; // Adjust based on API response
         const newAppointment = {
           id: apt._id,
           patient: payload.patientName,
-          healthId: payload.healthId,
+          healthId: payload.patientHealthId,
           date: new Date(payload.scheduledDate).toLocaleDateString(),
           time: new Date(payload.scheduledDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
           duration: `${payload.duration} mins`,
@@ -305,8 +328,8 @@ const Telemedicine = () => {
                     required 
                     className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`}
                   >
-                    <option value="Video Call">Video Call</option>
-                    <option value="Phone Call">Phone Call</option>
+                    <option value="Video">Video Call</option>
+                    <option value="Phone">Phone Call</option>
                     <option value="Chat">Chat</option>
                   </select>
                 </div>
@@ -314,6 +337,7 @@ const Telemedicine = () => {
               <div>
                 <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Notes</label>
                 <textarea 
+                  name="chiefComplaint"
                   rows="3" 
                   className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`} 
                   placeholder="Reason for consultation..."

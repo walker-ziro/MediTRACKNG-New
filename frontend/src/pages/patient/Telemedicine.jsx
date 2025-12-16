@@ -14,7 +14,7 @@ const Telemedicine = () => {
   const [userData, setUserData] = useState(null);
 
   useEffect(() => {
-    const userStr = localStorage.getItem('user');
+    const userStr = localStorage.getItem('userData');
     if (userStr) {
       setUserData(JSON.parse(userStr));
     }
@@ -28,8 +28,8 @@ const Telemedicine = () => {
         if (data) {
           const formatted = data.map(c => ({
             id: c._id,
-            doctor: c.provider.name,
-            specialty: c.provider.specialization,
+            doctor: (c.provider?.name && !c.provider.name.includes('undefined')) ? c.provider.name : 'Unknown Provider',
+            specialty: c.provider?.specialization || 'General',
             date: new Date(c.scheduledDate).toLocaleDateString(),
             time: new Date(c.scheduledDate).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
             duration: `${c.duration} mins`,
@@ -75,7 +75,7 @@ const Telemedicine = () => {
                 <div key={apt.id} className={`p-4 rounded-lg border ${darkMode ? 'bg-gray-700/50 border-gray-600' : 'bg-gray-50 border-gray-200'} flex flex-col md:flex-row items-center justify-between gap-4`}>
                   <div className="flex items-center gap-4 w-full md:w-auto">
                     <div className="w-12 h-12 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center font-bold text-lg">
-                      {apt.doctor.split(' ').map(n => n[0]).join('').substring(1, 3)}
+                      {apt.doctor.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase()}
                     </div>
                     <div>
                       <h3 className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{apt.doctor}</h3>

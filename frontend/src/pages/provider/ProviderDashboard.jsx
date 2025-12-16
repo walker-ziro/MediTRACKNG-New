@@ -2,12 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useSettings } from '../../context/SettingsContext';
 import { useApi } from '../../hooks/useApi';
-import { dashboardAPI } from '../../utils/api';
+import { dashboardAPI, api } from '../../utils/api';
 
 const ProviderDashboard = () => {
   const userData = JSON.parse(localStorage.getItem('userData') || '{}');
   const { theme, t , darkMode } = useSettings();
   const { wrapRequest } = useApi();
+  const [providerName, setProviderName] = useState(userData.lastName || 'Provider');
   const [stats, setStats] = useState({
     totalPatients: 0,
     todayAppointments: 0,
@@ -17,9 +18,8 @@ const ProviderDashboard = () => {
   });
 
   useEffect(() => {
-    const loadStats = async () => {
-      // Prefer providerId (string) over _id (ObjectId) if available, as backend handles both but providerId is cleaner
-      // Also check userData.id as some auth responses return 'id' instead of '_id'
+    const loadData = async () => {
+      // Load Stats
       const id = userData.providerId || userData._id || userData.id;
       if (id) {
         try {
@@ -33,15 +33,28 @@ const ProviderDashboard = () => {
       } else {
         console.warn('No provider ID found in user data', userData);
       }
+
+      // Load Profile to get up-to-date name
+      try {
+        const profile = await api.get('/multi-auth/profile');
+        if (profile.data && profile.data.lastName) {
+           setProviderName(profile.data.lastName);
+           // Update local storage
+           const currentData = JSON.parse(localStorage.getItem('userData') || '{}');
+           localStorage.setItem('userData', JSON.stringify({ ...currentData, ...profile.data }));
+        }
+      } catch (error) {
+         console.error('Failed to load profile', error);
+      }
     };
-    loadStats();
+    loadData();
   }, []);
 
   return (
     <div className={`p-8 min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
       {/* Top Header */}
       <header className={`shadow-sm p-6 rounded-lg mb-6 ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
-        <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Welcome, Dr. {userData.lastName || 'Provider'}</h1>
+        <h1 className={`text-3xl font-bold ${darkMode ? 'text-white' : 'text-gray-800'}`}>Welcome, Dr. {providerName}</h1>
         <p className={`mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Here's what's happening with your practice today</p>
       </header>
 
