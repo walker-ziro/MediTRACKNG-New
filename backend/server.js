@@ -44,6 +44,7 @@ app.use(cors({
     'http://localhost:3000',
     'http://127.0.0.1:5173',
     'http://127.0.0.1:3000',
+    'https://meditrackng.vercel.app',
     process.env.FRONTEND_URL
   ].filter(Boolean), // Allow frontend origins and production URL
   credentials: true
