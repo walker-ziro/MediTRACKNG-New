@@ -32,7 +32,10 @@ const ProviderLogin = ({ isEmbedded = false }) => {
       const response = await api.post('/multi-auth/provider/login', formData);
       const data = response.data;
 
-      // Token is now handled via httpOnly cookie
+      // Store token in localStorage (required by ProviderLayout)
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
       localStorage.setItem('userType', data.userType);
       localStorage.setItem('userData', JSON.stringify(data.user));
       navigate('/provider/dashboard');

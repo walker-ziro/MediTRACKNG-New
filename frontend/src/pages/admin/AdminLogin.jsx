@@ -42,7 +42,10 @@ const AdminLogin = () => {
         setRequire2FA(true);
         setTempToken(data.tempToken);
       } else {
-        // Token is now handled via httpOnly cookie
+        // Store token in localStorage (required by AdminLayout)
+        if (data.token) {
+          localStorage.setItem('token', data.token);
+        }
         localStorage.setItem('userType', data.userType);
         localStorage.setItem('userData', JSON.stringify(data.user));
         navigate('/admin/dashboard');
@@ -69,7 +72,10 @@ const AdminLogin = () => {
 
       const data = response.data;
 
-      // Token is now handled via httpOnly cookie
+      // Store token in localStorage (required by AdminLayout)
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
       localStorage.setItem('userType', data.userType);
       localStorage.setItem('userData', JSON.stringify(data.user));
       navigate('/admin/dashboard');
