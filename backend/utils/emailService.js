@@ -1,29 +1,34 @@
 const nodemailer = require('nodemailer');
 
-// Gmail Configuration
-const transporter = nodemailer.createTransport({
-  service: 'gmail',
-  auth: {
-    user: process.env.GMAIL_USER,
-    pass: process.env.GMAIL_PASS,
-  },
-});
+let transporter = null;
 
-// Brevo Configuration (Commented out)
-/*
-const transporter = nodemailer.createTransport({
-  host: 'smtp-relay.brevo.com',
-  port: 587,
-  secure: false, // true for 465, false for other ports
-  auth: {
-    user: process.env.BREVO_SMTP_USER, // generated ethereal user
-    pass: process.env.BREVO_SMTP_PASS, // generated ethereal password
-  },
-});
-*/
+const createTransporter = () => {
+  if (process.env.GMAIL_USER && process.env.GMAIL_PASS) {
+    return nodemailer.createTransport({
+      service: 'gmail',
+      auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_PASS,
+      },
+    });
+  }
+  return null;
+};
+
+// Initialize transporter
+transporter = createTransporter();
 
 const sendOTP = async (email, otp) => {
   try {
+    // Ensure transporter exists
+    if (!transporter) {
+      transporter = createTransporter();
+      if (!transporter) {
+        console.error("Email configuration missing: GMAIL_USER or GMAIL_PASS not set.");
+        return false;
+      }
+    }
+
     // Use the authenticated user as the sender
     const senderEmail = process.env.GMAIL_USER;
     
