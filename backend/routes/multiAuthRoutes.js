@@ -124,16 +124,15 @@ router.post('/provider/register', async (req, res) => {
     }
 
     // Send OTP Email
-    let emailSent = false;
-    try {
-      emailSent = await sendOTP(email, otp);
-    } catch (emailError) {
-      console.error('Email sending failed:', emailError);
-    }
+    const emailResult = await sendOTP(email, otp);
 
-    if (!emailSent) {
+    if (!emailResult.success) {
+      console.error('Email sending failed:', emailResult.error);
       await ProviderAuth.findByIdAndDelete(provider._id);
-      return res.status(500).json({ message: 'Failed to send verification email. Please check your email address or try again later.' });
+      return res.status(500).json({ 
+        message: 'Failed to send verification email.',
+        error: emailResult.error 
+      });
     }
 
     res.status(201).json({
@@ -311,16 +310,15 @@ router.post('/patient/register', async (req, res) => {
     }
 
     // Send OTP Email
-    let emailSent = false;
-    try {
-      emailSent = await sendOTP(email, otp);
-    } catch (emailError) {
-      console.error('Email sending failed:', emailError);
-    }
+    const emailResult = await sendOTP(email, otp);
 
-    if (!emailSent) {
+    if (!emailResult.success) {
+      console.error('Email sending failed:', emailResult.error);
       await PatientAuth.findByIdAndDelete(patient._id);
-      return res.status(500).json({ message: 'Failed to send verification email. Please check your email address or try again later.' });
+      return res.status(500).json({ 
+        message: 'Failed to send verification email.',
+        error: emailResult.error 
+      });
     }
 
     if (!emailSent) {
@@ -1095,10 +1093,14 @@ router.post('/resend-otp', async (req, res) => {
     }
 
     // Send OTP Email
-    const emailSent = await sendOTP(email, otp);
+    const emailResult = await sendOTP(email, otp);
 
-    if (!emailSent) {
-      return res.status(500).json({ message: 'Failed to send verification email. Please try again later.' });
+    if (!emailResult.success) {
+      console.error('Email sending failed:', emailResult.error);
+      return res.status(500).json({ 
+        message: 'Failed to send verification email.',
+        error: emailResult.error 
+      });
     }
 
     res.json({ message: 'OTP resent successfully' });

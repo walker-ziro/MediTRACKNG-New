@@ -25,7 +25,7 @@ const sendOTP = async (email, otp) => {
       transporter = createTransporter();
       if (!transporter) {
         console.error("Email configuration missing: GMAIL_USER or GMAIL_PASS not set.");
-        return false;
+        return { success: false, error: "Server email configuration is missing." };
       }
     }
 
@@ -50,10 +50,10 @@ const sendOTP = async (email, otp) => {
     });
 
     console.log("Message sent: %s", info.messageId);
-    return true;
+    return { success: true };
   } catch (error) {
     console.error("Error sending email: ", error);
-    return false;
+    return { success: false, error: error.message };
   }
 };
 

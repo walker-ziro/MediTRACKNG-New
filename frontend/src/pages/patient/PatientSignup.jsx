@@ -121,7 +121,10 @@ const PatientSignup = ({ isEmbedded = false }) => {
         navigate('/patient/dashboard');
       }
     } catch (err) {
-      const errorMessage = err.response?.data?.message || 'Registration failed';
+      let errorMessage = err.response?.data?.message || 'Registration failed';
+      if (err.response?.data?.error) {
+        errorMessage += ` (${err.response.data.error})`;
+      }
       setError(errorMessage);
       console.error('Registration error:', err);
     } finally {
