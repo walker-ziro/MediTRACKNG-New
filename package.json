@@ -4,9 +4,9 @@
   "description": "National Health Records System - Three Portal Architecture",
   "type": "module",
   "scripts": {
-    "dev": "vite",
-    "build": "vite build",
-    "preview": "vite preview",
+    "dev": "cd frontend && npm run dev",
+    "build": "cd frontend && npm run build",
+    "preview": "cd frontend && npm run preview",
     "backend": "cd backend && node server.js",
     "start": "concurrently \"npm run backend\" \"npm run dev\""
   },

@@ -252,7 +252,7 @@ const Appointments = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Preferred Date *</label>
-                  <input name="date" type="date" required className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`} />
+                  <input name="date" type="date" min={new Date().toISOString().split('T')[0]} max={new Date(new Date().setMonth(new Date().getMonth() + 6)).toISOString().split('T')[0]} required className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`} />
                 </div>
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Preferred Time *</label>

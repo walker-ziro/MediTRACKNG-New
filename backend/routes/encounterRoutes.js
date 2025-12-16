@@ -25,7 +25,6 @@ router.get('/', auth, async (req, res) => {
 router.post('/', auth, async (req, res) => {
   try {
     const { healthId, patientId, type, date, time, status, clinicalNotes } = req.body;
-    const { id: providerId } = req.user;
 
     // Find patient by healthId or patientId
     let patient;
@@ -36,13 +35,32 @@ router.post('/', auth, async (req, res) => {
     }
 
     if (!patient) {
+      console.log('Encounter creation failed: Patient not found', { healthId, patientId });
       return res.status(404).json({ message: 'Patient not found' });
     }
 
     // Get Provider to find Facility
-    const provider = await Provider.findById(providerId);
+    // Fix: Use providerId from token (stored as userId) to find Provider
+    // The token structure is { id, userId, userType, role } where userId is the providerId
+    const providerId = req.user.providerId || req.user.userId;
+    let provider = await Provider.findOne({ providerId: providerId });
+    
     if (!provider) {
-      return res.status(404).json({ message: 'Provider not found' });
+      // Fallback: try finding by _id if providerId lookup fails (for legacy/dev data)
+      // Note: req.user.id comes from the JWT token which is the _id of the Auth record
+      // We need to check if there is a Provider record with that _id (unlikely as they are different collections)
+      // OR if the Auth record _id matches a Provider record _id (also unlikely)
+      
+      // Let's try to find the provider by email if providerId fails
+      // Note: email might not be in the token depending on how it was generated
+      if (req.user.email) {
+        provider = await Provider.findOne({ 'contact.email': req.user.email });
+      }
+      
+      if (!provider) {
+          console.log('Provider lookup failed for:', req.user);
+          return res.status(404).json({ message: 'Provider profile not found. Please contact support.' });
+      }
     }
 
     // Create new encounter
@@ -68,7 +86,7 @@ router.post('/', auth, async (req, res) => {
     });
   } catch (error) {
     console.error('Encounter creation error:', error);
-    res.status(500).json({ message: 'Server error during encounter creation' });
+    res.status(500).json({ message: 'Server error during encounter creation', error: error.message });
   }
 });
 

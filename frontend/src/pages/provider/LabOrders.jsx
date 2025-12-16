@@ -143,8 +143,8 @@ const LabOrders = () => {
               </tr>
             </thead>
             <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
-              {labOrders.map((order) => (
-                <tr key={order.id} className={`transition-colors ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
+              {labOrders.map((order, index) => (
+                <tr key={order.id || index} className={`transition-colors ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <span className="text-sm font-medium text-blue-600">{order.id}</span>
                   </td>

@@ -32,8 +32,8 @@ const PatientPrescriptions = () => {
             rx.medications.map((med, index) => ({
               id: `${rx._id}-${index}`,
               medication: med.drugName,
-              dosage: `${med.dosage || ''} ${med.frequency || ''}`.trim(),
-              duration: med.duration,
+              dosage: `${med.dosage?.amount || med.dosage || ''} ${med.dosage?.unit || ''} ${med.frequency || ''}`.trim(),
+              duration: `${med.duration?.value || med.duration || ''} ${med.duration?.unit || ''}`.trim(),
               doctor: rx.provider?.name || 'Unknown Doctor',
               date: new Date(rx.createdAt).toLocaleDateString(),
               status: rx.status,

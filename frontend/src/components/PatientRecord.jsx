@@ -125,11 +125,11 @@ const PatientRecord = () => {
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-2">
                 <div className={`w-16 h-16 ${darkMode ? 'bg-gray-700 text-white' : 'bg-gray-100 text-gray-900'} rounded-full flex items-center justify-center text-2xl font-bold`}>
-                  {patient.demographics.name.charAt(0).toUpperCase()}
+                  {patient.firstName.charAt(0).toUpperCase()}
                 </div>
                 <div>
                   <h2 className={`text-2xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    {patient.demographics.name}
+                    {patient.firstName} {patient.lastName}
                   </h2>
                   <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Health ID: <span className="font-semibold text-primary-700">{patient.healthId}</span></p>
                 </div>
@@ -139,23 +139,23 @@ const PatientRecord = () => {
                 <div>
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Age</p>
                   <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    {calculateAge(patient.demographics.dateOfBirth)} years
+                    {calculateAge(patient.dateOfBirth)} years
                   </p>
                 </div>
                 <div>
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Gender</p>
-                  <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{patient.demographics.gender}</p>
+                  <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>{patient.gender}</p>
                 </div>
                 <div>
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Date of Birth</p>
                   <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    {formatDate(patient.demographics.dateOfBirth)}
+                    {formatDate(patient.dateOfBirth)}
                   </p>
                 </div>
                 <div>
                   <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Phone</p>
                   <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-                    {patient.demographics.phone || 'N/A'}
+                    {patient.contact?.phone || 'N/A'}
                   </p>
                 </div>
               </div>
@@ -215,6 +215,12 @@ const PatientRecord = () => {
 
 // Overview Tab Component
 const OverviewTab = ({ patient }) => {
+  const formatAddress = (addr) => {
+    if (!addr) return 'Not provided';
+    if (typeof addr === 'string') return addr;
+    return `${addr.street || ''}, ${addr.city || ''}, ${addr.state || ''}`;
+  };
+
   return (
     <div className="space-y-6">
       {/* Demographics */}
@@ -230,16 +236,16 @@ const OverviewTab = ({ patient }) => {
         <div className={`${darkMode ? 'bg-gray-900' : 'bg-gray-50'} rounded-lg p-4 grid grid-cols-1 md:grid-cols-2 gap-4`}>
           <div>
             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Full Name</p>
-            <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{patient.demographics.name}</p>
+            <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{patient.firstName} {patient.lastName}</p>
           </div>
           <div>
             <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Address</p>
-            <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{patient.demographics.address || 'Not provided'}</p>
+            <p className={`font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{formatAddress(patient.contact?.address)}</p>
           </div>
         </div>
       </section>
 
-      {/* Medical History */}
+      {/* Medical History (Chronic Conditions) */}
       <section>
         <h3 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'} mb-4 flex items-center`}>
           <span className="w-8 h-8 bg-red-100 rounded-full flex items-center justify-center mr-3">
@@ -250,17 +256,17 @@ const OverviewTab = ({ patient }) => {
           Medical History
         </h3>
         <div className="bg-red-50 rounded-lg p-4">
-          {patient.medicalHistory && patient.medicalHistory.length > 0 ? (
+          {patient.chronicConditions && patient.chronicConditions.length > 0 ? (
             <ul className="space-y-2">
-              {patient.medicalHistory.map((item, index) => (
+              {patient.chronicConditions.map((item, index) => (
                 <li key={index} className="flex items-start">
                   <span className="text-red-600 mr-2">•</span>
-                  <span className={`${darkMode ? 'text-white' : 'text-gray-900'}`}>{item}</span>
+                  <span className={`${darkMode ? 'text-white' : 'text-gray-900'}`}>{item.condition} (Diagnosed: {new Date(item.diagnosedDate).toLocaleDateString()})</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} italic`}>No medical history recorded</p>
+            <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} italic`}>No chronic conditions recorded</p>
           )}
         </div>
       </section>
@@ -273,20 +279,20 @@ const OverviewTab = ({ patient }) => {
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z" />
             </svg>
           </span>
-          Medication History
+          Current Medications
         </h3>
         <div className="bg-green-50 rounded-lg p-4">
-          {patient.medicationHistory && patient.medicationHistory.length > 0 ? (
+          {patient.currentMedications && patient.currentMedications.length > 0 ? (
             <ul className="space-y-2">
-              {patient.medicationHistory.map((item, index) => (
+              {patient.currentMedications.map((item, index) => (
                 <li key={index} className="flex items-start">
                   <span className="text-green-600 mr-2">•</span>
-                  <span className={`${darkMode ? 'text-white' : 'text-gray-900'}`}>{item}</span>
+                  <span className={`${darkMode ? 'text-white' : 'text-gray-900'}`}>{item.medication} - {item.dosage} ({item.frequency})</span>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} italic`}>No medication history recorded</p>
+            <p className={`${darkMode ? 'text-gray-400' : 'text-gray-600'} italic`}>No current medications recorded</p>
           )}
         </div>
       </section>

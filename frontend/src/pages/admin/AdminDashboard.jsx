@@ -171,7 +171,7 @@ const AdminDashboard = () => {
           <div className="space-y-3">
             {recentActivity.length > 0 ? (
               recentActivity.map((activity, idx) => (
-                <div key={idx} className={`flex items-center justify-between p-3 ${darkMode ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg`}>
+                <Link to="/admin/audit-logs" key={idx} className={`flex items-center justify-between p-3 ${darkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-50 hover:bg-gray-100'} rounded-lg transition-colors block`}>
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 bg-${activity.color}-900 rounded-full flex items-center justify-center`}>
                       <i className={`fas fa-${activity.icon} text-${activity.color}-400 text-sm`}></i>
@@ -182,7 +182,7 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                   <span className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{activity.time}</span>
-                </div>
+                </Link>
               ))
             ) : (
               <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No recent activity recorded.</p>

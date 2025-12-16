@@ -5,7 +5,18 @@ const auth = require('../middleware/auth');
 const ProviderAuth = require('../models/ProviderAuth');
 const PatientAuth = require('../models/PatientAuth');
 const AdminAuth = require('../models/AdminAuth');
+const Patient = require('../models/Patient'); // Import Patient model
+const Provider = require('../models/Provider'); // Import Provider model
+const Facility = require('../models/Facility'); // Import Facility model
 const { sendOTP } = require('../utils/emailService');
+const { v4: uuidv4 } = require('uuid');
+
+// Helper function to generate unique Health ID
+const generateHealthId = () => {
+  const prefix = 'MTN';
+  const uniqueId = uuidv4().split('-')[0].toUpperCase();
+  return `${prefix}-${uniqueId}`;
+};
 
 // Generate JWT token
 const generateToken = (user, userType) => {
@@ -340,6 +351,44 @@ router.post('/patient/login', async (req, res) => {
       return res.status(401).json({ message: 'Invalid credentials' });
     }
 
+    // Self-healing: Ensure Health ID and Patient record exist
+    if (!patient.healthId) {
+      patient.healthId = generateHealthId();
+    }
+
+    const existingPatientRecord = await Patient.findOne({ healthId: patient.healthId });
+    if (!existingPatientRecord) {
+      try {
+        const newPatient = new Patient({
+          healthId: patient.healthId,
+          firstName: patient.firstName,
+          lastName: patient.lastName,
+          dateOfBirth: patient.dateOfBirth,
+          gender: patient.gender,
+          // Only set bloodGroup/genotype if they have valid values (not empty strings)
+          ...(patient.bloodType && { bloodGroup: patient.bloodType }),
+          ...(patient.genotype && { genotype: patient.genotype }),
+          contact: {
+            phone: patient.phone,
+            email: patient.email,
+            address: {
+              street: patient.address?.street,
+              city: patient.address?.city,
+              state: patient.address?.state || 'Unknown',
+              country: patient.address?.country || 'Nigeria'
+            }
+          },
+          emergencyContact: patient.emergencyContact,
+          allergies: (patient.allergies || []).map(a => ({ allergen: a })),
+          chronicConditions: (patient.chronicConditions || []).map(c => ({ condition: c }))
+        });
+        await newPatient.save();
+      } catch (createError) {
+        console.error('Error creating patient record during login:', createError);
+        // Continue login even if profile creation fails, but log it
+      }
+    }
+
     // Reset login attempts and update last login
     patient.loginAttempts = 0;
     patient.lockUntil = undefined;
@@ -369,7 +418,8 @@ router.post('/patient/login', async (req, res) => {
         age: patient.getAge(),
         bloodType: patient.bloodType,
         photo: patient.photo,
-        permissions: patient.permissions
+        permissions: patient.permissions,
+        createdAt: patient.createdAt
       }
     });
   } catch (error) {
@@ -861,6 +911,97 @@ router.post('/verify-otp', async (req, res) => {
     user.isVerified = true;
     user.otp = undefined;
     user.otpExpires = undefined;
+    
+    // If patient, generate Health ID and create Patient record if not exists
+    if (userType === 'patient') {
+      if (!user.healthId) {
+        user.healthId = generateHealthId();
+      }
+
+      // Check if Patient record exists
+      const existingPatientRecord = await Patient.findOne({ healthId: user.healthId });
+      
+      if (!existingPatientRecord) {
+        // Create Patient record
+        try {
+          const newPatient = new Patient({
+            healthId: user.healthId,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            dateOfBirth: user.dateOfBirth,
+            gender: user.gender,
+            // Only set bloodGroup/genotype if they have valid values
+            ...(user.bloodType && { bloodGroup: user.bloodType }),
+            ...(user.genotype && { genotype: user.genotype }),
+            contact: {
+              phone: user.phone,
+              email: user.email,
+              address: {
+                street: user.address?.street,
+                city: user.address?.city,
+                state: user.address?.state || 'Unknown',
+                country: user.address?.country || 'Nigeria'
+              }
+            },
+            emergencyContact: user.emergencyContact,
+            allergies: (user.allergies || []).map(a => ({ allergen: a })),
+            chronicConditions: (user.chronicConditions || []).map(c => ({ condition: c }))
+          });
+          
+          await newPatient.save();
+        } catch (createError) {
+          console.error('Error creating patient record during verification:', createError);
+        }
+      }
+    } else if (userType === 'provider') {
+      // Check if Provider record exists
+      const existingProvider = await Provider.findOne({ providerId: user.providerId });
+      
+      if (!existingProvider) {
+        try {
+          // Find or Create Facility
+          let facility = await Facility.findOne({ facilityId: user.facilityId });
+          
+          if (!facility) {
+            // Create placeholder facility
+            facility = await Facility.create({
+              facilityId: user.facilityId,
+              name: user.facilityName || 'Unknown Facility',
+              type: 'General Hospital', // Default
+              location: {
+                state: 'Lagos', // Default
+                address: 'Unknown Address',
+                city: 'Unknown City'
+              },
+              contact: {
+                email: user.email // Use provider email as contact for now
+              }
+            });
+          }
+
+          const newProvider = new Provider({
+            providerId: user.providerId,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            specialization: user.specialization,
+            providerType: user.role,
+            licenseNumber: user.licenseNumber,
+            licenseExpiry: user.licenseExpiryDate,
+            primaryFacility: facility._id,
+            contact: {
+              email: user.email,
+              phone: user.phone
+            },
+            username: user.email,
+            password: user.password
+          });
+
+          await newProvider.save();
+        } catch (createError) {
+          console.error('Error creating provider record during verification:', createError);
+        }
+      }
+    }
     
     await user.save();
 

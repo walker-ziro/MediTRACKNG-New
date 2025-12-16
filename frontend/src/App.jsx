@@ -71,7 +71,7 @@ function App() {
   const darkMode = theme && theme.toLowerCase() === 'dark';
   return (
 
-    <Router>
+    <Router future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <div className={`min-h-screen ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
           <Routes>
           <Route path="/login" element={<Login />} />

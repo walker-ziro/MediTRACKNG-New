@@ -46,7 +46,9 @@ const encounterSchema = new mongoose.Schema({
       'Telehealth',
       'Follow-up',
       'Referral',
-      'Health Screening'
+      'Health Screening',
+      'Consultation',
+      'Procedure'
     ],
     required: true
   },

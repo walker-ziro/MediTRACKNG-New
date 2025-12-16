@@ -192,7 +192,25 @@ const Encounters = () => {
                 </div>
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Date & Time *</label>
-                  <input name="datetime" type="datetime-local" required className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`} />
+                  <input 
+                    name="datetime" 
+                    type="datetime-local" 
+                    required 
+                    min="1900-01-01T00:00"
+                    max={new Date(new Date().setMonth(new Date().getMonth() + 6)).toISOString().slice(0, 16)}
+                    onChange={(e) => {
+                      const selectedDate = new Date(e.target.value);
+                      const minDate = new Date('1900-01-01');
+                      const maxDate = new Date();
+                      maxDate.setMonth(maxDate.getMonth() + 6);
+                      
+                      if (selectedDate < minDate || selectedDate > maxDate) {
+                        e.target.value = '';
+                        alert('Please select a valid date between 1900 and 6 months from now.');
+                      }
+                    }}
+                    className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`} 
+                  />
                 </div>
               </div>
               <div>

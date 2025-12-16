@@ -62,8 +62,10 @@ const Prescriptions = () => {
     try {
       const selectedPatient = patients.find(p => p.healthId === formData.patientId);
       const payload = {
-        healthId: formData.patientId,
-        patientName: selectedPatient ? `${selectedPatient.firstName} ${selectedPatient.lastName}` : '',
+        patient: {
+            healthId: formData.patientId,
+            name: selectedPatient ? `${selectedPatient.firstName} ${selectedPatient.lastName}` : '',
+        },
         provider: {
             providerId: userData.providerId || userData.id || userData._id,
             name: `${userData.firstName} ${userData.lastName}`,
@@ -82,14 +84,14 @@ const Prescriptions = () => {
 
       const response = await postData('/prescriptions', payload);
       if (response) {
-        const rx = response.prescription || response; // Adjust based on API response
+        const rx = response.prescription || response.data || response; // Adjust based on API response
         const newPrescriptions = rx.medications.map((med, index) => ({
           id: `${rx.prescriptionId || rx._id}-${index}`,
-          patient: payload.patientName,
-          healthId: payload.healthId,
+          patient: payload.patient.name,
+          healthId: payload.patient.healthId,
           medication: med.drugName,
-          dosage: `${med.dosage} ${med.frequency}`.trim(),
-          duration: med.duration,
+          dosage: `${med.dosage.amount || med.dosage} ${med.dosage.unit || ''} ${med.frequency || ''}`.trim(),
+          duration: med.duration.value ? `${med.duration.value} ${med.duration.unit}` : med.duration,
           date: new Date().toLocaleDateString(),
           status: 'Active'
         }));

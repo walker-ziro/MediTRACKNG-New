@@ -18,6 +18,8 @@ const DRUG_INTERACTIONS = {
   'Prednisone': ['NSAIDs', 'Warfarin', 'Diabetes medications']
 };
 
+const { v4: uuidv4 } = require('uuid');
+
 // @desc    Create new prescription
 // @route   POST /api/prescriptions
 // @access  Private
@@ -29,6 +31,7 @@ router.post('/', auth, async (req, res) => {
     const patientRecord = await Patient.findOne({ healthId: patient.healthId });
     
     if (!patientRecord) {
+      console.log('Patient not found for healthId:', patient.healthId);
       return res.status(404).json({
         success: false,
         message: 'Patient not found'
@@ -44,31 +47,67 @@ router.post('/', auth, async (req, res) => {
         int.drug1 === med.drugName || int.drug2 === med.drugName
       );
       
+      // Parse dosage if it's a string
+      let dosageObj = { amount: '0', unit: 'mg' };
+      if (typeof med.dosage === 'string') {
+        const parts = med.dosage.split(' ');
+        if (parts.length >= 2) {
+            dosageObj = { amount: parts[0], unit: parts.slice(1).join(' ') };
+        } else {
+            dosageObj = { amount: med.dosage, unit: 'unit' };
+        }
+      } else if (med.dosage) {
+        dosageObj = med.dosage;
+      }
+
+      // Parse duration if it's a string
+      let durationObj = { value: 1, unit: 'days' };
+      if (typeof med.duration === 'string') {
+         const parts = med.duration.split(' ');
+         if (parts.length >= 2) {
+             durationObj = { value: parseInt(parts[0]) || 1, unit: parts.slice(1).join(' ') };
+         } else {
+             durationObj = { value: parseInt(med.duration) || 1, unit: 'days' };
+         }
+      } else if (med.duration) {
+        durationObj = med.duration;
+      }
+
       return {
         ...med,
+        dosage: dosageObj,
+        duration: durationObj,
         interactions: medInteractions.map(int => int.description),
         warnings: [
-          ...checkAllergies(med, patientRecord.medicalHistory?.allergies || []),
-          ...checkContraindications(med, patientRecord.medicalHistory?.chronicConditions || [])
+          ...checkAllergies(med, patientRecord.allergies || []), // Fixed: allergies is at root
+          ...checkContraindications(med, patientRecord.chronicConditions || []) // Fixed: chronicConditions is at root
         ]
       };
     });
     
+    // Ensure provider details are present
+    // Fix: Use userId from token if providerId is missing
+    const providerId = req.user.providerId || req.user.userId || 'UNKNOWN';
+    const providerName = `${req.user.firstName || 'Dr.'} ${req.user.lastName || 'Provider'}`;
+    
     const prescription = await Prescription.create({
-      ...req.body,
+      prescriptionId: `RX-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${uuidv4().split('-')[0].toUpperCase()}`,
       patient: {
         healthId: patient.healthId,
-        name: patientRecord.demographics?.name,
-        age: calculateAge(patientRecord.demographics?.dateOfBirth),
-        allergies: patientRecord.medicalHistory?.allergies || []
+        name: patientRecord.firstName + ' ' + patientRecord.lastName, // Fixed: name construction
+        age: calculateAge(patientRecord.dateOfBirth), // Fixed: dateOfBirth is at root
+        allergies: patientRecord.allergies?.map(a => a.allergen) || [] // Fixed: allergies structure
       },
       provider: {
-        providerId: req.user.providerId,
-        name: `${req.user.firstName} ${req.user.lastName}`,
-        licenseNumber: req.user.licenseNumber,
-        specialization: req.user.specialization
+        providerId: providerId,
+        name: providerName,
+        licenseNumber: req.user.licenseNumber || 'N/A',
+        specialization: req.user.specialization || 'General'
       },
-      medications: enhancedMedications
+      medications: enhancedMedications,
+      diagnosis,
+      clinicalNotes,
+      encounterId
     });
     
     // Create notification for patient

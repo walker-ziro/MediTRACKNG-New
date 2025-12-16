@@ -60,7 +60,18 @@ const Patients = () => {
   });
 
   const handleFormChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+    const { name, value } = e.target;
+    
+    if (name === 'dateOfBirth') {
+      const selectedDate = new Date(value);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (selectedDate > today) {
+        return; // Prevent selecting future dates
+      }
+    }
+    setFormData({ ...formData, [name]: value });
   };
 
   const handleSubmit = async (e) => {
@@ -374,7 +385,7 @@ const Patients = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Date of Birth *</label>
-                  <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleFormChange} required className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`} />
+                  <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleFormChange} min="1900-01-01" max={new Date().toISOString().split('T')[0]} required className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`} />
                 </div>
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Gender *</label>
@@ -541,7 +552,7 @@ const Patients = () => {
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Date of Birth *</label>
-                  <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleFormChange} required className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`} />
+                  <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleFormChange} min="1900-01-01" max={new Date().toISOString().split('T')[0]} required className={`w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-300 bg-white'}`} />
                 </div>
                 <div>
                   <label className={`block text-sm font-medium mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Gender *</label>

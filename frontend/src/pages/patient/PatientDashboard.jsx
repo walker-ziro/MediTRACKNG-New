@@ -153,7 +153,7 @@ const PatientDashboard = () => {
           <div className="space-y-3">
             {upcomingAppointments.length > 0 ? (
               upcomingAppointments.map((apt, idx) => (
-              <div key={idx} className={`flex items-center justify-between p-3 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} rounded-lg hover:bg-gray-100 transition-colors`}>
+              <Link to="/patient/appointments" key={idx} className={`flex items-center justify-between p-3 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} rounded-lg hover:bg-gray-100 transition-colors block`}>
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
                     <i className="fas fa-user-md text-green-600"></i>
@@ -166,7 +166,7 @@ const PatientDashboard = () => {
                     <p className="text-xs text-gray-400">{new Date(apt.date).toLocaleDateString()} at {apt.time}</p>
                   </div>
                 </div>
-              </div>
+              </Link>
             ))
             ) : (
               <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No upcoming appointments.</p>

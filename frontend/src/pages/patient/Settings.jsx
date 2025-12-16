@@ -95,7 +95,8 @@ const PatientSettings = () => {
       // 2. Pass options to browser
       let attResp;
       try {
-        attResp = await startRegistration(options);
+        // Pass optionsJSON as expected by @simplewebauthn/browser v10+
+        attResp = await startRegistration({ optionsJSON: options });
         console.log('Registration response:', attResp);
       } catch (error) {
         console.error('startRegistration error:', error);
@@ -117,8 +118,12 @@ const PatientSettings = () => {
         showNotification('Registration failed.', 'error');
       }
     } catch (error) {
-      console.error(error);
-      showNotification('Biometric registration failed', 'error');
+      console.error('Registration error details:', error);
+      if (error.response) {
+        console.error('Server error response:', error.response.data);
+      }
+      const errorMsg = error.response?.data?.error || error.message || 'Biometric registration failed';
+      showNotification(errorMsg, 'error');
     }
   };
 
@@ -220,6 +225,7 @@ const PatientSettings = () => {
                   name="dateOfBirth"
                   value={formData.dateOfBirth}
                   onChange={handleChange}
+                  max={new Date().toISOString().split('T')[0]}
                   className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200'}`}
                 />
               </div>

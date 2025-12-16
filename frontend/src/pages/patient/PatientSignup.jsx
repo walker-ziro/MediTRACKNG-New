@@ -58,6 +58,16 @@ const PatientSignup = ({ isEmbedded = false }) => {
   const handleChange = (e) => {
     const { name, value } = e.target;
     
+    if (name === 'dateOfBirth') {
+      const selectedDate = new Date(value);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (selectedDate > today) {
+        return; // Prevent selecting future dates
+      }
+    }
+
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
       setFormData({
@@ -321,6 +331,8 @@ const PatientSignup = ({ isEmbedded = false }) => {
                   name="dateOfBirth"
                   value={formData.dateOfBirth}
                   onChange={handleChange}
+                  min="1900-01-01"
+                  max={new Date().toISOString().split('T')[0]}
                   className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />

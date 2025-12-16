@@ -23,9 +23,21 @@ const NewPatientModal = ({ onClose, onSuccess }) => {
   const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
+    const { name, value } = e.target;
+    
+    if (name === 'dateOfBirth') {
+      const selectedDate = new Date(value);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      if (selectedDate > today) {
+        return; // Prevent selecting future dates
+      }
+    }
+
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [name]: value
     });
     setError('');
   };
@@ -136,6 +148,8 @@ const NewPatientModal = ({ onClose, onSuccess }) => {
                     name="dateOfBirth"
                     value={formData.dateOfBirth}
                     onChange={handleChange}
+                    min="1900-01-01"
+                    max={new Date().toISOString().split('T')[0]}
                     className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
                       darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300'
                     }`}

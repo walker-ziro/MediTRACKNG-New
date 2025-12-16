@@ -7,7 +7,9 @@ const AuditLogs = () => {
   const { fetchData } = useApi();
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('suspicious'); // 'suspicious' or 'all'
+  const [filter, setFilter] = useState('all'); // Default to 'all' to show activity immediately
+
+  const [selectedLog, setSelectedLog] = useState(null);
 
   useEffect(() => {
     const loadLogs = async () => {
@@ -69,6 +71,7 @@ const AuditLogs = () => {
             <thead className="bg-gray-750 border-b border-gray-700">
               <tr>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase">Timestamp</th>
+                <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase">Type</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase">User</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase">Action</th>
                 <th className="px-6 py-4 text-left text-xs font-medium text-gray-400 uppercase">Resource</th>
@@ -79,17 +82,32 @@ const AuditLogs = () => {
             <tbody className="divide-y divide-gray-700">
               {loading ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-4 text-center text-gray-400">Loading logs...</td>
+                  <td colSpan="7" className="px-6 py-4 text-center text-gray-400">Loading logs...</td>
                 </tr>
               ) : logs.length === 0 ? (
                 <tr>
-                  <td colSpan="6" className="px-6 py-4 text-center text-gray-400">No logs found</td>
+                  <td colSpan="7" className="px-6 py-4 text-center text-gray-400">No logs found</td>
                 </tr>
               ) : (
                 logs.map((log) => (
                   <tr key={log._id} className="hover:bg-gray-750 transition-colors">
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-400">
                       {new Date(log.timestamp).toLocaleString()}
+                    </td>
+                    <td className="px-6 py-4 whitespace-nowrap">
+                      {log.suspicious ? (
+                        <span className="px-2 py-1 rounded text-xs font-medium bg-red-900/50 text-red-300 border border-red-800">
+                          Suspicious
+                        </span>
+                      ) : log.wasEmergencyAccess ? (
+                        <span className="px-2 py-1 rounded text-xs font-medium bg-orange-900/50 text-orange-300 border border-orange-800">
+                          Emergency
+                        </span>
+                      ) : (
+                        <span className="px-2 py-1 rounded text-xs font-medium bg-gray-700 text-gray-300 border border-gray-600">
+                          Standard
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
                       <div className="text-sm font-medium text-white">
@@ -115,7 +133,12 @@ const AuditLogs = () => {
                       </span>
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-400">
-                      {log.suspiciousReason || log.dataAccessed || '-'}
+                      <button 
+                        onClick={() => setSelectedLog(log)}
+                        className="text-blue-400 hover:text-blue-300 hover:underline focus:outline-none"
+                      >
+                        {log.suspiciousReason ? 'View Alert' : 'View Details'}
+                      </button>
                     </td>
                   </tr>
                 ))
@@ -124,6 +147,111 @@ const AuditLogs = () => {
           </table>
         </div>
       </div>
+
+      {/* Log Details Modal */}
+      {selectedLog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className={`w-full max-w-2xl rounded-xl shadow-2xl overflow-hidden ${darkMode ? 'bg-gray-800' : 'bg-white'}`}>
+            <div className="p-6 border-b border-gray-700 flex justify-between items-center">
+              <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>
+                Log Details
+              </h3>
+              <button 
+                onClick={() => setSelectedLog(null)}
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6 max-h-[70vh] overflow-y-auto">
+              <div className="grid grid-cols-2 gap-6 mb-6">
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Timestamp</label>
+                  <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    {new Date(selectedLog.timestamp).toLocaleString()}
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Log Type</label>
+                  <div className="flex items-center gap-2">
+                    {selectedLog.suspicious && (
+                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-red-900/50 text-red-300 border border-red-800">
+                        Suspicious
+                      </span>
+                    )}
+                    {selectedLog.wasEmergencyAccess && (
+                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-orange-900/50 text-orange-300 border border-orange-800">
+                        Emergency
+                      </span>
+                    )}
+                    {!selectedLog.suspicious && !selectedLog.wasEmergencyAccess && (
+                      <span className="px-2 py-0.5 rounded text-xs font-medium bg-gray-700 text-gray-300 border border-gray-600">
+                        Standard
+                      </span>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 uppercase mb-1">User</label>
+                  <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    {selectedLog.accessedBy?.firstName} {selectedLog.accessedBy?.lastName}
+                  </p>
+                  <p className="text-xs text-gray-500">{selectedLog.accessedBy?.role || 'User'}</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-500 uppercase mb-1">Action</label>
+                  <p className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                    {selectedLog.actionType} on {selectedLog.resourceType}
+                  </p>
+                </div>
+              </div>
+
+              <div className={`p-4 rounded-lg mb-6 ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+                <h4 className="text-sm font-medium text-gray-400 mb-3 uppercase">Access Details</h4>
+                <div className="space-y-3">
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-500">Status:</span>
+                    <span className={`text-sm font-medium ${
+                      selectedLog.accessResult === 'Success' ? 'text-green-400' : 'text-red-400'
+                    }`}>
+                      {selectedLog.accessResult}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-sm text-gray-500">IP Address:</span>
+                    <span className={`text-sm ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                      {selectedLog.ipAddress || 'N/A'}
+                    </span>
+                  </div>
+                  {selectedLog.suspiciousReason && (
+                    <div className="pt-2 border-t border-gray-700">
+                      <span className="block text-sm text-red-400 font-medium mb-1">Suspicious Activity Reason:</span>
+                      <p className="text-sm text-gray-300">{selectedLog.suspiciousReason}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-500 uppercase mb-2">Raw Data</label>
+                <pre className={`p-4 rounded-lg text-xs overflow-x-auto ${darkMode ? 'bg-black text-green-400' : 'bg-gray-100 text-gray-800'}`}>
+                  {JSON.stringify(selectedLog, null, 2)}
+                </pre>
+              </div>
+            </div>
+            <div className="p-6 border-t border-gray-700 flex justify-end">
+              <button
+                onClick={() => setSelectedLog(null)}
+                className={`px-4 py-2 rounded-lg font-medium ${darkMode ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-gray-200 hover:bg-gray-300 text-gray-800'}`}
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

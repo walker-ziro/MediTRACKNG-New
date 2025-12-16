@@ -31,7 +31,12 @@ const PatientLogin = ({ isEmbedded = false }) => {
       const response = await api.post('/multi-auth/patient/login', formData);
       const data = response.data;
 
-      // Token is now handled via httpOnly cookie
+      // Save token to localStorage for PrivateRoute check
+      if (data.token) {
+        localStorage.setItem('token', data.token);
+      }
+      
+      // Token is also handled via httpOnly cookie for security
       localStorage.setItem('userType', data.userType);
       localStorage.setItem('userData', JSON.stringify(data.user));
       navigate('/patient/dashboard');

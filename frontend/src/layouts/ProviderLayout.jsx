@@ -240,7 +240,7 @@ const ProviderLayout = () => {
                   className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg transition-colors"
                 >
                   <img
-                    src={userData.photo || 'https://via.placeholder.com/40'}
+                    src={userData.photo || `https://ui-avatars.com/api/?name=${userData.name || 'User'}&background=random`}
                     alt="Profile"
                     className="w-10 h-10 rounded-full"
                   />
