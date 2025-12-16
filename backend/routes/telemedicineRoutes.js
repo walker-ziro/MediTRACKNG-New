@@ -4,6 +4,9 @@ const Telemedicine = require('../models/Telemedicine');
 const Patient = require('../models/Patient');
 const auth = require('../middleware/auth');
 
+const { createNotification } = require('../utils/notificationService');
+const PatientAuth = require('../models/PatientAuth');
+
 // Helper function to generate meeting room
 const generateMeetingRoom = () => {
   const roomId = Math.random().toString(36).substring(2, 15);
@@ -19,12 +22,18 @@ const generateMeetingRoom = () => {
 };
 
 // Helper to create notification
-const createNotification = async (healthId, title, message, type = 'Info') => {
+const sendNotification = async (healthId, title, message, type = 'system') => {
   try {
-    // Notification model is currently incompatible with patient notifications
-    // const Notification = require('../models/Notification');
-    // await Notification.create({ ... });
-    console.log(`[Mock Notification] To: ${healthId}, Title: ${title}, Message: ${message}`);
+    const patientAuth = await PatientAuth.findOne({ healthId });
+    if (patientAuth) {
+      await createNotification({
+        recipient: patientAuth._id,
+        recipientModel: 'PatientAuth',
+        type,
+        title,
+        message
+      });
+    }
   } catch (error) {
     console.error('Error creating notification:', error);
   }
@@ -86,15 +95,13 @@ router.post('/', auth, async (req, res) => {
       meetingRoom
     });
 
-    // Notify patient (Disabled temporarily due to model mismatch)
-    /*
-    await createNotification(
+    // Notify patient
+    await sendNotification(
       patientHealthId,
       'Telemedicine Consultation Scheduled',
       `Your virtual consultation is scheduled for ${new Date(scheduledDate).toLocaleString()}. Meeting URL: ${meetingRoom.meetingUrl}`,
-      'Info'
+      'appointment'
     );
-    */
 
     res.status(201).json({
       message: 'Telemedicine consultation scheduled successfully',
@@ -194,11 +201,11 @@ router.post('/:id/start', auth, async (req, res) => {
     await consultation.save();
 
     // Notify patient
-    await createNotification(
+    await sendNotification(
       consultation.patient.healthId,
       'Consultation Started',
       `Your virtual consultation with ${consultation.provider.name} has started. Join now: ${consultation.meetingRoom.meetingUrl}`,
-      'Important'
+      'appointment'
     );
 
     res.json({
@@ -260,11 +267,11 @@ router.post('/:id/complete', auth, async (req, res) => {
       notificationMessage += ` Follow-up scheduled for ${new Date(followUp.scheduledDate).toLocaleDateString()}.`;
     }
 
-    await createNotification(
+    await sendNotification(
       consultation.patient.healthId,
       'Consultation Completed',
       notificationMessage,
-      'Info'
+      'appointment'
     );
 
     res.json({
@@ -296,11 +303,11 @@ router.put('/:id/cancel', auth, async (req, res) => {
     await consultation.save();
 
     // Notify patient
-    await createNotification(
+    await sendNotification(
       consultation.patient.healthId,
       'Consultation Cancelled',
       `Your consultation scheduled for ${new Date(consultation.scheduledDate).toLocaleString()} has been cancelled. Reason: ${reason}`,
-      'Important'
+      'appointment'
     );
 
     res.json({
@@ -338,11 +345,11 @@ router.put('/:id/reschedule', auth, async (req, res) => {
     await consultation.save();
 
     // Notify patient
-    await createNotification(
+    await sendNotification(
       consultation.patient.healthId,
       'Consultation Rescheduled',
       `Your consultation has been rescheduled from ${new Date(oldDate).toLocaleString()} to ${new Date(newDate).toLocaleString()}. ${reason ? `Reason: ${reason}` : ''} New meeting link: ${consultation.meetingRoom.meetingUrl}`,
-      'Important'
+      'appointment'
     );
 
     res.json({
@@ -442,11 +449,11 @@ router.put('/:id/payment', auth, async (req, res) => {
 
     // Notify patient
     if (status === 'Paid') {
-      await createNotification(
+      await sendNotification(
         consultation.patient.healthId,
         'Payment Confirmed',
         `Payment of ₦${amount} for telemedicine consultation has been confirmed. Transaction ID: ${transactionId}`,
-        'Info'
+        'system'
       );
     }
 

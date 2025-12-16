@@ -111,6 +111,18 @@ router.post('/provider/register', async (req, res) => {
     provider.setRolePermissions();
     await provider.save();
 
+    // Check email configuration
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
+      console.error('Email configuration missing: GMAIL_USER or GMAIL_PASS not set.');
+      // For development/testing without email, we might want to allow registration but warn
+      // But for security, we should probably fail or handle it differently.
+      // For now, let's fail with a clear message so the user knows what to fix.
+      await ProviderAuth.findByIdAndDelete(provider._id);
+      return res.status(500).json({ 
+        message: 'Server email configuration is missing. Please set GMAIL_USER and GMAIL_PASS environment variables.' 
+      });
+    }
+
     // Send OTP Email
     let emailSent = false;
     try {
@@ -289,12 +301,26 @@ router.post('/patient/register', async (req, res) => {
     // Create new patient
     const patient = await PatientAuth.create(patientData);
 
+    // Check email configuration
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
+      console.error('Email configuration missing: GMAIL_USER or GMAIL_PASS not set.');
+      await PatientAuth.findByIdAndDelete(patient._id);
+      return res.status(500).json({ 
+        message: 'Server email configuration is missing. Please set GMAIL_USER and GMAIL_PASS environment variables.' 
+      });
+    }
+
     // Send OTP Email
     let emailSent = false;
     try {
       emailSent = await sendOTP(email, otp);
     } catch (emailError) {
       console.error('Email sending failed:', emailError);
+    }
+
+    if (!emailSent) {
+      await PatientAuth.findByIdAndDelete(patient._id);
+      return res.status(500).json({ message: 'Failed to send verification email. Please check your email address or try again later.' });
     }
 
     if (!emailSent) {
@@ -1061,8 +1087,19 @@ router.post('/resend-otp', async (req, res) => {
     user.otpExpires = otpExpires;
     await user.save();
 
+    // Check email configuration
+    if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
+      return res.status(500).json({ 
+        message: 'Server email configuration is missing. Please set GMAIL_USER and GMAIL_PASS environment variables.' 
+      });
+    }
+
     // Send OTP Email
-    await sendOTP(email, otp);
+    const emailSent = await sendOTP(email, otp);
+
+    if (!emailSent) {
+      return res.status(500).json({ message: 'Failed to send verification email. Please try again later.' });
+    }
 
     res.json({ message: 'OTP resent successfully' });
 

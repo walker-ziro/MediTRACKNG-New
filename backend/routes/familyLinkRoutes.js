@@ -3,18 +3,22 @@ const router = express.Router();
 const FamilyLink = require('../models/FamilyLink');
 const Patient = require('../models/Patient');
 const auth = require('../middleware/auth');
+const { createNotification } = require('../utils/notificationService');
+const PatientAuth = require('../models/PatientAuth');
 
 // Helper to create notification
-const createNotification = async (healthId, title, message, type = 'Info') => {
+const sendNotification = async (healthId, title, message, type = 'system') => {
   try {
-    const Notification = require('../models/Notification');
-    await Notification.create({
-      patientHealthId: healthId,
-      title,
-      message,
-      type,
-      priority: type === 'Important' ? 'High' : 'Medium'
-    });
+    const patientAuth = await PatientAuth.findOne({ healthId });
+    if (patientAuth) {
+      await createNotification({
+        recipient: patientAuth._id,
+        recipientModel: 'PatientAuth',
+        type,
+        title,
+        message
+      });
+    }
   } catch (error) {
     console.error('Error creating notification:', error);
   }
@@ -51,11 +55,11 @@ router.post('/', auth, async (req, res) => {
     });
 
     // Notify primary member
-    await createNotification(
+    await sendNotification(
       primaryHealthId,
       'Family Health Link Created',
       'Your family health link has been created. You can now add family members to share health information.',
-      'Info'
+      'system'
     );
 
     res.status(201).json({
@@ -134,18 +138,18 @@ router.post('/:linkId/members', auth, async (req, res) => {
     await familyLink.save();
 
     // Notify both members
-    await createNotification(
+    await sendNotification(
       familyLink.primaryMember.healthId,
       'Family Member Added',
       `${newMember.name} has been added to your family health link. Status: Pending verification.`,
-      'Info'
+      'system'
     );
 
-    await createNotification(
+    await sendNotification(
       healthId,
       'Family Link Request',
       `${familyLink.primaryMember.name} has requested to link your health records as ${relationship}. Please verify to activate.`,
-      'Important'
+      'system'
     );
 
     res.status(201).json({
@@ -232,18 +236,18 @@ router.put('/:linkId/members/:memberId/verify', auth, async (req, res) => {
     await familyLink.save();
 
     // Notify both members
-    await createNotification(
+    await sendNotification(
       familyLink.primaryMember.healthId,
       'Member Verified',
       `${member.name} has verified and accepted the family link. Status: Active.`,
-      'Info'
+      'system'
     );
 
-    await createNotification(
+    await sendNotification(
       member.healthId,
       'Family Link Activated',
       `Your family health link with ${familyLink.primaryMember.name} is now active.`,
-      'Info'
+      'system'
     );
 
     res.json({
@@ -284,11 +288,11 @@ router.put('/:linkId/members/:memberId/permissions', auth, async (req, res) => {
     await familyLink.save();
 
     // Notify member
-    await createNotification(
+    await sendNotification(
       member.healthId,
       'Permissions Updated',
       `Your access permissions for ${familyLink.primaryMember.name}'s health records have been updated.`,
-      'Info'
+      'system'
     );
 
     res.json({
@@ -326,18 +330,18 @@ router.post('/:linkId/members/:memberId/revoke', auth, async (req, res) => {
     await familyLink.save();
 
     // Notify both members
-    await createNotification(
+    await sendNotification(
       familyLink.primaryMember.healthId,
       'Member Access Revoked',
       `Access for ${member.name} has been revoked.`,
-      'Info'
+      'system'
     );
 
-    await createNotification(
+    await sendNotification(
       member.healthId,
       'Family Link Revoked',
       `Your access to ${familyLink.primaryMember.name}'s health records has been revoked. ${reason ? `Reason: ${reason}` : ''}`,
-      'Important'
+      'system'
     );
 
     res.json({

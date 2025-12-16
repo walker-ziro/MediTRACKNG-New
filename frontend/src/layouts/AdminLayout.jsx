@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, Outlet, useLocation } from 'react-router-dom';
 import { useSettings } from '../context/SettingsContext';
+import { api } from '../utils/api';
+import Footer from '../components/Footer';
 
 const AdminLayout = () => {
   const navigate = useNavigate();
@@ -11,6 +13,22 @@ const AdminLayout = () => {
   const [showProfile, setShowProfile] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const response = await api.get('/notifications');
+        setNotifications(response.data);
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      }
+    };
+
+    if (userData) {
+      fetchNotifications();
+    }
+  }, [userData]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -315,8 +333,11 @@ const AdminLayout = () => {
         </header>
 
         {/* Main Content */}
-        <main className={`flex-1 overflow-y-auto ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
-          <Outlet />
+        <main className={`flex-1 overflow-y-auto ${darkMode ? 'bg-gray-900' : 'bg-white'} flex flex-col`}>
+          <div className="flex-1">
+            <Outlet />
+          </div>
+          <Footer />
         </main>
       </div>
 
@@ -334,18 +355,21 @@ const AdminLayout = () => {
                 </button>
               </div>
               <div className="space-y-4">
-                <div className="p-4 bg-red-900/50 border border-red-700 rounded-lg">
-                  <p className="font-semibold text-sm text-white">Security Alert</p>
-                  <p className="text-xs text-gray-300 mt-1">Unusual login attempt detected - Lagos, Nigeria</p>
-                </div>
-                <div className="p-4 bg-yellow-900/50 border border-yellow-700 rounded-lg">
-                  <p className="font-semibold text-sm text-white">Pending Approvals</p>
-                  <p className="text-xs text-gray-300 mt-1">18 provider registrations awaiting approval</p>
-                </div>
-                <div className="p-4 bg-blue-900/50 border border-blue-700 rounded-lg">
-                  <p className="font-semibold text-sm text-white">System Update</p>
-                  <p className="text-xs text-gray-300 mt-1">New features deployed successfully</p>
-                </div>
+                {notifications.length === 0 ? (
+                  <p className={`text-center py-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No new notifications</p>
+                ) : (
+                  notifications.map((notification) => (
+                    <div key={notification._id} className={`p-4 rounded-lg ${
+                      notification.type === 'emergency' ? 'bg-red-900/50 border border-red-700' :
+                      notification.type === 'system' ? 'bg-blue-900/50 border border-blue-700' :
+                      'bg-gray-800 border border-gray-700'
+                    }`}>
+                      <p className="font-semibold text-sm text-white">{notification.title}</p>
+                      <p className="text-xs text-gray-300 mt-1">{notification.message}</p>
+                      <p className="text-xs text-gray-500 mt-1">{new Date(notification.createdAt).toLocaleString()}</p>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>

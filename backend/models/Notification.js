@@ -3,8 +3,13 @@ const mongoose = require('mongoose');
 const notificationSchema = new mongoose.Schema({
   recipient: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Provider',
-    required: true
+    required: true,
+    refPath: 'recipientModel'
+  },
+  recipientModel: {
+    type: String,
+    required: true,
+    enum: ['ProviderAuth', 'PatientAuth', 'AdminAuth']
   },
   type: {
     type: String,

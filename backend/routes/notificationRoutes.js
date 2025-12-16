@@ -6,7 +6,17 @@ const auth = require('../middleware/auth'); // Assuming auth middleware exists
 // Get all notifications for current user
 router.get('/', auth, async (req, res) => {
   try {
-    const notifications = await Notification.find({ recipient: req.user.id })
+    let recipientModel;
+    if (req.user.userType === 'provider') recipientModel = 'ProviderAuth';
+    else if (req.user.userType === 'patient') recipientModel = 'PatientAuth';
+    else if (req.user.userType === 'admin') recipientModel = 'AdminAuth';
+
+    const query = { recipient: req.user.id };
+    if (recipientModel) {
+      query.recipientModel = recipientModel;
+    }
+
+    const notifications = await Notification.find(query)
       .sort({ createdAt: -1 })
       .limit(50);
     res.json(notifications);

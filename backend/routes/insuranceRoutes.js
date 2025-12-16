@@ -3,18 +3,22 @@ const router = express.Router();
 const Insurance = require('../models/Insurance');
 const Patient = require('../models/Patient');
 const auth = require('../middleware/auth');
+const { createNotification } = require('../utils/notificationService');
+const PatientAuth = require('../models/PatientAuth');
 
 // Helper to create notification
-const createNotification = async (healthId, title, message, type = 'Info') => {
+const sendNotification = async (healthId, title, message, type = 'system') => {
   try {
-    const Notification = require('../models/Notification');
-    await Notification.create({
-      patientHealthId: healthId,
-      title,
-      message,
-      type,
-      priority: type === 'Important' ? 'High' : 'Medium'
-    });
+    const patientAuth = await PatientAuth.findOne({ healthId });
+    if (patientAuth) {
+      await createNotification({
+        recipient: patientAuth._id,
+        recipientModel: 'PatientAuth',
+        type,
+        title,
+        message
+      });
+    }
   } catch (error) {
     console.error('Error creating notification:', error);
   }
@@ -92,11 +96,11 @@ router.post('/', auth, async (req, res) => {
     });
 
     // Notify patient
-    await createNotification(
+    await sendNotification(
       patientHealthId,
       'Insurance Policy Added',
       `Your insurance policy from ${provider.name} (${policyNumber}) has been added to your health record.`,
-      'Info'
+      'system'
     );
 
     res.status(201).json({
@@ -167,11 +171,11 @@ router.post('/:id/verify', auth, async (req, res) => {
     await policy.save();
 
     // Notify patient
-    await createNotification(
+    await sendNotification(
       policy.patient.healthId,
       'Insurance Policy Verified',
       `Your insurance policy from ${policy.provider.name} has been verified and is now active.`,
-      'Info'
+      'system'
     );
 
     res.json({
@@ -315,11 +319,11 @@ router.post('/:id/claims', auth, async (req, res) => {
     await policy.save();
 
     // Notify patient
-    await createNotification(
+    await sendNotification(
       policy.patient.healthId,
       'Insurance Claim Submitted',
       `Claim ${claimId} for ₦${amount.toLocaleString()} has been submitted to ${policy.provider.name}.`,
-      'Info'
+      'system'
     );
 
     res.status(201).json({
@@ -373,11 +377,11 @@ router.put('/:id/claims/:claimId', auth, async (req, res) => {
       message = `Your claim ${req.params.claimId} status has been updated to ${status}.`;
     }
 
-    await createNotification(
+    await sendNotification(
       policy.patient.healthId,
       'Claim Status Update',
       message,
-      status === 'Denied' ? 'Important' : 'Info'
+      status === 'Denied' ? 'system' : 'system'
     );
 
     res.json({
@@ -448,18 +452,18 @@ router.post('/:id/dependents', auth, async (req, res) => {
     await policy.save();
 
     // Notify both policy holder and dependent
-    await createNotification(
+    await sendNotification(
       policy.patient.healthId,
       'Dependent Added to Policy',
       `${name} has been added as a dependent on your insurance policy.`,
-      'Info'
+      'system'
     );
 
-    await createNotification(
+    await sendNotification(
       healthId,
       'Added to Insurance Policy',
       `You have been added as a dependent on ${policy.patient.name}'s insurance policy (${policy.policyNumber}).`,
-      'Info'
+      'system'
     );
 
     res.json({
@@ -495,11 +499,11 @@ router.put('/:id/status', auth, async (req, res) => {
     await policy.save();
 
     // Notify patient
-    await createNotification(
+    await sendNotification(
       policy.patient.healthId,
       'Insurance Policy Status Updated',
       `Your insurance policy status has been updated from ${oldStatus} to ${status}. ${reason ? `Reason: ${reason}` : ''}`,
-      status === 'Cancelled' || status === 'Suspended' ? 'Important' : 'Info'
+      status === 'Cancelled' || status === 'Suspended' ? 'system' : 'system'
     );
 
     res.json({

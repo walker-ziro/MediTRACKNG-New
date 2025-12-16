@@ -5,12 +5,18 @@ import { useSettings } from '../context/SettingsContext';
 const LandingPage = () => {
   const { theme, darkMode } = useSettings();
   const [scrolled, setScrolled] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
       setScrolled(window.scrollY > 50);
     };
     window.addEventListener('scroll', handleScroll);
+    
+    // Check login status
+    const token = localStorage.getItem('token');
+    setIsLoggedIn(!!token);
+
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
@@ -58,16 +64,19 @@ const LandingPage = () => {
           </span>
         </div>
         <div className="flex items-center gap-4">
-          <Link 
-            to="/login" 
-            className={`px-6 py-2.5 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 ${
-              darkMode 
-                ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-900/20' 
-                : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-200'
-            }`}
-          >
-            Login / Sign Up
-          </Link>
+          {!isLoggedIn && (
+            <Link 
+              to="/login" 
+              className={`px-4 py-2 md:px-6 md:py-2.5 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 text-sm md:text-base ${
+                darkMode 
+                  ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-900/20' 
+                  : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-200'
+              }`}
+            >
+              <span className="md:hidden">Login</span>
+              <span className="hidden md:inline">Login / Sign Up</span>
+            </Link>
+          )}
         </div>
       </nav>
 

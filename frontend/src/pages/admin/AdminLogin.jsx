@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useSettings } from '../../context/SettingsContext';
 import { useNavigate, Link } from 'react-router-dom';
 import { api } from '../../utils/api';
+import Footer from '../../components/Footer';
 
 const AdminLogin = () => {
   const { theme , darkMode } = useSettings();
@@ -89,9 +90,10 @@ const AdminLogin = () => {
   };
 
   return (
-    <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} px-4 py-8`}>
-      <div className="w-full max-w-md">
-        <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl shadow-xl overflow-hidden border`}>
+    <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className="flex-1 flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-md">
+          <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl shadow-xl overflow-hidden border`}>
           {/* Header */}
           <div className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} px-8 py-8 text-center border-b`}>
             <div className="flex items-center justify-center gap-3 mb-6">
@@ -290,6 +292,7 @@ const AdminLogin = () => {
           </div>
         </div>
       </div>
+      <Footer />
     </div>
   );
 };

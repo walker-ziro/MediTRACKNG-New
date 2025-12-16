@@ -1,6 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, Link, Outlet, useLocation } from 'react-router-dom';
 import { useSettings } from '../context/SettingsContext';
+import { api } from '../utils/api';
+import Footer from '../components/Footer';
 
 const ProviderLayout = () => {
   const navigate = useNavigate();
@@ -11,6 +13,22 @@ const ProviderLayout = () => {
   const [showProfile, setShowProfile] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    const fetchNotifications = async () => {
+      try {
+        const response = await api.get('/notifications');
+        setNotifications(response.data);
+      } catch (error) {
+        console.error('Error fetching notifications:', error);
+      }
+    };
+
+    if (userData) {
+      fetchNotifications();
+    }
+  }, [userData]);
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -315,8 +333,11 @@ const ProviderLayout = () => {
         </header>
 
         {/* Main Content */}
-        <main className={`flex-1 overflow-y-auto ${darkMode ? 'bg-gray-900' : 'bg-white'}`}>
-          <Outlet />
+        <main className={`flex-1 overflow-y-auto ${darkMode ? 'bg-gray-900' : 'bg-white'} flex flex-col`}>
+          <div className="flex-1">
+            <Outlet />
+          </div>
+          <Footer />
         </main>
       </div>
 
@@ -334,18 +355,22 @@ const ProviderLayout = () => {
                 </button>
               </div>
               <div className="space-y-4">
-                <div className="p-4 bg-blue-50 rounded-lg">
-                  <p className="font-semibold text-sm">New appointment scheduled</p>
-                  <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>Patient John Doe - Tomorrow at 10:00 AM</p>
-                </div>
-                <div className="p-4 bg-green-50 rounded-lg">
-                  <p className="font-semibold text-sm">Lab results ready</p>
-                  <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>Patient Jane Smith's blood work is complete</p>
-                </div>
-                <div className="p-4 bg-yellow-50 rounded-lg">
-                  <p className="font-semibold text-sm">Prescription renewal needed</p>
-                  <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-600'} mt-1`}>3 prescriptions expiring this week</p>
-                </div>
+                {notifications.length === 0 ? (
+                  <p className={`text-center py-4 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>No new notifications</p>
+                ) : (
+                  notifications.map((notification) => (
+                    <div key={notification._id} className={`p-4 rounded-lg ${
+                      notification.type === 'emergency' ? 'bg-red-50' :
+                      notification.type === 'lab' ? 'bg-green-50' :
+                      notification.type === 'appointment' ? 'bg-blue-50' :
+                      'bg-gray-50'
+                    }`}>
+                      <p className={`font-semibold text-sm ${darkMode ? 'text-gray-800' : 'text-gray-900'}`}>{notification.title}</p>
+                      <p className={`text-xs ${darkMode ? 'text-gray-600' : 'text-gray-600'} mt-1`}>{notification.message}</p>
+                      <p className="text-xs text-gray-500 mt-1">{new Date(notification.createdAt).toLocaleString()}</p>
+                    </div>
+                  ))
+                )}
               </div>
             </div>
           </div>

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useSettings } from '../context/SettingsContext';
 import { api } from '../utils/api';
+import Footer from '../components/Footer';
 
 const ProviderLogin = ({ isEmbedded = false }) => {
   const { theme } = useSettings();
@@ -184,10 +185,13 @@ const ProviderLogin = ({ isEmbedded = false }) => {
   }
 
   return (
-    <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gray-50'} px-4 py-8`}>
-      <div className="w-full max-w-md">
-        {content}
+    <div className={`min-h-screen flex flex-col ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
+      <div className="flex-1 flex items-center justify-center px-4 py-8">
+        <div className="w-full max-w-md">
+          {content}
+        </div>
       </div>
+      <Footer />
     </div>
   );
 };
