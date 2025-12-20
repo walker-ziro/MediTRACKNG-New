@@ -9,6 +9,9 @@ const createTransporter = () => {
       host: 'smtp-relay.brevo.com',
       port: 587,
       secure: false,
+      connectionTimeout: 10000, // 10 seconds
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
       auth: {
         user: process.env.BREVO_SMTP_USER || process.env.BREVO_USER,
         pass: process.env.BREVO_API_KEY,
@@ -22,6 +25,9 @@ const createTransporter = () => {
       host: 'smtp.sendgrid.net',
       port: 587,
       secure: false,
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
       auth: {
         user: 'apikey',
         pass: process.env.SENDGRID_API_KEY,
@@ -33,6 +39,9 @@ const createTransporter = () => {
   if (process.env.GMAIL_USER && process.env.GMAIL_PASS) {
     return nodemailer.createTransport({
       service: 'gmail',
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 10000,
       auth: {
         user: process.env.GMAIL_USER,
         pass: process.env.GMAIL_PASS,
