@@ -1170,7 +1170,7 @@ router.post('/forgot-password', async (req, res) => {
     await user.save();
 
     // Send reset email
-    const emailResult = await sendPasswordReset(email, resetToken, user.firstName);
+    const emailResult = await sendPasswordReset(email, resetToken, user.firstName, userType);
 
     if (!emailResult.success) {
       console.error('Password reset email failed:', emailResult.error);

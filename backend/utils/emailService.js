@@ -98,7 +98,7 @@ const sendOTP = async (email, otp) => {
   }
 };
 
-const sendPasswordReset = async (email, resetToken, firstName) => {
+const sendPasswordReset = async (email, resetToken, firstName, userType) => {
   try {
     if (!transporter) {
       transporter = createTransporter();
@@ -114,7 +114,7 @@ const sendPasswordReset = async (email, resetToken, firstName) => {
       ? process.env.SENDGRID_FROM_EMAIL || 'noreply@meditrackng.com'
       : process.env.GMAIL_USER;
 
-    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/reset-password?token=${resetToken}`;
+    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/${userType}/reset-password?token=${resetToken}`;
     
     const info = await transporter.sendMail({
       from: `"MediTRACKNG" <${senderEmail}>`,
