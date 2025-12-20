@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Lock, Eye, EyeOff, CheckCircle, AlertCircle } from 'lucide-react';
-import api from '../../services/api';
+import api from '../../utils/api';
 
 const AdminResetPassword = () => {
   const [searchParams] = useSearchParams();
