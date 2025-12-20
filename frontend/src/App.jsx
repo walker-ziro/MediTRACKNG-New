@@ -31,9 +31,13 @@ import PatientLogin from './pages/patient/PatientLogin';
 import PatientSignup from './pages/patient/PatientSignup';
 import BiometricLogin from './pages/patient/BiometricLogin';
 import PatientDashboard from './pages/patient/PatientDashboard';
+import PatientForgotPassword from './pages/patient/PatientForgotPassword';
+import PatientResetPassword from './pages/patient/PatientResetPassword';
 import AdminLogin from './pages/admin/AdminLogin';
 import AdminSignup from './pages/admin/AdminSignup';
 import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminForgotPassword from './pages/admin/AdminForgotPassword';
+import AdminResetPassword from './pages/admin/AdminResetPassword';
 import { ProtectedProviderRoute, ProtectedPatientRoute, ProtectedAdminRoute } from './components/ProtectedPortalRoute';
 
 // Layout Components
@@ -48,6 +52,8 @@ import ProviderPrescriptions from './pages/provider/Prescriptions';
 import ProviderLabOrders from './pages/provider/LabOrders';
 import ProviderTelemedicine from './pages/provider/Telemedicine';
 import ProviderSettings from './pages/provider/Settings';
+import ForgotPassword from './pages/provider/ForgotPassword';
+import ResetPassword from './pages/provider/ResetPassword';
 
 // Patient Pages
 import PatientHealthRecords from './pages/patient/HealthRecords';
@@ -225,6 +231,8 @@ function App() {
           {/* Provider Portal */}
           <Route path="/provider/login" element={<ProviderLogin />} />
           <Route path="/provider/signup" element={<ProviderSignup />} />
+          <Route path="/provider/forgot-password" element={<ForgotPassword />} />
+          <Route path="/provider/reset-password" element={<ResetPassword />} />
           <Route path="/provider/*" element={
             <ProtectedProviderRoute>
               <ProviderLayout />
@@ -245,6 +253,8 @@ function App() {
           <Route path="/patient/login" element={<PatientLogin />} />
           <Route path="/patient/biometric-login" element={<BiometricLogin />} />
           <Route path="/patient/signup" element={<PatientSignup />} />
+          <Route path="/patient/forgot-password" element={<PatientForgotPassword />} />
+          <Route path="/patient/reset-password" element={<PatientResetPassword />} />
           <Route path="/patient/*" element={
             <ProtectedPatientRoute>
               <PatientLayout />
@@ -263,6 +273,8 @@ function App() {
           {/* Admin Portal */}
           <Route path="/admin/login" element={<AdminLogin />} />
           <Route path="/admin/signup" element={<AdminSignup />} />
+          <Route path="/admin/forgot-password" element={<AdminForgotPassword />} />
+          <Route path="/admin/reset-password" element={<AdminResetPassword />} />
           <Route path="/admin/*" element={
             <ProtectedAdminRoute>
               <AdminLayout />
