@@ -1,75 +1,135 @@
-# Email Service Setup for Render Deployment
+# Email Service Setup for MediTRACKNG
 
-## Problem
-Render's free tier blocks outbound SMTP connections to Gmail (ports 465, 587, 25), causing "Connection timeout" errors.
+## Using Brevo (Recommended for Production)
 
-## Solution: Use SendGrid (Recommended)
+Brevo (formerly Sendinblue) is a reliable email service that works on all hosting platforms including Render.
 
-SendGrid works on Render and offers a free tier with 100 emails/day.
-
-### Step 1: Create SendGrid Account
-1. Go to [SendGrid](https://signup.sendgrid.com/)
-2. Sign up for a free account
+### Step 1: Create Brevo Account
+1. Go to [Brevo](https://www.brevo.com/)
+2. Sign up for a free account (300 emails/day)
 3. Verify your email address
 
-### Step 2: Create API Key
-1. Log into SendGrid dashboard
-2. Go to **Settings** → **API Keys**
-3. Click **Create API Key**
-4. Name it "MediTRACKNG" or similar
-5. Select **Full Access** or **Restricted Access** with "Mail Send" permission
-6. Click **Create & View**
-7. **Copy the API key** (you won't see it again!)
+### Step 2: Get SMTP Credentials
+1. Log into Brevo dashboard
+2. Go to **Settings** → **SMTP & API**
+3. Under **SMTP**, you'll see:
+   - **SMTP Server:** smtp-relay.brevo.com
+   - **Port:** 587
+   - **Login:** (your email or username)
+   - **SMTP Key:** Click "Create a new SMTP key" if you don't have one
 
-### Step 3: Verify Sender Email (Required)
-1. In SendGrid dashboard, go to **Settings** → **Sender Authentication**
-2. Click **Verify a Single Sender**
-3. Fill in the form with your email (e.g., walkertech001@gmail.com)
-4. Check your email and click the verification link
-5. Once verified, this email will be your "From" address
+### Step 3: Verify Sender Email
+1. In Brevo dashboard, go to **Senders**
+2. Click **Add a sender**
+3. Fill in your details (name and email)
+4. Check your email for verification link
+5. Click to verify
 
-### Step 4: Add to Render Environment Variables
+### Step 4: Add to Environment Variables
+
+#### For Render (Production):
 1. Go to your Render dashboard
-2. Select your **MediTRACKNG** service
+2. Select your MediTRACKNG service
 3. Go to **Environment** tab
 4. Add these variables:
-   - **Key:** `SENDGRID_API_KEY`  
-     **Value:** (paste the API key from Step 2)
-   - **Key:** `SENDGRID_FROM_EMAIL`  
-     **Value:** (the email you verified in Step 3, e.g., walkertech001@gmail.com)
-
+   ```
+   BREVO_API_KEY=your-smtp-key-here
+   BREVO_SMTP_USER=your-brevo-login-email
+   BREVO_FROM_EMAIL=verified-sender@yourdomain.com
+   FRONTEND_URL=https://meditrackng.vercel.app
+   ```
 5. Click **Save Changes**
-6. Your service will automatically redeploy
 
-### Step 5: Test
-- Try registering a new provider
-- You should receive the OTP email within seconds
-- Check spam folder if you don't see it
+#### For Local Development (.env file):
+```env
+BREVO_API_KEY=your-smtp-key-here
+BREVO_SMTP_USER=your-brevo-login-email
+BREVO_FROM_EMAIL=verified-sender@yourdomain.com
+FRONTEND_URL=http://localhost:5173
+```
 
 ---
 
-## Alternative: Keep Gmail for Local Development
+## Alternative: Using Gmail (Local Development Only)
 
-The code now automatically uses:
-- **SendGrid** when `SENDGRID_API_KEY` is present (production/Render)
-- **Gmail** when only `GMAIL_USER`/`GMAIL_PASS` are present (local development)
+Gmail can be used for local development but **will not work on Render** due to SMTP restrictions.
 
-This way you don't need to change anything for local testing!
+### Setup Gmail:
+1. Enable 2-Factor Authentication on your Google Account
+2. Generate an App Password:
+   - Go to [Google Account Security](https://myaccount.google.com/security)
+   - Under "2-Step Verification", scroll to "App passwords"
+   - Select "Mail" and your device
+   - Copy the generated 16-character password
+
+3. Add to `.env`:
+   ```env
+   GMAIL_USER=your-email@gmail.com
+   GMAIL_PASS=your-16-char-app-password
+   ```
 
 ---
 
-## Environment Variables Summary
+## Features Implemented
 
-### For Render (Production):
-```
-SENDGRID_API_KEY=SG.xxxxxxxxxxxxxxxxxxxxxxx
-SENDGRID_FROM_EMAIL=walkertech001@gmail.com
+### 1. OTP Verification
+- ✅ Email sent during provider/patient registration
+- ✅ 6-digit OTP code
+- ✅ 10-minute expiration
+- ✅ Resend OTP functionality
+
+### 2. Password Reset
+- ✅ Request reset via email
+- ✅ Secure token-based reset link
+- ✅ 1-hour expiration
+- ✅ Works for all user types (provider, patient, admin)
+
+### API Endpoints:
+
+#### Request Password Reset:
+```http
+POST /api/multi-auth/forgot-password
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "userType": "provider" // or "patient" or "admin"
+}
 ```
 
-### For Local Development (.env file):
+#### Reset Password:
+```http
+POST /api/multi-auth/reset-password
+Content-Type: application/json
+
+{
+  "token": "reset-token-from-email",
+  "password": "newPassword123",
+  "userType": "provider"
+}
 ```
-GMAIL_USER=your-email@gmail.com
-GMAIL_PASS=your-app-password
+
+#### Verify OTP:
+```http
+POST /api/multi-auth/verify-otp
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "otp": "123456",
+  "userType": "provider"
+}
+```
+
+#### Resend OTP:
+```http
+POST /api/multi-auth/resend-otp
+Content-Type: application/json
+
+{
+  "email": "user@example.com",
+  "userType": "provider"
+}
 ```
 
 ---
@@ -77,18 +137,63 @@ GMAIL_PASS=your-app-password
 ## Troubleshooting
 
 ### "Email service not configured"
-- Make sure you added the environment variables in Render
-- Wait for the service to redeploy after adding them
+- Ensure you added the environment variables in Render
+- Wait for the service to redeploy after adding variables
+- Check the logs to confirm variables are loaded
 
-### "Connection timeout" (with SendGrid)
-- Double-check the API key is correct
-- Ensure the API key has "Mail Send" permission
+### "Connection timeout"
+- For Render: Use Brevo, not Gmail
+- Verify SMTP credentials are correct
+- Check that port 587 is being used
 
 ### Emails go to spam
-- Add SendGrid IP addresses to your SPF record (if using custom domain)
+- Add SPF record to your domain DNS
+- Verify sender email in Brevo
 - Ask recipients to mark as "Not Spam"
-- Use SendGrid's sender authentication features
 
-### "Sender email not verified"
-- You must verify your sender email in SendGrid before it will send emails
-- Check your email for the verification link from SendGrid
+### "Invalid or expired token"
+- Password reset tokens expire after 1 hour
+- Request a new reset link
+- Ensure the token wasn't modified
+
+---
+
+## Environment Variables Summary
+
+### Production (Render):
+```env
+BREVO_API_KEY=your-smtp-key
+BREVO_SMTP_USER=your-email@domain.com
+BREVO_FROM_EMAIL=noreply@meditrackng.com
+FRONTEND_URL=https://meditrackng.vercel.app
+JWT_SECRET=your-jwt-secret
+MONGODB_URI=your-mongodb-connection-string
+```
+
+### Local Development:
+```env
+BREVO_API_KEY=your-smtp-key
+BREVO_SMTP_USER=your-email@domain.com
+BREVO_FROM_EMAIL=noreply@meditrackng.com
+FRONTEND_URL=http://localhost:5173
+JWT_SECRET=your-jwt-secret
+MONGODB_URI=mongodb://localhost:27017/meditrackng
+```
+
+---
+
+## Testing
+
+### Test OTP Email:
+1. Register a new provider or patient
+2. Check your email for 6-digit code
+3. Enter code in verification screen
+4. Account should be activated
+
+### Test Password Reset:
+1. Go to login page
+2. Click "Forgot Password"
+3. Enter email and user type
+4. Check email for reset link
+5. Click link and enter new password
+6. Login with new password

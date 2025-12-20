@@ -8,8 +8,9 @@ const AdminAuth = require('../models/AdminAuth');
 const Patient = require('../models/Patient'); // Import Patient model
 const Provider = require('../models/Provider'); // Import Provider model
 const Facility = require('../models/Facility'); // Import Facility model
-const { sendOTP } = require('../utils/emailService');
+const { sendOTP, sendPasswordReset } = require('../utils/emailService');
 const { v4: uuidv4 } = require('uuid');
+const crypto = require('crypto');
 
 // Helper function to generate unique Health ID
 const generateHealthId = () => {
@@ -111,80 +112,8 @@ router.post('/provider/register', async (req, res) => {
     provider.setRolePermissions();
     await provider.save();
 
-    // TODO: Email verification temporarily disabled
-    // Automatically verify the provider for now
-    provider.isVerified = true;
-    provider.isActive = true;
-    provider.otp = undefined;
-    provider.otpExpires = undefined;
-    await provider.save();
-
-    // Create Provider record (normally happens during verification)
-    try {
-      const existingProviderRecord = await Provider.findOne({ providerId: provider.providerId });
-      
-      if (!existingProviderRecord) {
-        // Find or Create Facility
-        let facility = await Facility.findOne({ facilityId: provider.facilityId });
-        
-        if (!facility) {
-          facility = await Facility.create({
-            facilityId: provider.facilityId || `FAC-${Date.now()}`,
-            name: provider.facilityName || 'Unknown Facility',
-            type: 'General Hospital',
-            location: {
-              state: 'Lagos',
-              address: 'Unknown Address',
-              city: 'Unknown City'
-            },
-            contact: {
-              email: provider.email
-            }
-          });
-        }
-
-        const newProvider = new Provider({
-          providerId: provider.providerId,
-          firstName: provider.firstName,
-          lastName: provider.lastName,
-          specialization: provider.specialization,
-          providerType: provider.role,
-          licenseNumber: provider.licenseNumber,
-          licenseExpiry: provider.licenseExpiryDate,
-          primaryFacility: facility._id,
-          contact: {
-            email: provider.email,
-            phone: provider.phone
-          },
-          username: provider.email,
-          password: provider.password
-        });
-
-        await newProvider.save();
-      }
-    } catch (createError) {
-      console.error('Error creating provider record:', createError);
-      // Continue anyway - the auth record is created
-    }
-
-    /* EMAIL VERIFICATION DISABLED - UNCOMMENT WHEN EMAIL SERVICE IS CONFIGURED
-    console.log('Provider created successfully, checking email configuration...');
-    console.log('GMAIL_USER exists:', !!process.env.GMAIL_USER);
-    console.log('GMAIL_PASS exists:', !!process.env.GMAIL_PASS);
-
-    // Check email configuration
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
-      console.error('Email configuration missing: GMAIL_USER or GMAIL_PASS not set.');
-      await ProviderAuth.findByIdAndDelete(provider._id);
-      return res.status(503).json({ 
-        message: 'Email service not configured. Please contact administrator to set GMAIL_USER and GMAIL_PASS.' 
-      });
-    }
-
-    console.log('Sending OTP email to:', email);
-    // Send OTP Email
+    // Send OTP Email for verification
     const emailResult = await sendOTP(email, otp);
-    console.log('Email result:', emailResult);
 
     if (!emailResult.success) {
       console.error('Email sending failed:', emailResult.error);
@@ -194,27 +123,13 @@ router.post('/provider/register', async (req, res) => {
         error: emailResult.error 
       });
     }
-    */
-
-    // Generate token for immediate login (no email verification)
-    const token = generateToken(provider, 'provider');
 
     res.status(201).json({
-      message: 'Provider registered successfully.',
-      token,
+      message: 'Provider registered successfully. Please verify your email.',
       providerId: provider.providerId,
       userType: 'provider',
-      requiresVerification: false,
-      user: {
-        providerId: provider.providerId,
-        name: `${provider.firstName} ${provider.lastName}`,
-        email: provider.email,
-        role: provider.role,
-        specialization: provider.specialization,
-        facilityName: provider.facilityName,
-        permissions: provider.permissions,
-        photo: provider.photo
-      }
+      requiresVerification: true,
+      email: email
     });
   } catch (error) {
     console.error('Provider registration error:', error);
@@ -427,65 +342,7 @@ router.post('/patient/register', async (req, res) => {
     // Create new patient
     const patient = await PatientAuth.create(patientData);
 
-    // TODO: Email verification temporarily disabled
-    // Automatically verify the patient for now
-    patient.isVerified = true;
-    patient.isActive = true;
-    patient.otp = undefined;
-    patient.otpExpires = undefined;
-    
-    // Generate Health ID
-    if (!patient.healthId) {
-      patient.healthId = generateHealthId();
-    }
-    await patient.save();
-
-    // Create Patient record (normally happens during verification)
-    try {
-      const existingPatientRecord = await Patient.findOne({ healthId: patient.healthId });
-      
-      if (!existingPatientRecord) {
-        const newPatient = new Patient({
-          healthId: patient.healthId,
-          firstName: patient.firstName,
-          lastName: patient.lastName,
-          dateOfBirth: patient.dateOfBirth,
-          gender: patient.gender,
-          ...(patient.bloodType && { bloodGroup: patient.bloodType }),
-          ...(patient.genotype && { genotype: patient.genotype }),
-          contact: {
-            phone: patient.phone,
-            email: patient.email,
-            address: {
-              street: patient.address?.street,
-              city: patient.address?.city,
-              state: patient.address?.state || 'Unknown',
-              country: patient.address?.country || 'Nigeria'
-            }
-          },
-          emergencyContact: patient.emergencyContact,
-          allergies: (patient.allergies || []).map(a => ({ allergen: a })),
-          chronicConditions: (patient.chronicConditions || []).map(c => ({ condition: c }))
-        });
-        
-        await newPatient.save();
-      }
-    } catch (createError) {
-      console.error('Error creating patient record:', createError);
-      // Continue anyway - the auth record is created
-    }
-
-    /* EMAIL VERIFICATION DISABLED - UNCOMMENT WHEN EMAIL SERVICE IS CONFIGURED
-    // Check email configuration
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
-      console.error('Email configuration missing: GMAIL_USER or GMAIL_PASS not set.');
-      await PatientAuth.findByIdAndDelete(patient._id);
-      return res.status(503).json({ 
-        message: 'Email service not configured. Please contact administrator to set GMAIL_USER and GMAIL_PASS.' 
-      });
-    }
-
-    // Send OTP Email
+    // Send OTP Email for verification
     const emailResult = await sendOTP(email, otp);
 
     if (!emailResult.success) {
@@ -496,25 +353,12 @@ router.post('/patient/register', async (req, res) => {
         error: emailResult.error 
       });
     }
-    */
-
-    // Generate token for immediate login (no email verification)
-    const token = generateToken(patient, 'patient');
 
     res.status(201).json({
-      message: 'Patient registered successfully.',
-      token,
+      message: 'Patient registered successfully. Please verify your email.',
       userType: 'patient',
-      requiresVerification: false,
-      user: {
-        healthId: patient.healthId,
-        name: `${patient.firstName} ${patient.lastName}`,
-        email: patient.email,
-        phone: patient.phone,
-        bloodType: patient.bloodType,
-        photo: patient.photo,
-        permissions: patient.permissions
-      }
+      requiresVerification: true,
+      email: email
     });
   } catch (error) {
     console.error('Patient registration error:', error);
@@ -1269,13 +1113,6 @@ router.post('/resend-otp', async (req, res) => {
     user.otpExpires = otpExpires;
     await user.save();
 
-    // Check email configuration
-    if (!process.env.GMAIL_USER || !process.env.GMAIL_PASS) {
-      return res.status(503).json({ 
-        message: 'Email service not configured. Please contact administrator to set GMAIL_USER and GMAIL_PASS.' 
-      });
-    }
-
     // Send OTP Email
     const emailResult = await sendOTP(email, otp);
 
@@ -1292,6 +1129,112 @@ router.post('/resend-otp', async (req, res) => {
   } catch (error) {
     console.error('Resend OTP error:', error);
     res.status(500).json({ message: 'Server error during OTP resend' });
+  }
+});
+
+// ========== PASSWORD RESET ROUTES ==========
+
+// Request Password Reset
+router.post('/forgot-password', async (req, res) => {
+  try {
+    const { email, userType } = req.body;
+
+    if (!email || !userType) {
+      return res.status(400).json({ message: 'Email and user type are required' });
+    }
+
+    let Model;
+    if (userType === 'provider') {
+      Model = ProviderAuth;
+    } else if (userType === 'patient') {
+      Model = PatientAuth;
+    } else if (userType === 'admin') {
+      Model = AdminAuth;
+    } else {
+      return res.status(400).json({ message: 'Invalid user type' });
+    }
+
+    const user = await Model.findOne({ email });
+
+    if (!user) {
+      // Don't reveal if email exists or not for security
+      return res.json({ message: 'If an account exists with this email, you will receive password reset instructions.' });
+    }
+
+    // Generate reset token
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const hashedToken = crypto.createHash('sha256').update(resetToken).digest('hex');
+
+    user.resetPasswordToken = hashedToken;
+    user.resetPasswordExpires = new Date(Date.now() + 60 * 60 * 1000); // 1 hour
+    await user.save();
+
+    // Send reset email
+    const emailResult = await sendPasswordReset(email, resetToken, user.firstName);
+
+    if (!emailResult.success) {
+      console.error('Password reset email failed:', emailResult.error);
+      return res.status(500).json({ 
+        message: 'Failed to send password reset email.',
+        error: emailResult.error 
+      });
+    }
+
+    res.json({ message: 'If an account exists with this email, you will receive password reset instructions.' });
+
+  } catch (error) {
+    console.error('Forgot password error:', error);
+    res.status(500).json({ message: 'Server error during password reset request' });
+  }
+});
+
+// Reset Password
+router.post('/reset-password', async (req, res) => {
+  try {
+    const { token, password, userType } = req.body;
+
+    if (!token || !password || !userType) {
+      return res.status(400).json({ message: 'Token, password, and user type are required' });
+    }
+
+    if (password.length < 8) {
+      return res.status(400).json({ message: 'Password must be at least 8 characters long' });
+    }
+
+    let Model;
+    if (userType === 'provider') {
+      Model = ProviderAuth;
+    } else if (userType === 'patient') {
+      Model = PatientAuth;
+    } else if (userType === 'admin') {
+      Model = AdminAuth;
+    } else {
+      return res.status(400).json({ message: 'Invalid user type' });
+    }
+
+    // Hash the provided token to match stored hash
+    const hashedToken = crypto.createHash('sha256').update(token).digest('hex');
+
+    const user = await Model.findOne({
+      resetPasswordToken: hashedToken,
+      resetPasswordExpires: { $gt: Date.now() }
+    });
+
+    if (!user) {
+      return res.status(400).json({ message: 'Invalid or expired reset token' });
+    }
+
+    // Update password
+    user.password = password;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+    await user.save();
+
+    res.json({ message: 'Password reset successful. You can now login with your new password.' });
+
+  } catch (error) {
+    console.error('Reset password error:', error);
+    res.status(500).json({ message: 'Server error during password reset' });
   }
 });
 

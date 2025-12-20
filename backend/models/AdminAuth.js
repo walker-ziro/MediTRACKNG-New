@@ -113,6 +113,10 @@ const adminAuthSchema = new mongoose.Schema({
   verificationToken: String,
   verificationExpiry: Date,
   
+  // Password Reset
+  resetPasswordToken: String,
+  resetPasswordExpires: Date,
+  
   // Security
   lastLogin: Date,
   loginAttempts: {
