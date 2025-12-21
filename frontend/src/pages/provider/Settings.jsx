@@ -280,10 +280,12 @@ const Settings = () => {
                   type="text"
                   name="facilityId"
                   value={formData.facilityId}
-                  onChange={handleChange}
-                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'border-gray-200'}`}
+                  disabled
+                  className={`w-full px-4 py-2 border rounded-lg focus:outline-none ${darkMode ? 'bg-gray-800 border-gray-600 text-gray-400' : 'bg-gray-100 border-gray-300 text-gray-500'} cursor-not-allowed`}
                   placeholder="FAC-12345"
+                  title="Facility ID can only be changed by administrators"
                 />
+                <p className={`text-xs mt-1 ${darkMode ? 'text-gray-500' : 'text-gray-400'}`}>Contact admin to change facility assignment</p>
               </div>
 
               <div className="pt-4">

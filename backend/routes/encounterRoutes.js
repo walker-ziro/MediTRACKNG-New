@@ -77,7 +77,7 @@ router.post('/', auth, async (req, res) => {
     }
 
     const encounter = new Encounter({
-      encounterId: `ENC-${uuidv4().split('-')[0].toUpperCase()}`,
+      encounterId: `ENC-${Date.now().toString().slice(-6)}${Math.random().toString(36).substr(2, 3).toUpperCase()}`,
       patient: patient._id,
       facility: provider.primaryFacility,
       provider: provider._id,

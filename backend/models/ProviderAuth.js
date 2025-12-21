@@ -121,12 +121,8 @@ const providerAuthSchema = new mongoose.Schema({
 // Generate unique provider ID
 providerAuthSchema.pre('save', async function(next) {
   if (!this.providerId) {
-    const date = new Date();
-    const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
-    const count = await mongoose.model('ProviderAuth').countDocuments({
-      providerId: new RegExp(`^PROV-${dateStr}`)
-    });
-    this.providerId = `PROV-${dateStr}-${String(count + 1).padStart(5, '0')}`;
+    const count = await mongoose.model('ProviderAuth').countDocuments();
+    this.providerId = `PROV-${String(count + 1).padStart(4, '0')}`;
   }
   next();
 });

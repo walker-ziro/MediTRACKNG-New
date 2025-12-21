@@ -107,7 +107,7 @@ router.post('/', auth, async (req, res) => {
     }
     
     const prescription = await Prescription.create({
-      prescriptionId: `RX-${new Date().toISOString().slice(0,10).replace(/-/g,'')}-${uuidv4().split('-')[0].toUpperCase()}`,
+      prescriptionId: `RX-${Date.now().toString().slice(-6)}${Math.random().toString(36).substr(2, 3).toUpperCase()}`,
       patient: {
         healthId: patient.healthId,
         name: patientRecord.firstName + ' ' + patientRecord.lastName, // Fixed: name construction
