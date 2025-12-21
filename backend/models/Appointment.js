@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const appointmentSchema = new mongoose.Schema({
+  appointmentId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
   healthId: {
     type: String,
     required: true
@@ -51,6 +56,15 @@ const appointmentSchema = new mongoose.Schema({
   }
 }, {
   timestamps: true
+});
+
+// Generate unique appointment ID before save
+appointmentSchema.pre('save', async function(next) {
+  if (!this.appointmentId) {
+    const count = await mongoose.model('Appointment').countDocuments();
+    this.appointmentId = `APT-${Date.now().toString().slice(-6)}${Math.random().toString(36).substr(2, 3).toUpperCase()}`;
+  }
+  next();
 });
 
 // Index for efficient queries

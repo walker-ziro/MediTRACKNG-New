@@ -7,7 +7,7 @@ const patientSchema = new mongoose.Schema({
     required: true,
     unique: true,
     index: true,
-    // Format: MTN-XXXXXXX (MediTRACKNG National ID)
+    // Format: PID-XXXXXXX (Patient ID)
   },
   
   // Biometric Identification

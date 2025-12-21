@@ -1,6 +1,11 @@
 const mongoose = require('mongoose');
 
 const laboratorySchema = new mongoose.Schema({
+  orderId: {
+    type: String,
+    unique: true,
+    sparse: true
+  },
   healthId: {
     type: String,
     required: true
@@ -38,6 +43,14 @@ const laboratorySchema = new mongoose.Schema({
   notes: String
 }, {
   timestamps: true
+});
+
+// Generate unique order ID before save
+laboratorySchema.pre('save', async function(next) {
+  if (!this.orderId) {
+    this.orderId = `LAB-${Date.now().toString().slice(-6)}${Math.random().toString(36).substr(2, 3).toUpperCase()}`;
+  }
+  next();
 });
 
 module.exports = mongoose.model('Laboratory', laboratorySchema);

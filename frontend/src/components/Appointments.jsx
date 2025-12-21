@@ -24,7 +24,10 @@ const Appointments = () => {
     try {
       setLoading(true);
       const response = await appointmentAPI.getAll();
-      const data = response.data;
+      const data = response.data.map(apt => ({
+        ...apt,
+        appointmentId: apt.appointmentId || apt._id || apt.id
+      }));
       setAppointments(data);
       
       // Calculate stats from real data (backend uses lowercase status values)
@@ -53,7 +56,8 @@ const Appointments = () => {
   const filteredAppointments = appointments.filter(apt => {
     const matchesSearch = (apt.patientName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
                          (apt.healthId?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
-                         (apt.doctorName?.toLowerCase() || '').includes(searchTerm.toLowerCase());
+                         (apt.doctorName?.toLowerCase() || '').includes(searchTerm.toLowerCase()) ||
+                         (apt.appointmentId?.toLowerCase() || '').includes(searchTerm.toLowerCase());
     const matchesFilter = filterStatus === 'All' || apt.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
@@ -183,8 +187,8 @@ const Appointments = () => {
                 {filteredAppointments.map((apt) => {
                   const formattedDate = apt.date ? new Date(apt.date).toLocaleDateString() : 'N/A';
                   return (
-                    <tr key={apt._id || apt.id} className={`${darkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50'} transition-colors`}>
-                      <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>{apt._id || apt.id || 'N/A'}</td>
+                    <tr key={apt.appointmentId || apt._id || apt.id} className={`${darkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-50'} transition-colors`}>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${darkMode ? 'text-blue-400' : 'text-blue-600'}`}>{apt.appointmentId || apt._id || apt.id || 'N/A'}</td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className={`text-sm font-medium ${darkMode ? 'text-white' : 'text-gray-900'}`}>{apt.patientName || 'N/A'}</div>
                         <div className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{apt.healthId || 'N/A'}</div>

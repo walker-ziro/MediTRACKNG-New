@@ -52,6 +52,7 @@ const Telemedicine = () => {
         if (appointmentsData) {
           const formattedAppointments = appointmentsData.map(apt => ({
             id: apt._id,
+            appointmentId: apt.appointmentId || apt._id || apt.id,
             patient: apt.patient?.name || 'Unknown',
             healthId: apt.patient?.healthId || 'N/A',
             date: new Date(apt.scheduledDate).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }),
@@ -213,9 +214,9 @@ const Telemedicine = () => {
             </thead>
             <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
               {appointments.map((appointment) => (
-                <tr key={appointment.id} className={`${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition-colors`}>
+                <tr key={appointment.appointmentId || appointment.id} className={`${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition-colors`}>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-medium text-blue-600">{appointment.id}</span>
+                    <span className="text-sm font-medium text-blue-600">{appointment.appointmentId || appointment.id || 'N/A'}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>

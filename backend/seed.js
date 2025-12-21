@@ -21,7 +21,7 @@ const sampleProviders = [
 
 const samplePatients = [
   {
-    healthId: 'MTN-DEMO0001',
+    healthId: 'PID-DEMO0001',
     demographics: {
       name: 'Oluwaseun Adebayo',
       dateOfBirth: new Date('1985-03-15'),
@@ -34,7 +34,7 @@ const samplePatients = [
     immunizationRecords: ['COVID-19 (Pfizer)', 'Hepatitis B', 'Yellow Fever']
   },
   {
-    healthId: 'MTN-DEMO0002',
+    healthId: 'PID-DEMO0002',
     demographics: {
       name: 'Amina Mohammed',
       dateOfBirth: new Date('1990-07-22'),
@@ -157,8 +157,8 @@ async function seedDatabase() {
     console.log('   Password: password123');
     console.log('   Facility: Federal Medical Centre Abuja');
     console.log('\n🏥 Sample Patients:');
-    console.log('   Health ID: MTN-DEMO0001 (Oluwaseun Adebayo)');
-    console.log('   Health ID: MTN-DEMO0002 (Amina Mohammed)');
+    console.log('   Health ID: PID-DEMO0001 (Oluwaseun Adebayo)');
+    console.log('   Health ID: PID-DEMO0002 (Amina Mohammed)');
     console.log('\n🚀 You can now login and test the system!');
 
     process.exit(0);

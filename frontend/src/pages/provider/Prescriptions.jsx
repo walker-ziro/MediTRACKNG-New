@@ -31,6 +31,7 @@ const Prescriptions = () => {
           const flattenedPrescriptions = prescriptionsData.data.flatMap(rx => 
             rx.medications.map((med, index) => ({
               id: `${rx.prescriptionId || rx._id}-${index}`,
+              prescriptionId: rx.prescriptionId || rx._id,
               patient: rx.patient?.name || 'Unknown',
               healthId: rx.patient?.healthId || 'N/A',
               medication: med.drugName,
@@ -88,6 +89,7 @@ const Prescriptions = () => {
         const rx = response.prescription || response.data || response; // Adjust based on API response
         const newPrescriptions = rx.medications.map((med, index) => ({
           id: `${rx.prescriptionId || rx._id}-${index}`,
+          prescriptionId: rx.prescriptionId || rx._id,
           patient: payload.patient.name,
           healthId: payload.patient.healthId,
           medication: med.drugName,
@@ -160,7 +162,7 @@ const Prescriptions = () => {
               {prescriptions.map((prescription) => (
                 <tr key={prescription.id} className={`transition-colors ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-medium text-blue-600">{prescription.id}</span>
+                    <span className="text-sm font-medium text-blue-600">{prescription.prescriptionId || prescription.id}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>

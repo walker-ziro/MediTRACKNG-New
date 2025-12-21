@@ -41,7 +41,7 @@ const Appointments = () => {
         const response = await fetchData(`/patient-portal/appointments/${userData.healthId}`);
         if (response?.appointments) {
           const formattedAppointments = response.appointments.map(apt => ({
-            id: apt.id,
+            id: apt.appointmentId || apt._id,
             date: new Date(apt.date).toLocaleDateString(),
             time: apt.time,
             doctor: typeof apt.doctor === 'string' ? apt.doctor : (apt.doctor ? `Dr. ${apt.doctor.firstName} ${apt.doctor.lastName}` : 'Unknown Doctor'),

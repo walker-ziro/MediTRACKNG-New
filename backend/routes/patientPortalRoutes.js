@@ -144,9 +144,10 @@ router.get('/encounters/:healthId', async (req, res) => {
       encounters: encounters.map(e => ({
         id: e._id,
         date: e.encounterDate,
-        type: e.type,
+        type: e.encounterType,
         chiefComplaint: e.chiefComplaint,
         diagnosis: e.diagnosis,
+        assessment: e.assessment,
         provider: e.provider,
         facility: e.facility,
         prescriptions: e.prescriptions,
@@ -218,6 +219,7 @@ router.get('/appointments/:healthId', async (req, res) => {
     res.json({
       appointments: appointments.map(appt => ({
         id: appt._id,
+        appointmentId: appt.appointmentId,
         date: appt.date,
         time: appt.time,
         doctor: appt.doctorName,

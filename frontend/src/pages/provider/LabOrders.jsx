@@ -29,6 +29,7 @@ const LabOrders = () => {
         if (ordersData) {
           const formattedOrders = ordersData.map(order => ({
             id: order._id,
+            orderId: order.orderId || order._id,
             patient: order.patientName || 'Unknown',
             healthId: order.healthId || 'N/A',
             test: order.testType || order.testName,
@@ -75,6 +76,7 @@ const LabOrders = () => {
         const order = response.labOrder || response; // Adjust based on API response structure
         const newOrder = {
           id: order._id,
+          orderId: order.orderId || order._id,
           patient: payload.patientName,
           healthId: payload.healthId,
           test: payload.testType,
@@ -147,7 +149,7 @@ const LabOrders = () => {
               {labOrders.map((order, index) => (
                 <tr key={order.id || index} className={`transition-colors ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className="text-sm font-medium text-blue-600">{order.id}</span>
+                    <span className="text-sm font-medium text-blue-600">{order.orderId || order.id}</span>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div>

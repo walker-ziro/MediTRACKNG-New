@@ -31,6 +31,7 @@ const PatientPrescriptions = () => {
           const flattenedPrescriptions = response.data.flatMap(rx => 
             rx.medications.map((med, index) => ({
               id: `${rx._id}-${index}`,
+              prescriptionId: rx.prescriptionId || rx._id,
               medication: med.drugName,
               dosage: `${med.dosage?.amount || med.dosage || ''} ${med.dosage?.unit || ''} ${med.frequency || ''}`.trim(),
               duration: `${med.duration?.value || med.duration || ''} ${med.duration?.unit || ''}`.trim(),

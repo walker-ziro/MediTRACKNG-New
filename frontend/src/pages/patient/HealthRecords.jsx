@@ -28,7 +28,7 @@ const HealthRecords = () => {
               provider: enc.provider ? `Dr. ${enc.provider.firstName} ${enc.provider.lastName}` : 'Unknown Provider',
               diagnosis: (enc.diagnosis && enc.diagnosis.length > 0) 
                 ? enc.diagnosis.map(d => d.description || d.code).join(', ') 
-                : 'No diagnosis',
+                : (enc.assessment || enc.chiefComplaint || 'No diagnosis'),
               notes: enc.chiefComplaint || 'No notes'
             };
           });

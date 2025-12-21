@@ -42,7 +42,11 @@ const Appointments = () => {
         ]);
 
         if (appointmentsData) {
-          setAppointments(appointmentsData);
+          const normalized = appointmentsData.map(apt => ({
+            ...apt,
+            appointmentId: apt.appointmentId || apt._id
+          }));
+          setAppointments(normalized);
         }
         if (patientsData) {
           setPatients(patientsData);
@@ -103,7 +107,11 @@ const Appointments = () => {
 
       const response = await postData('/appointments', payload);
       if (response && response.appointment) {
-        setAppointments([response.appointment, ...appointments]);
+        const created = {
+          ...response.appointment,
+          appointmentId: response.appointment.appointmentId || response.appointment._id
+        };
+        setAppointments([created, ...appointments]);
         setShowCreateModal(false);
         setFormData({
           patientId: '',
@@ -168,6 +176,7 @@ const Appointments = () => {
           <table className="w-full">
             <thead className={`border-b ${darkMode ? 'bg-gray-700 border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
               <tr>
+                <th className={`px-6 py-4 text-left text-xs font-medium uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Appointment ID</th>
                 <th className={`px-6 py-4 text-left text-xs font-medium uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Date & Time</th>
                 <th className={`px-6 py-4 text-left text-xs font-medium uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Patient</th>
                 <th className={`px-6 py-4 text-left text-xs font-medium uppercase ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>Type</th>
@@ -187,7 +196,10 @@ const Appointments = () => {
                 </tr>
               ) : (
                 appointments.map((apt) => (
-                  <tr key={apt._id} className={darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}>
+                  <tr key={apt.appointmentId || apt._id} className={darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}>
+                    <td className={`px-6 py-4 whitespace-nowrap text-sm font-medium ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>
+                      {apt.appointmentId || apt._id || 'N/A'}
+                    </td>
                     <td className={`px-6 py-4 whitespace-nowrap text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>
                       {new Date(apt.date).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })} <br/>
                       <span className="text-xs text-gray-500">{apt.time}</span>

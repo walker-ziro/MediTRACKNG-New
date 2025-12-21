@@ -14,7 +14,7 @@ const crypto = require('crypto');
 
 // Helper function to generate unique Health ID
 const generateHealthId = () => {
-  const prefix = 'MTN';
+  const prefix = 'PID';
   const uniqueId = `${Date.now().toString().slice(-6)}${Math.random().toString(36).substr(2, 4).toUpperCase()}`;
   return `${prefix}-${uniqueId}`;
 };
