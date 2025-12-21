@@ -109,10 +109,10 @@ const sendPasswordReset = async (email, resetToken, firstName, userType) => {
     console.log(`Reset URL: ${resetUrl}`);
 
     // Priority 1: Use Brevo REST API (works on all platforms including Render free tier)
-    if (process.env.BREVO_API_KEY) {
+    // NOTE: BREVO_API_KEY must be the REST API key, NOT the SMTP password (xsmtpsib-)
+    // Get it from: Brevo Dashboard → Your Name → SMTP & API → API Keys tab
+    if (process.env.BREVO_API_KEY && !process.env.BREVO_API_KEY.startsWith('xsmtpsib-')) {
       console.log('Using Brevo REST API to send password reset email');
-      console.log('API Key present:', !!process.env.BREVO_API_KEY);
-      console.log('API Key length:', process.env.BREVO_API_KEY?.length);
       
       try {
         const response = await axios.post(
@@ -152,9 +152,11 @@ const sendPasswordReset = async (email, resetToken, firstName, userType) => {
         return { success: true };
       } catch (apiError) {
         console.error('Brevo API error:', apiError.response?.data || apiError.message);
-        console.error('Full error:', apiError);
+        console.error('NOTE: Make sure BREVO_API_KEY is the REST API key, not SMTP password');
         // Fall through to SMTP fallback
       }
+    } else if (process.env.BREVO_API_KEY?.startsWith('xsmtpsib-')) {
+      console.warn('BREVO_API_KEY appears to be an SMTP password, not REST API key. Skipping API method.');
     }
 
     // Priority 2: Fall back to SMTP (for local development)
