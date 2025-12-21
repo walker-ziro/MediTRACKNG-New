@@ -62,6 +62,7 @@ import PatientPrescriptions from './pages/patient/Prescriptions';
 import PatientTelemedicine from './pages/patient/Telemedicine';
 import PatientFamilyHealth from './pages/patient/FamilyHealth';
 import PatientSettings from './pages/patient/Settings';
+import NearbyHealthCenters from './pages/patient/NearbyHealthCenters';
 
 // Admin Pages
 import AdminUserManagement from './pages/admin/UserManagement';
@@ -267,6 +268,7 @@ function App() {
             <Route path="prescriptions" element={<PatientPrescriptions />} />
             <Route path="telemedicine" element={<PatientTelemedicine />} />
             <Route path="family-health" element={<PatientFamilyHealth />} />
+            <Route path="nearby-health-centers" element={<NearbyHealthCenters />} />
             <Route path="settings" element={<PatientSettings />} />
           </Route>
           

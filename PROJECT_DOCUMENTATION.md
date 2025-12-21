@@ -21,6 +21,7 @@ Empowers individuals to take control of their health.
 *   **Prescriptions:** View active medications, dosage instructions, and request refills.
 *   **Appointments:** Book physical or virtual consultations with doctors.
 *   **Telemedicine:** Join video/audio consultations directly from the browser.
+*   **Nearby Health Centers:** Locate hospitals and clinics on an interactive map based on current location.
 *   **Billing:** View invoices and payment history.
 
 ### B. Provider Portal (The "Clinician's Workspace")

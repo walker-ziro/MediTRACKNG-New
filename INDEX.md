@@ -16,7 +16,7 @@ Welcome to MediTRACKNG! This index will help you navigate all project documentat
 
 **Start here if:** You're new to the project or want a high-level overview.
 
-### 2. **QUICKSTART.md** - Fast Setup (3 Steps)
+### 2. **QUICK_START_GUIDE.md** - Fast Setup (3 Steps)
 ⚡ Get up and running in under 5 minutes.
 - Install dependencies
 - Start servers
@@ -30,15 +30,12 @@ Welcome to MediTRACKNG! This index will help you navigate all project documentat
 ## 📖 Detailed Guides
 
 ### 3. **SETUP_GUIDE.md** - Comprehensive Installation Guide
-📘 Complete setup and usage documentation (400+ lines).
+📘 Complete setup and usage documentation.
 - Detailed installation steps
 - MongoDB setup (local vs cloud)
 - Environment configuration
-- API endpoint documentation
 - Troubleshooting guide
 - Production deployment checklist
-- Technology stack details
-- Support information
 
 **Use this when:** You need detailed setup instructions or encounter issues.
 
@@ -48,11 +45,6 @@ Welcome to MediTRACKNG! This index will help you navigate all project documentat
 - Patient management flows (create, search)
 - Encounter management flows (create, view)
 - Multi-facility workflows
-- UI state indicators
-- Responsive behavior
-- Security flows
-- Data flow diagrams
-- Critical user paths
 
 **Use this when:** You want to understand how users interact with the system.
 
@@ -62,9 +54,6 @@ Welcome to MediTRACKNG! This index will help you navigate all project documentat
 - File statistics and line counts
 - Detailed file descriptions
 - Dependencies list
-- Database collections
-- Scripts reference
-- Growth path recommendations
 
 **Use this when:** You need to understand the codebase structure.
 
@@ -72,32 +61,78 @@ Welcome to MediTRACKNG! This index will help you navigate all project documentat
 
 ## 🎯 Project Information
 
-### 6. **PROJECT_SUMMARY.md** - Implementation Details
-📊 Complete feature list and what was built (500+ lines).
+### 6. **PROJECT_DOCUMENTATION.md** - Implementation Details
+📊 Complete feature list and what was built.
 - Overview of completed features
 - Technology stack breakdown
 - Database schema details
 - API endpoint list
 - Component descriptions
 - Security features
-- Key implementation highlights
-- Success criteria
-- Next steps for production
-- Technical highlights
-- Deliverables summary
 
 **Use this when:** You need to understand what was implemented and how.
 
+### 7. **NATIONAL_SYSTEM_FEATURES.md** - National Infrastructure
+🏥 Details on the nationwide healthcare features.
+- Multi-facility architecture
+- Unified patient identification
+- Public health analytics
+- Consent management
+
+**Use this when:** You want to understand the national-scale capabilities.
+
 ---
 
-## ✅ Quality Assurance
+## 🛠️ Technical Documentation
 
-### 7. **TESTING_CHECKLIST.md** - Comprehensive Testing Guide
-✓ Complete testing scenarios and checklist (400+ lines).
-- Pre-testing setup
-- Authentication testing
-- Patient management testing
-- Encounter management testing
+### 8. **MAPS_SETUP.md** - Nearby Health Centers
+🗺️ Documentation for the mapping feature.
+- Leaflet.js & OpenStreetMap integration
+- Overpass API usage
+- No-cost implementation details
+
+### 9. **API_DOCUMENTATION.md** - Backend API Reference
+🔌 Detailed API endpoint documentation.
+- Auth endpoints
+- Patient endpoints
+- Encounter endpoints
+- Request/Response examples
+
+### 10. **backend/README.md** - Backend Specifics
+⚙️ Detailed backend documentation.
+- Folder structure
+- ID generation system
+- Migration scripts
+- Security implementation
+
+### 11. **frontend/README.md** - Frontend Specifics
+🎨 Detailed frontend documentation.
+- Component structure
+- Routing configuration
+- State management
+- Theming
+
+---
+
+## 📧 Email & Notifications
+
+### 12. **EMAIL_SETUP.md** & **GMAIL_SETUP.md**
+📧 Guides for setting up email notifications.
+- SMTP configuration
+- Gmail integration
+- Brevo integration (**BREVO_SETUP.md**)
+- Account activation flows (**ACCOUNT_ACTIVATION.md**)
+
+---
+
+## 🧭 Navigation Tips
+
+- **New Developer?** Start with `README.md` then `QUICK_START_GUIDE.md`.
+- **Need to Deploy?** Check `SETUP_GUIDE.md`.
+- **Understanding Code?** Look at `FILE_STRUCTURE.md` and `PROJECT_DOCUMENTATION.md`.
+- **Working on Maps?** See `MAPS_SETUP.md`.
+- **Working on API?** See `API_DOCUMENTATION.md` and `backend/README.md`.
+
 - Multi-facility testing
 - UI/UX testing
 - Error handling testing

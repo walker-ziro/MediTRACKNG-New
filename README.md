@@ -14,12 +14,17 @@ A comprehensive, secure, and centralized National Health Records System for all 
 - **🔒 Security & Compliance** - NDPA 2023 compliant with granular access control
 
 ### Core EHR Features
-- **Unified Patient Identification** - Unique Health IDs (MTN-XXXXXXXX format)
-- **Biometric Authentication** - Fingerprint and facial recognition support
+- **Unified Patient Identification** - Unique Health IDs (`PID-XXXXXX` format)
+- **Standardized Record IDs** - Short, readable IDs for all entities:
+  - Appointments: `APT-XXXXXX`
+  - Lab Orders: `LAB-XXXXXX`
+  - Prescriptions: `RX-XXXXXX`
+  - Encounters: `ENC-XXXXXX`
 - **Electronic Health Records (EHR)** - Complete medical history tracking across all facilities
 - **Provider Portal** - Secure access for healthcare professionals
 - **Encounter Timeline** - Visual timeline of patient visits nationwide
-- **JWT Authentication** - Secure provider and patient authentication
+- **Telemedicine** - Integrated video consultations using Jitsi Meet
+- **Nearby Health Centers** - Interactive map to find hospitals and clinics (using OpenStreetMap & Leaflet)
 - **Real-time Updates** - Immediate access to patient records with consent
 - **Responsive Design** - Works on desktop and mobile devices
 
@@ -30,7 +35,8 @@ A comprehensive, secure, and centralized National Health Records System for all 
 - **Frontend:** React 18 with Hooks
 - **Styling:** Tailwind CSS
 - **Authentication:** JWT + bcryptjs
-- **HTTP Client:** Axios
+- **Mapping:** Leaflet.js + OpenStreetMap + Overpass API (Free, no API keys required)
+- **Video Conferencing:** Jitsi Meet React SDK
 - **Build Tool:** Vite
 
 ## 📋 Prerequisites
@@ -89,7 +95,7 @@ npm run dev
 
 ### 5. Access the Application
 
-- **Frontend:** http://localhost:3000
+- **Frontend:** http://localhost:5173 (Vite default)
 - **Backend API:** http://localhost:5000
 
 ## 👥 Sample Credentials (After Seeding)
@@ -99,27 +105,62 @@ npm run dev
 - Password: `password123`
 - Facility: General Hospital Lagos
 
-**Sample Patients:**
-- Health ID: `MTN-DEMO0001` (Oluwaseun Adebayo)
-- Health ID: `MTN-DEMO0002` (Amina Mohammed)
+**Provider 2:**
+- Username: `dr.williams`
+- Password: `password123`
+- Facility: Abuja National Hospital
+
+**Patient 1:**
+- Health ID: `PID-DEMO0001`
+- Password: `password123`
+
+**Patient 2:**
+- Health ID: `PID-DEMO0002`
+- Password: `password123`
+
+## 🗺️ Nearby Health Centers Feature
+
+The application includes a "Nearby Health Centers" feature in the Patient Portal.
+- **Technology:** Uses Leaflet.js and OpenStreetMap (100% Free).
+- **Data Source:** Overpass API to fetch real-time hospital and clinic data.
+- **Features:**
+  - Auto-detects user location.
+  - Displays nearby facilities on an interactive map.
+  - Lists facilities with distance, address, and type.
+  - "Get Directions" button links to Google Maps.
+  - Dark mode support.
+
+## 🔄 ID System Migration
+
+If you have existing data with old ID formats, migration scripts are available in `backend/scripts/`:
+- `migrateAppointmentIds.js`: Adds `APT-XXXXXX` to appointments.
+- `migrateLabOrderIds.js`: Adds `LAB-XXXXXX` to lab orders.
+
+Run them via:
+```powershell
+cd backend
+node scripts/migrateAppointmentIds.js
+node scripts/migrateLabOrderIds.js
+```
 
 ## 📖 Documentation
 
 **Start Here:** [INDEX.md](INDEX.md) - Complete documentation index and navigation guide
 
 **Quick References:**
-- **[QUICKSTART.md](QUICKSTART.md)** - Get running in 3 steps (5 minutes)
+- **[QUICK_START_GUIDE.md](QUICK_START_GUIDE.md)** - Get running in 3 steps (5 minutes)
 - **[SETUP_GUIDE.md](SETUP_GUIDE.md)** - Comprehensive installation and usage guide
 - **[USER_FLOWS.md](USER_FLOWS.md)** - Detailed user journey walkthroughs
 - **[FILE_STRUCTURE.md](FILE_STRUCTURE.md)** - Complete codebase structure
-- **[PROJECT_SUMMARY.md](PROJECT_SUMMARY.md)** - Implementation details and features
-- **[TESTING_CHECKLIST.md](TESTING_CHECKLIST.md)** - Comprehensive testing guide
-- **[VISUAL_GUIDE.md](VISUAL_GUIDE.md)** - UI/UX design system and mockups
+- **[PROJECT_DOCUMENTATION.md](PROJECT_DOCUMENTATION.md)** - Implementation details and features
+- **[MAPS_SETUP.md](MAPS_SETUP.md)** - Nearby Health Centers feature setup
+- **[API_DOCUMENTATION.md](API_DOCUMENTATION.md)** - Backend API endpoints
+- **[NATIONAL_SYSTEM_FEATURES.md](NATIONAL_SYSTEM_FEATURES.md)** - National infrastructure details
 
 ## 🔑 Key Workflows
 
 ### Register a Provider
-1. Navigate to http://localhost:3000
+1. Navigate to http://localhost:5173
 2. Click "Don't have an account? Register"
 3. Enter credentials and facility name
 
@@ -127,7 +168,7 @@ npm run dev
 1. Login to the dashboard
 2. Click "Create New Patient"
 3. Fill in demographics and medical history
-4. System generates unique Health ID
+4. System generates unique Health ID (`PID-XXXXXX`)
 
 ### Record an Encounter
 1. Search for patient by Health ID
@@ -149,11 +190,13 @@ MediTRACKNG/
 │   ├── models/              # Mongoose schemas
 │   ├── routes/              # API endpoints
 │   ├── middleware/          # Auth middleware
+│   ├── scripts/             # Migration and utility scripts
 │   ├── server.js            # Express server
 │   └── seed.js              # Sample data seeder
 └── frontend/
     ├── src/
     │   ├── components/      # React components
+    │   ├── pages/           # Page components (Patient/Provider/Admin)
     │   ├── utils/           # API utilities
     │   └── App.jsx          # Main application
     └── vite.config.js
@@ -200,7 +243,7 @@ MediTRACKNG/
 
 **Frontend won't start:**
 - Ensure backend is running first
-- Check port 3000 is available
+- Check port 5173 is available
 - Clear npm cache if needed
 
 **Can't find patient:**
