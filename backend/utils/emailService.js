@@ -1,15 +1,29 @@
 const nodemailer = require('nodemailer');
-const brevo = require('@getbrevo/brevo');
+let brevo;
+try {
+  brevo = require('@getbrevo/brevo');
+} catch (error) {
+  console.log('Brevo SDK not available, will use SMTP fallback');
+}
 
 let transporter = null;
 let brevoApiInstance = null;
 
-// Initialize Brevo API client if available
-if (process.env.BREVO_API_KEY) {
-  const apiKey = brevo.ApiClient.instance.authentications['api-key'];
-  apiKey.apiKey = process.env.BREVO_API_KEY;
-  brevoApiInstance = new brevo.TransactionalEmailsApi();
-}
+// Function to initialize Brevo API client
+const getBrevoApiInstance = () => {
+  if (!brevoApiInstance && brevo && process.env.BREVO_API_KEY) {
+    try {
+      const apiKey = brevo.ApiClient.instance.authentications['api-key'];
+      apiKey.apiKey = process.env.BREVO_API_KEY;
+      brevoApiInstance = new brevo.TransactionalEmailsApi();
+      console.log('Brevo API client initialized successfully');
+    } catch (error) {
+      console.error('Failed to initialize Brevo API client:', error.message);
+      return null;
+    }
+  }
+  return brevoApiInstance;
+};
 
 const createTransporter = () => {
   // Priority 1: Use Brevo (formerly Sendinblue) - works on Render
@@ -117,7 +131,8 @@ const sendPasswordReset = async (email, resetToken, firstName, userType) => {
     console.log(`Reset URL: ${resetUrl}`);
 
     // Priority 1: Use Brevo API (works on all platforms including Render free tier)
-    if (brevoApiInstance) {
+    const brevoApi = getBrevoApiInstance();
+    if (brevoApi && brevo) {
       console.log('Using Brevo API to send password reset email');
       
       const sendSmtpEmail = new brevo.SendSmtpEmail();
@@ -142,7 +157,7 @@ const sendPasswordReset = async (email, resetToken, firstName, userType) => {
         </div>
       `;
 
-      const result = await brevoApiInstance.sendTransacEmail(sendSmtpEmail);
+      const result = await brevoApi.sendTransacEmail(sendSmtpEmail);
       console.log('Password reset email sent via Brevo API:', result.messageId);
       return { success: true };
     }
