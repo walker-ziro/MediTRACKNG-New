@@ -1,29 +1,7 @@
 const nodemailer = require('nodemailer');
-let brevo;
-try {
-  brevo = require('@getbrevo/brevo');
-} catch (error) {
-  console.log('Brevo SDK not available, will use SMTP fallback');
-}
+const axios = require('axios');
 
 let transporter = null;
-let brevoApiInstance = null;
-
-// Function to initialize Brevo API client
-const getBrevoApiInstance = () => {
-  if (!brevoApiInstance && brevo && process.env.BREVO_API_KEY) {
-    try {
-      const apiKey = brevo.ApiClient.instance.authentications['api-key'];
-      apiKey.apiKey = process.env.BREVO_API_KEY;
-      brevoApiInstance = new brevo.TransactionalEmailsApi();
-      console.log('Brevo API client initialized successfully');
-    } catch (error) {
-      console.error('Failed to initialize Brevo API client:', error.message);
-      return null;
-    }
-  }
-  return brevoApiInstance;
-};
 
 const createTransporter = () => {
   // Priority 1: Use Brevo (formerly Sendinblue) - works on Render
@@ -130,36 +108,49 @@ const sendPasswordReset = async (email, resetToken, firstName, userType) => {
     
     console.log(`Reset URL: ${resetUrl}`);
 
-    // Priority 1: Use Brevo API (works on all platforms including Render free tier)
-    const brevoApi = getBrevoApiInstance();
-    if (brevoApi && brevo) {
-      console.log('Using Brevo API to send password reset email');
+    // Priority 1: Use Brevo REST API (works on all platforms including Render free tier)
+    if (process.env.BREVO_API_KEY) {
+      console.log('Using Brevo REST API to send password reset email');
       
-      const sendSmtpEmail = new brevo.SendSmtpEmail();
-      sendSmtpEmail.sender = { 
-        name: "MediTRACKNG", 
-        email: process.env.BREVO_FROM_EMAIL || 'noreply@meditrackng.com' 
-      };
-      sendSmtpEmail.to = [{ email: email }];
-      sendSmtpEmail.subject = "Password Reset Request";
-      sendSmtpEmail.htmlContent = `
-        <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
-          <h2 style="color: #2563eb;">Password Reset Request</h2>
-          <p>Hi ${firstName || 'there'},</p>
-          <p>You requested to reset your password. Click the button below to reset it:</p>
-          <div style="margin: 30px 0;">
-            <a href="${resetUrl}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Reset Password</a>
-          </div>
-          <p>Or copy and paste this link into your browser:</p>
-          <p style="color: #666; word-break: break-all;">${resetUrl}</p>
-          <p>This link will expire in 1 hour.</p>
-          <p>If you did not request this, please ignore this email and your password will remain unchanged.</p>
-        </div>
-      `;
+      try {
+        const response = await axios.post(
+          'https://api.brevo.com/v3/smtp/email',
+          {
+            sender: {
+              name: 'MediTRACKNG',
+              email: process.env.BREVO_FROM_EMAIL || 'noreply@meditrackng.com'
+            },
+            to: [{ email: email }],
+            subject: 'Password Reset Request',
+            htmlContent: `
+              <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+                <h2 style="color: #2563eb;">Password Reset Request</h2>
+                <p>Hi ${firstName || 'there'},</p>
+                <p>You requested to reset your password. Click the button below to reset it:</p>
+                <div style="margin: 30px 0;">
+                  <a href="${resetUrl}" style="background-color: #2563eb; color: white; padding: 12px 24px; text-decoration: none; border-radius: 5px; display: inline-block;">Reset Password</a>
+                </div>
+                <p>Or copy and paste this link into your browser:</p>
+                <p style="color: #666; word-break: break-all;">${resetUrl}</p>
+                <p>This link will expire in 1 hour.</p>
+                <p>If you did not request this, please ignore this email and your password will remain unchanged.</p>
+              </div>
+            `
+          },
+          {
+            headers: {
+              'api-key': process.env.BREVO_API_KEY,
+              'Content-Type': 'application/json'
+            }
+          }
+        );
 
-      const result = await brevoApi.sendTransacEmail(sendSmtpEmail);
-      console.log('Password reset email sent via Brevo API:', result.messageId);
-      return { success: true };
+        console.log('Password reset email sent via Brevo API:', response.data.messageId);
+        return { success: true };
+      } catch (apiError) {
+        console.error('Brevo API error:', apiError.response?.data || apiError.message);
+        // Fall through to SMTP fallback
+      }
     }
 
     // Priority 2: Fall back to SMTP (for local development)
