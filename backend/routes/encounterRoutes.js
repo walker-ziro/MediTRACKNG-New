@@ -64,13 +64,25 @@ router.post('/', auth, async (req, res) => {
     }
 
     // Create new encounter
+    const encounterDate = date ? new Date(`${date}T${time || '00:00'}`) : new Date();
+    
+    // Validate date is not in the future
+    const now = new Date();
+    if (encounterDate > now) {
+      return res.status(400).json({ 
+        message: 'Encounter date cannot be in the future',
+        providedDate: encounterDate,
+        currentDate: now
+      });
+    }
+
     const encounter = new Encounter({
       encounterId: `ENC-${uuidv4().split('-')[0].toUpperCase()}`,
       patient: patient._id,
       facility: provider.primaryFacility,
       provider: provider._id,
       encounterType: type || 'Outpatient Visit',
-      encounterDate: date ? new Date(`${date}T${time || '00:00'}`) : new Date(),
+      encounterDate: encounterDate,
       status: status || 'Scheduled',
       clinicalNotes: clinicalNotes || ''
     });

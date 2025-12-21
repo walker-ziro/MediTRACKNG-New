@@ -37,7 +37,7 @@ const Patients = () => {
             age: p.dateOfBirth ? new Date().getFullYear() - new Date(p.dateOfBirth).getFullYear() : 'N/A',
             gender: p.gender,
             bloodType: p.bloodGroup || 'N/A',
-            lastVisit: p.lastVisit ? new Date(p.lastVisit).toLocaleDateString() : 'No visits yet',
+            lastVisit: p.lastVisit && !isNaN(new Date(p.lastVisit).getTime()) ? new Date(p.lastVisit).toLocaleDateString() : 'No visits yet',
             status: p.status,
             email: p.contact?.email || '',
             phone: p.contact?.phone || '',

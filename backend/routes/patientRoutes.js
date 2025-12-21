@@ -36,12 +36,12 @@ router.get('/', auth, async (req, res) => {
     // Fetch last visit date for each patient
     const patientsWithLastVisit = await Promise.all(patients.map(async (patient) => {
       const lastEncounter = await Encounter.findOne({ patient: patient._id })
-        .sort({ date: -1 })
-        .select('date');
+        .sort({ encounterDate: -1 })
+        .select('encounterDate');
       
       return {
         ...patient,
-        lastVisit: lastEncounter ? lastEncounter.date : null
+        lastVisit: lastEncounter ? lastEncounter.encounterDate : null
       };
     }));
 
@@ -96,7 +96,10 @@ router.post('/', auth, async (req, res) => {
         email,
         phone,
         address: {
-          street: address // Simplified for now
+          street: address || '',
+          city: '',
+          lga: '',
+          state: 'Lagos' // Default state, should be from form
         }
       },
       emergencyContact: {

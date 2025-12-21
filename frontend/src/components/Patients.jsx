@@ -186,7 +186,7 @@ const Patients = () => {
                     ? Math.floor((new Date() - new Date(patient.demographics.dateOfBirth)) / (365.25 * 24 * 60 * 60 * 1000))
                     : 'N/A';
                   const fullName = `${patient.demographics?.firstName || ''} ${patient.demographics?.lastName || ''}`.trim() || 'N/A';
-                  const lastVisit = patient.lastVisit 
+                  const lastVisit = patient.lastVisit && !isNaN(new Date(patient.lastVisit).getTime())
                     ? new Date(patient.lastVisit).toLocaleDateString()
                     : 'No visits';
                   

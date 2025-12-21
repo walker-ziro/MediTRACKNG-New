@@ -15,16 +15,23 @@ const HealthRecords = () => {
       try {
         const data = await fetchData(`/patient-portal/encounters/${userData.healthId}`);
         if (data && data.encounters) {
-          const formattedRecords = data.encounters.map(enc => ({
-            id: enc.id,
-            date: new Date(enc.date).toLocaleDateString(),
-            type: enc.type,
-            provider: enc.provider ? `Dr. ${enc.provider.firstName} ${enc.provider.lastName}` : 'Unknown Provider',
-            diagnosis: (enc.diagnosis && enc.diagnosis.length > 0) 
-              ? enc.diagnosis.map(d => d.description || d.code).join(', ') 
-              : 'No diagnosis',
-            notes: enc.chiefComplaint || 'No notes'
-          }));
+          const formattedRecords = data.encounters.map(enc => {
+            const dateObj = new Date(enc.date);
+            const formattedDate = !isNaN(dateObj.getTime()) 
+              ? dateObj.toLocaleDateString() 
+              : 'Date not available';
+            
+            return {
+              id: enc.id,
+              date: formattedDate,
+              type: enc.type,
+              provider: enc.provider ? `Dr. ${enc.provider.firstName} ${enc.provider.lastName}` : 'Unknown Provider',
+              diagnosis: (enc.diagnosis && enc.diagnosis.length > 0) 
+                ? enc.diagnosis.map(d => d.description || d.code).join(', ') 
+                : 'No diagnosis',
+              notes: enc.chiefComplaint || 'No notes'
+            };
+          });
           setRecords(formattedRecords);
         }
       } catch (error) {
@@ -53,7 +60,7 @@ const HealthRecords = () => {
         <div className={`rounded-xl p-6 border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
           <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-600'}`}>Last Visit</p>
           <p className={`text-xl font-bold mt-1 ${darkMode ? 'text-white' : 'text-gray-900'}`}>
-            {records.length > 0 ? records[0].date : 'N/A'}
+            {records.length > 0 && records[0].date ? new Date(records[0].date).toLocaleDateString() : 'N/A'}
           </p>
         </div>
         <div className={`rounded-xl p-6 border ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>

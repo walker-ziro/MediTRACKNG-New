@@ -135,7 +135,7 @@ router.get('/encounters/:healthId', async (req, res) => {
     const encounters = await Encounter.find({ patient: patient._id })
       .populate('provider', 'firstName lastName specialization')
       .populate('facility', 'name facilityId type')
-      .sort({ date: -1 })
+      .sort({ encounterDate: -1 })
       .limit(50);
 
     await logPatientAccess(req.params.healthId, 'View', 'Clinical Notes', req.ip);
@@ -143,7 +143,7 @@ router.get('/encounters/:healthId', async (req, res) => {
     res.json({
       encounters: encounters.map(e => ({
         id: e._id,
-        date: e.date,
+        date: e.encounterDate,
         type: e.type,
         chiefComplaint: e.chiefComplaint,
         diagnosis: e.diagnosis,
