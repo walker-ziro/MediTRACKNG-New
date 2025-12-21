@@ -1170,6 +1170,7 @@ router.post('/forgot-password', async (req, res) => {
     await user.save();
 
     // Send reset email
+    console.log(`Attempting to send password reset email to ${email} for ${userType}`);
     const emailResult = await sendPasswordReset(email, resetToken, user.firstName, userType);
 
     if (!emailResult.success) {
@@ -1180,11 +1181,16 @@ router.post('/forgot-password', async (req, res) => {
       });
     }
 
+    console.log('Password reset email sent successfully');
     res.json({ message: 'If an account exists with this email, you will receive password reset instructions.' });
 
   } catch (error) {
     console.error('Forgot password error:', error);
-    res.status(500).json({ message: 'Server error during password reset request' });
+    console.error('Error stack:', error.stack);
+    res.status(500).json({ 
+      message: 'Server error during password reset request',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
   }
 });
 

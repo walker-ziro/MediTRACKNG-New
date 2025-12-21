@@ -100,12 +100,16 @@ const sendOTP = async (email, otp) => {
 
 const sendPasswordReset = async (email, resetToken, firstName, userType) => {
   try {
+    console.log(`sendPasswordReset called with: email=${email}, userType=${userType}, firstName=${firstName}`);
+    
     if (!transporter) {
+      console.log('Creating new transporter...');
       transporter = createTransporter();
       if (!transporter) {
         console.error("Email configuration missing.");
         return { success: false, error: "Server email configuration is missing." };
       }
+      console.log('Transporter created successfully');
     }
 
     const senderEmail = process.env.BREVO_API_KEY
@@ -114,7 +118,11 @@ const sendPasswordReset = async (email, resetToken, firstName, userType) => {
       ? process.env.SENDGRID_FROM_EMAIL || 'noreply@meditrackng.com'
       : process.env.GMAIL_USER;
 
-    const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:5173'}/${userType}/reset-password?token=${resetToken}`;
+    const frontendUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+    const resetUrl = `${frontendUrl}/${userType}/reset-password?token=${resetToken}`;
+    
+    console.log(`Sending password reset email from ${senderEmail} to ${email}`);
+    console.log(`Reset URL: ${resetUrl}`);
     
     const info = await transporter.sendMail({
       from: `"MediTRACKNG" <${senderEmail}>`,
