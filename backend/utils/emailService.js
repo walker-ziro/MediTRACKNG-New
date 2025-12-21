@@ -111,6 +111,8 @@ const sendPasswordReset = async (email, resetToken, firstName, userType) => {
     // Priority 1: Use Brevo REST API (works on all platforms including Render free tier)
     if (process.env.BREVO_API_KEY) {
       console.log('Using Brevo REST API to send password reset email');
+      console.log('API Key present:', !!process.env.BREVO_API_KEY);
+      console.log('API Key length:', process.env.BREVO_API_KEY?.length);
       
       try {
         const response = await axios.post(
@@ -139,8 +141,9 @@ const sendPasswordReset = async (email, resetToken, firstName, userType) => {
           },
           {
             headers: {
+              'accept': 'application/json',
               'api-key': process.env.BREVO_API_KEY,
-              'Content-Type': 'application/json'
+              'content-type': 'application/json'
             }
           }
         );
@@ -149,6 +152,7 @@ const sendPasswordReset = async (email, resetToken, firstName, userType) => {
         return { success: true };
       } catch (apiError) {
         console.error('Brevo API error:', apiError.response?.data || apiError.message);
+        console.error('Full error:', apiError);
         // Fall through to SMTP fallback
       }
     }
