@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link, Outlet, useLocation } from 'react-router-dom';
 import { useSettings } from '../context/SettingsContext';
 import { api } from '../utils/api';
@@ -14,6 +14,20 @@ const AdminLayout = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const profileRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setShowProfile(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -101,6 +115,7 @@ const AdminLayout = () => {
         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 120px)' }}>
           <Link
             to="/admin/dashboard"
+            onClick={() => setIsSidebarOpen(false)}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/admin/dashboard')
                 ? 'bg-blue-600 text-white'
@@ -115,6 +130,7 @@ const AdminLayout = () => {
 
           <Link
             to="/admin/users"
+            onClick={() => setIsSidebarOpen(false)}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/admin/users')
                 ? 'bg-blue-600 text-white'
@@ -129,6 +145,7 @@ const AdminLayout = () => {
 
           <Link
             to="/admin/providers"
+            onClick={() => setIsSidebarOpen(false)}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/admin/providers')
                 ? 'bg-blue-600 text-white'
@@ -143,6 +160,7 @@ const AdminLayout = () => {
 
           <Link
             to="/admin/facilities"
+            onClick={() => setIsSidebarOpen(false)}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/admin/facilities')
                 ? 'bg-blue-600 text-white'
@@ -157,6 +175,7 @@ const AdminLayout = () => {
 
           <Link
             to="/admin/analytics"
+            onClick={() => setIsSidebarOpen(false)}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/admin/analytics')
                 ? 'bg-blue-600 text-white'
@@ -171,6 +190,7 @@ const AdminLayout = () => {
 
           <Link
             to="/admin/audit-logs"
+            onClick={() => setIsSidebarOpen(false)}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/admin/audit-logs')
                 ? 'bg-blue-600 text-white'
@@ -185,6 +205,7 @@ const AdminLayout = () => {
 
           <Link
             to="/admin/insurance"
+            onClick={() => setIsSidebarOpen(false)}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/admin/insurance')
                 ? 'bg-blue-600 text-white'
@@ -201,6 +222,7 @@ const AdminLayout = () => {
 
           <Link
             to="/admin/settings"
+            onClick={() => setIsSidebarOpen(false)}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/admin/settings')
                 ? 'bg-blue-600 text-white'
@@ -278,7 +300,7 @@ const AdminLayout = () => {
               {/* Notifications */}
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
-                className="relative p-2 text-gray-400 hover:bg-gray-700 rounded-lg transition-colors"
+                className={`relative p-2 ${darkMode ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'} rounded-lg transition-colors`}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -292,10 +314,10 @@ const AdminLayout = () => {
               </div>
 
               {/* Profile */}
-              <div className="relative">
+              <div className="relative" ref={profileRef}>
                 <button
                   onClick={() => setShowProfile(!showProfile)}
-                  className="flex items-center gap-3 p-2 hover:bg-gray-700 rounded-lg transition-colors"
+                  className={`flex items-center gap-3 p-2 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} rounded-lg transition-colors`}
                 >
                   <div className={`w-10 h-10 ${darkMode ? 'bg-gray-700' : 'bg-gray-100'} rounded-full flex items-center justify-center`}>
                     <svg className={`w-5 h-5 ${darkMode ? 'text-gray-400' : 'text-gray-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -315,14 +337,14 @@ const AdminLayout = () => {
 
                 {/* Profile Dropdown */}
                 {showProfile && (
-                  <div className="absolute right-0 mt-2 w-64 bg-gray-800 rounded-lg shadow-lg border border-gray-700 py-2 z-50">
-                    <div className="px-4 py-3 border-b border-gray-700">
-                      <p className="font-semibold text-white">{userData.name}</p>
-                      <p className="text-sm text-gray-400">{userData.email}</p>
+                  <div className={`absolute right-0 mt-2 w-64 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg shadow-lg border py-2 z-50`}>
+                    <div className={`px-4 py-3 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                      <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{userData.name}</p>
+                      <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{userData.email}</p>
                       <p className="text-xs text-red-400 mt-1">{userData.adminId}</p>
                     </div>
-                    <Link to="/admin/settings" className="block px-4 py-2 hover:bg-gray-700 text-gray-300">Profile Settings</Link>
-                    <button onClick={handleLogout} className="w-full text-left px-4 py-2 hover:bg-red-900/50 text-red-400">
+                    <Link to="/admin/settings" className={`block px-4 py-2 ${darkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-50 text-gray-700'}`}>Profile Settings</Link>
+                    <button onClick={handleLogout} className={`w-full text-left px-4 py-2 ${darkMode ? 'hover:bg-red-900/50' : 'hover:bg-red-50'} text-red-400`}>
                       Log out
                     </button>
                   </div>
@@ -344,11 +366,11 @@ const AdminLayout = () => {
       {/* Notifications Panel */}
       {showNotifications && (
         <div className="fixed inset-0 bg-black bg-opacity-50 z-50" onClick={() => setShowNotifications(false)}>
-          <div className="absolute right-0 top-0 h-full w-96 bg-gray-800 shadow-xl border-l border-gray-700" onClick={(e) => e.stopPropagation()}>
+          <div className={`absolute right-0 top-0 h-full w-96 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} shadow-xl border-l`} onClick={(e) => e.stopPropagation()}>
             <div className="p-6">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-xl font-bold text-white">System Notifications</h3>
-                <button onClick={() => setShowNotifications(false)} className="text-gray-400 hover:text-gray-300">
+                <h3 className={`text-xl font-bold ${darkMode ? 'text-white' : 'text-gray-900'}`}>System Notifications</h3>
+                <button onClick={() => setShowNotifications(false)} className={`${darkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'}`}>
                   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                   </svg>

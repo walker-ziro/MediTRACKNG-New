@@ -138,7 +138,7 @@ const PatientDashboard = () => {
               <Link
                 key={action.label}
                 to={action.link}
-                className={`flex items-center gap-3 p-3 border-2 border-${action.color}-200 hover:bg-${action.color}-50 rounded-lg transition-colors`}
+                className={`flex items-center gap-3 p-3 border-2 border-${action.color}-200 ${darkMode ? 'hover:bg-gray-700' : `hover:bg-${action.color}-50`} rounded-lg transition-colors`}
               >
                 <i className={`fas fa-${action.icon} text-${action.color}-600`}></i>
                 <span className={`font-medium ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>{action.label}</span>

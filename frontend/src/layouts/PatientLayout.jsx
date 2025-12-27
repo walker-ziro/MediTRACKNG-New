@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate, Link, Outlet, useLocation } from 'react-router-dom';
 import { useSettings } from '../context/SettingsContext';
 import { api } from '../utils/api';
@@ -14,6 +14,20 @@ const PatientLayout = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const profileRef = useRef(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (profileRef.current && !profileRef.current.contains(event.target)) {
+        setShowProfile(false);
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchNotifications = async () => {
@@ -101,6 +115,7 @@ const PatientLayout = () => {
         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 120px)' }}>
           <Link
             to="/patient/dashboard"
+            onClick={() => setIsSidebarOpen(false)}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/patient/dashboard')
                 ? 'bg-blue-600 text-white'
@@ -115,6 +130,7 @@ const PatientLayout = () => {
 
           <Link
             to="/patient/health-records"
+            onClick={() => setIsSidebarOpen(false)}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/patient/health-records')
                 ? 'bg-blue-600 text-white'
@@ -129,6 +145,7 @@ const PatientLayout = () => {
 
           <Link
             to="/patient/appointments"
+            onClick={() => setIsSidebarOpen(false)}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/patient/appointments')
                 ? 'bg-blue-600 text-white'
@@ -143,6 +160,7 @@ const PatientLayout = () => {
 
           <Link
             to="/patient/prescriptions"
+            onClick={() => setIsSidebarOpen(false)}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/patient/prescriptions')
                 ? 'bg-blue-600 text-white'
@@ -157,6 +175,7 @@ const PatientLayout = () => {
 
           <Link
             to="/patient/telemedicine"
+            onClick={() => setIsSidebarOpen(false)}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/patient/telemedicine')
                 ? 'bg-blue-600 text-white'
@@ -171,6 +190,7 @@ const PatientLayout = () => {
 
           <Link
             to="/patient/family-health"
+            onClick={() => setIsSidebarOpen(false)}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/patient/family-health')
                 ? 'bg-blue-600 text-white'
@@ -185,6 +205,7 @@ const PatientLayout = () => {
 
           <Link
             to="/patient/nearby-health-centers"
+            onClick={() => setIsSidebarOpen(false)}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/patient/nearby-health-centers')
                 ? 'bg-blue-600 text-white'
@@ -202,6 +223,7 @@ const PatientLayout = () => {
 
           <Link
             to="/patient/settings"
+            onClick={() => setIsSidebarOpen(false)}
             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors ${
               isActive('/patient/settings')
                 ? 'bg-blue-600 text-white'
@@ -279,7 +301,7 @@ const PatientLayout = () => {
               {/* Notifications */}
               <button
                 onClick={() => setShowNotifications(!showNotifications)}
-                className={`relative p-2 ${darkMode ? 'text-gray-400' : 'text-gray-600'} hover:bg-gray-100 rounded-lg transition-colors`}
+                className={`relative p-2 ${darkMode ? 'text-gray-400 hover:bg-gray-700' : 'text-gray-600 hover:bg-gray-100'} rounded-lg transition-colors`}
               >
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
@@ -293,10 +315,10 @@ const PatientLayout = () => {
               </div>
 
               {/* Profile */}
-              <div className="relative">
+              <div className="relative" ref={profileRef}>
                 <button
                   onClick={() => setShowProfile(!showProfile)}
-                  className="flex items-center gap-3 p-2 hover:bg-gray-100 rounded-lg transition-colors"
+                  className={`flex items-center gap-3 p-2 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} rounded-lg transition-colors`}
                 >
                   <img
                     src={userData.photo || `https://ui-avatars.com/api/?name=${userData.name || 'User'}&background=random`}
@@ -318,12 +340,12 @@ const PatientLayout = () => {
                 {showProfile && (
                   <div className={`absolute right-0 mt-2 w-64 ${darkMode ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow-lg border ${darkMode ? 'border-gray-700' : 'border-gray-200'} py-2 z-50`}>
                     <div className={`px-4 py-3 border-b ${darkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                      <p className="font-semibold text-gray-800">{userData.name}</p>
+                      <p className={`font-semibold ${darkMode ? 'text-white' : 'text-gray-800'}`}>{userData.name}</p>
                       <p className={`text-sm ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>{userData.email}</p>
                       <p className="text-xs text-green-600 mt-1">{userData.healthId}</p>
                     </div>
                     <Link to="/patient/settings" className={`block px-4 py-2 ${darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>Profile Settings</Link>
-                    <button onClick={handleLogout} className="w-full text-left px-4 py-2 hover:bg-red-50 text-red-600">
+                    <button onClick={handleLogout} className={`w-full text-left px-4 py-2 ${darkMode ? 'hover:bg-red-900/20' : 'hover:bg-red-50'} text-red-600`}>
                       Log out
                     </button>
                   </div>
