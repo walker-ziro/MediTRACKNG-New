@@ -111,6 +111,20 @@ const AdminLayout = () => {
            <p className={`text-xs ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>Admin Portal</p>
         </div>
 
+        {/* Mobile Search Bar */}
+        <div className="px-4 pb-4 md:hidden">
+          <div className="relative w-full">
+            <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+            <input
+              type="text"
+              placeholder="Search..."
+              className={`w-full pl-10 pr-4 py-2 ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-200'} border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500`}
+            />
+          </div>
+        </div>
+
         {/* Navigation */}
         <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 120px)' }}>
           <Link
@@ -254,7 +268,7 @@ const AdminLayout = () => {
       <div className="ml-0 md:ml-64 flex flex-col min-h-screen transition-all duration-300">
         {/* Top Navigation Bar */}
         <header className={`${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} border-b px-4 md:px-8 py-4 sticky top-0 z-40`}>
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex items-center justify-between gap-2 md:gap-4">
             {/* Hamburger Menu */}
             <button
               onClick={() => setIsSidebarOpen(true)}
@@ -266,7 +280,7 @@ const AdminLayout = () => {
             </button>
 
             {/* Search Bar */}
-            <div className="flex items-center flex-1 max-w-2xl">
+            <div className="hidden md:flex items-center flex-1 max-w-2xl">
               <div className="relative w-full">
                 <svg className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
@@ -280,7 +294,7 @@ const AdminLayout = () => {
             </div>
 
             {/* Right Side Actions */}
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 md:gap-4">
               {/* Dark Mode Toggle */}
               <button
                 onClick={() => updateTheme(darkMode ? 'light' : 'dark')}

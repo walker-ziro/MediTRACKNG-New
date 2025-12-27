@@ -388,7 +388,7 @@ const NearbyHealthCenters = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Map */}
           <div className="lg:col-span-2">
-            <div className={`rounded-xl shadow-lg overflow-hidden border relative ${darkMode ? 'border-gray-700' : 'border-gray-200'}`} style={{ height: '600px' }}>
+            <div className={`rounded-xl shadow-lg overflow-hidden border relative z-0 ${darkMode ? 'border-gray-700' : 'border-gray-200'}`} style={{ height: '600px' }}>
               {loading && (
                 <div className={`absolute inset-0 z-[1000] flex items-center justify-center ${darkMode ? 'bg-gray-900' : 'bg-gray-50'}`}>
                   <div className="text-center">

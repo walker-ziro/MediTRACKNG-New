@@ -457,6 +457,9 @@ const PatientSignup = ({ isEmbedded = false }) => {
                   name="emergencyContact.phone"
                   value={formData.emergencyContact.phone}
                   onChange={handleChange}
+                  onInput={(e) => e.target.value = e.target.value.replace(/[^0-9]/g, '').slice(0, 13)}
+                  maxLength={13}
+                  pattern="[0-9]*"
                   placeholder="+234 XXX XXX XXXX"
                   className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
