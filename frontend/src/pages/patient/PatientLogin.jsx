@@ -88,7 +88,7 @@ const PatientLogin = ({ isEmbedded = false }) => {
               value={formData.email}
               onChange={handleChange}
               placeholder="Enter your email"
-              className={`w-full px-4 py-3 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none transition-all`}
+              className={`w-full px-4 py-3 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none transition-all`}
               required
             />
           </div>
@@ -106,7 +106,7 @@ const PatientLogin = ({ isEmbedded = false }) => {
                 value={formData.password}
                 onChange={handleChange}
                 placeholder="Enter your password"
-                className={`w-full px-4 py-3 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none transition-all`}
+                className={`w-full px-4 py-3 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none transition-all`}
                 required
               />
               <button

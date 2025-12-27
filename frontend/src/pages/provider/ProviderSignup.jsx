@@ -279,7 +279,7 @@ const ProviderSignup = ({ isEmbedded = false }) => {
                   value={formData.firstName}
                   onChange={handleChange}
                   placeholder="Enter first name"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -291,7 +291,7 @@ const ProviderSignup = ({ isEmbedded = false }) => {
                   value={formData.lastName}
                   onChange={handleChange}
                   placeholder="Enter last name"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -303,7 +303,7 @@ const ProviderSignup = ({ isEmbedded = false }) => {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="your.email@hospital.com"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -318,7 +318,7 @@ const ProviderSignup = ({ isEmbedded = false }) => {
                   maxLength={13}
                   pattern="[0-9]*"
                   placeholder="08012345678"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -331,7 +331,7 @@ const ProviderSignup = ({ isEmbedded = false }) => {
                   onChange={handleChange}
                   min="1900-01-01"
                   max={new Date().toISOString().split('T')[0]}
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -341,7 +341,7 @@ const ProviderSignup = ({ isEmbedded = false }) => {
                   name="gender"
                   value={formData.gender}
                   onChange={handleChange}
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 >
                   <option value="">Select gender</option>
@@ -366,7 +366,7 @@ const ProviderSignup = ({ isEmbedded = false }) => {
                   name="role"
                   value={formData.role}
                   onChange={handleChange}
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 >
                   <option value="">Select role</option>
@@ -386,7 +386,7 @@ const ProviderSignup = ({ isEmbedded = false }) => {
                   value={formData.specialization}
                   onChange={handleChange}
                   placeholder="e.g., Cardiology, Surgery"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                 />
               </div>
               <div>
@@ -397,7 +397,7 @@ const ProviderSignup = ({ isEmbedded = false }) => {
                   value={formData.licenseNumber}
                   onChange={handleChange}
                   placeholder="Professional license number"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -408,7 +408,7 @@ const ProviderSignup = ({ isEmbedded = false }) => {
                   name="licenseExpiryDate"
                   value={formData.licenseExpiryDate}
                   onChange={handleChange}
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -420,7 +420,7 @@ const ProviderSignup = ({ isEmbedded = false }) => {
                   value={formData.department}
                   onChange={handleChange}
                   placeholder="e.g., Emergency, Pediatrics"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                 />
               </div>
             </div>
@@ -441,7 +441,7 @@ const ProviderSignup = ({ isEmbedded = false }) => {
                   value={formData.facilityId}
                   onChange={handleChange}
                   placeholder="FAC-XXXXX"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -453,7 +453,7 @@ const ProviderSignup = ({ isEmbedded = false }) => {
                   value={formData.facilityName}
                   onChange={handleChange}
                   placeholder="Hospital/Clinic name"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -475,7 +475,7 @@ const ProviderSignup = ({ isEmbedded = false }) => {
                   value={formData.address.street}
                   onChange={handleChange}
                   placeholder="Street address"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -487,7 +487,7 @@ const ProviderSignup = ({ isEmbedded = false }) => {
                   value={formData.address.city}
                   onChange={handleChange}
                   placeholder="City"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -499,7 +499,7 @@ const ProviderSignup = ({ isEmbedded = false }) => {
                   value={formData.address.state}
                   onChange={handleChange}
                   placeholder="State"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -511,7 +511,7 @@ const ProviderSignup = ({ isEmbedded = false }) => {
                   value={formData.address.postalCode}
                   onChange={handleChange}
                   placeholder="Postal code"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -534,7 +534,7 @@ const ProviderSignup = ({ isEmbedded = false }) => {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="Minimum 8 characters"
-                    className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                    className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                     required
                   />
                   <button
@@ -555,7 +555,7 @@ const ProviderSignup = ({ isEmbedded = false }) => {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     placeholder="Re-enter password"
-                    className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                    className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                     required
                   />
                   <button

@@ -278,7 +278,7 @@ const PatientSignup = ({ isEmbedded = false }) => {
                   value={formData.firstName}
                   onChange={handleChange}
                   placeholder="Enter first name"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -290,7 +290,7 @@ const PatientSignup = ({ isEmbedded = false }) => {
                   value={formData.lastName}
                   onChange={handleChange}
                   placeholder="Enter last name"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -302,7 +302,7 @@ const PatientSignup = ({ isEmbedded = false }) => {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="your.email@example.com"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -317,7 +317,7 @@ const PatientSignup = ({ isEmbedded = false }) => {
                   maxLength={13}
                   pattern="[0-9]*"
                   placeholder="08012345678"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -330,7 +330,7 @@ const PatientSignup = ({ isEmbedded = false }) => {
                   onChange={handleChange}
                   min="1900-01-01"
                   max={new Date().toISOString().split('T')[0]}
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -340,7 +340,7 @@ const PatientSignup = ({ isEmbedded = false }) => {
                   name="gender"
                   value={formData.gender}
                   onChange={handleChange}
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 >
                   <option value="">Select gender</option>
@@ -365,7 +365,7 @@ const PatientSignup = ({ isEmbedded = false }) => {
                   name="bloodType"
                   value={formData.bloodType}
                   onChange={handleChange}
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                 >
                   <option value="">Select blood type</option>
                   <option value="A+">A+</option>
@@ -384,7 +384,7 @@ const PatientSignup = ({ isEmbedded = false }) => {
                   name="genotype"
                   value={formData.genotype}
                   onChange={handleChange}
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                 >
                   <option value="">Select genotype</option>
                   <option value="AA">AA</option>
@@ -402,7 +402,7 @@ const PatientSignup = ({ isEmbedded = false }) => {
                   onChange={handleChange}
                   placeholder="List any known allergies (e.g., medications, food, environmental)"
                   rows="2"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none resize-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none resize-none`}
                 />
               </div>
               <div className="md:col-span-2">
@@ -413,7 +413,7 @@ const PatientSignup = ({ isEmbedded = false }) => {
                   onChange={handleChange}
                   placeholder="List any chronic conditions (e.g., diabetes, hypertension, asthma)"
                   rows="2"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none resize-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none resize-none`}
                 />
               </div>
             </div>
@@ -434,7 +434,7 @@ const PatientSignup = ({ isEmbedded = false }) => {
                   value={formData.emergencyContact.name}
                   onChange={handleChange}
                   placeholder="Full name"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -446,7 +446,7 @@ const PatientSignup = ({ isEmbedded = false }) => {
                   value={formData.emergencyContact.relationship}
                   onChange={handleChange}
                   placeholder="e.g., Spouse, Parent, Sibling"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -458,7 +458,7 @@ const PatientSignup = ({ isEmbedded = false }) => {
                   value={formData.emergencyContact.phone}
                   onChange={handleChange}
                   placeholder="+234 XXX XXX XXXX"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -470,7 +470,7 @@ const PatientSignup = ({ isEmbedded = false }) => {
                   value={formData.emergencyContact.email}
                   onChange={handleChange}
                   placeholder="contact@example.com"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                 />
               </div>
             </div>
@@ -491,7 +491,7 @@ const PatientSignup = ({ isEmbedded = false }) => {
                   value={formData.address.street}
                   onChange={handleChange}
                   placeholder="Street address"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -503,7 +503,7 @@ const PatientSignup = ({ isEmbedded = false }) => {
                   value={formData.address.city}
                   onChange={handleChange}
                   placeholder="City"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -515,7 +515,7 @@ const PatientSignup = ({ isEmbedded = false }) => {
                   value={formData.address.state}
                   onChange={handleChange}
                   placeholder="State"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -527,7 +527,7 @@ const PatientSignup = ({ isEmbedded = false }) => {
                   value={formData.address.postalCode}
                   onChange={handleChange}
                   placeholder="Postal code"
-                  className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                  className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                   required
                 />
               </div>
@@ -550,7 +550,7 @@ const PatientSignup = ({ isEmbedded = false }) => {
                     value={formData.password}
                     onChange={handleChange}
                     placeholder="Minimum 8 characters"
-                    className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                    className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                     required
                   />
                   <button
@@ -571,7 +571,7 @@ const PatientSignup = ({ isEmbedded = false }) => {
                     value={formData.confirmPassword}
                     onChange={handleChange}
                     placeholder="Re-enter password"
-                    className={`w-full px-4 py-2.5 border ${darkMode ? 'border-gray-600' : 'border-gray-300'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
+                    className={`w-full px-4 py-2.5 border ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'} rounded-lg focus:ring-2 focus:ring-gray-500 focus:border-transparent outline-none`}
                     required
                   />
                   <button

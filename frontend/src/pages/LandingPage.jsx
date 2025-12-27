@@ -6,6 +6,7 @@ const LandingPage = () => {
   const { theme, darkMode } = useSettings();
   const [scrolled, setScrolled] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [userType, setUserType] = useState('');
 
   useEffect(() => {
     const handleScroll = () => {
@@ -15,7 +16,9 @@ const LandingPage = () => {
     
     // Check login status
     const token = localStorage.getItem('token');
+    const storedUserType = localStorage.getItem('userType');
     setIsLoggedIn(!!token);
+    setUserType(storedUserType || '');
 
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
@@ -64,7 +67,7 @@ const LandingPage = () => {
           </span>
         </div>
         <div className="flex items-center gap-4">
-          {!isLoggedIn && (
+          {!isLoggedIn ? (
             <Link 
               to="/login" 
               className={`px-4 py-2 md:px-6 md:py-2.5 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 text-sm md:text-base ${
@@ -75,6 +78,17 @@ const LandingPage = () => {
             >
               <span className="md:hidden">Login</span>
               <span className="hidden md:inline">Login / Sign Up</span>
+            </Link>
+          ) : (
+            <Link 
+              to={`/${userType}/dashboard`}
+              className={`px-4 py-2 md:px-6 md:py-2.5 rounded-full font-semibold transition-all duration-300 transform hover:scale-105 text-sm md:text-base ${
+                darkMode 
+                  ? 'bg-blue-600 text-white hover:bg-blue-500 shadow-lg shadow-blue-900/20' 
+                  : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-200'
+              }`}
+            >
+              Dashboard
             </Link>
           )}
         </div>

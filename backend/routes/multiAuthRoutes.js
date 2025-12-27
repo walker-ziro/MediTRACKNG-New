@@ -79,6 +79,22 @@ router.post('/provider/register', async (req, res) => {
       }
     }
 
+    // Check if email is used by a Patient
+    const existingPatient = await PatientAuth.findOne({ email });
+    if (existingPatient) {
+      return res.status(400).json({ 
+        message: 'This email is already registered as a Patient. Please use a different email.' 
+      });
+    }
+
+    // Check if email is used by an Admin
+    const existingAdmin = await AdminAuth.findOne({ email });
+    if (existingAdmin) {
+      return res.status(400).json({ 
+        message: 'This email is already registered as an Admin. Please use a different email.' 
+      });
+    }
+
     // Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
@@ -148,6 +164,22 @@ router.post('/provider/register', async (req, res) => {
 router.post('/provider/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    // Check if email belongs to a patient
+    const patientExists = await PatientAuth.findOne({ email });
+    if (patientExists) {
+      return res.status(403).json({ 
+        message: 'This email is registered as a Patient. Please use the Patient Portal.' 
+      });
+    }
+
+    // Check if email belongs to an admin
+    const adminExists = await AdminAuth.findOne({ email });
+    if (adminExists) {
+      return res.status(403).json({ 
+        message: 'This email is registered as an Admin. Please use the Admin Portal.' 
+      });
+    }
 
     // Find provider
     const provider = await ProviderAuth.findOne({ email });
@@ -314,6 +346,22 @@ router.post('/patient/register', async (req, res) => {
       }
     }
 
+    // Check if email is used by a Provider
+    const existingProvider = await ProviderAuth.findOne({ email });
+    if (existingProvider) {
+      return res.status(400).json({ 
+        message: 'This email is already registered as a Provider. Please use a different email.' 
+      });
+    }
+
+    // Check if email is used by an Admin
+    const existingAdmin = await AdminAuth.findOne({ email });
+    if (existingAdmin) {
+      return res.status(400).json({ 
+        message: 'This email is already registered as an Admin. Please use a different email.' 
+      });
+    }
+
     // Generate OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const otpExpires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
@@ -370,6 +418,22 @@ router.post('/patient/register', async (req, res) => {
 router.post('/patient/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    // Check if email belongs to a provider
+    const providerExists = await ProviderAuth.findOne({ email });
+    if (providerExists) {
+      return res.status(403).json({ 
+        message: 'This email is registered as a Provider. Please use the Provider Portal.' 
+      });
+    }
+
+    // Check if email belongs to an admin
+    const adminExists = await AdminAuth.findOne({ email });
+    if (adminExists) {
+      return res.status(403).json({ 
+        message: 'This email is registered as an Admin. Please use the Admin Portal.' 
+      });
+    }
 
     // Find patient
     const patient = await PatientAuth.findOne({ email });
@@ -514,6 +578,22 @@ router.post('/admin/register', async (req, res) => {
       });
     }
 
+    // Check if email is used by a Provider
+    const existingProvider = await ProviderAuth.findOne({ email });
+    if (existingProvider) {
+      return res.status(400).json({ 
+        message: 'This email is already registered as a Provider. Please use a different email.' 
+      });
+    }
+
+    // Check if email is used by a Patient
+    const existingPatient = await PatientAuth.findOne({ email });
+    if (existingPatient) {
+      return res.status(400).json({ 
+        message: 'This email is already registered as a Patient. Please use a different email.' 
+      });
+    }
+
     // Create admin data object
     const adminData = {
       firstName,
@@ -561,6 +641,22 @@ router.post('/admin/register', async (req, res) => {
 router.post('/admin/login', async (req, res) => {
   try {
     const { email, password } = req.body;
+
+    // Check if email belongs to a provider
+    const providerExists = await ProviderAuth.findOne({ email });
+    if (providerExists) {
+      return res.status(403).json({ 
+        message: 'This email is registered as a Provider. Please use the Provider Portal.' 
+      });
+    }
+
+    // Check if email belongs to a patient
+    const patientExists = await PatientAuth.findOne({ email });
+    if (patientExists) {
+      return res.status(403).json({ 
+        message: 'This email is registered as a Patient. Please use the Patient Portal.' 
+      });
+    }
 
     // Find admin
     const admin = await AdminAuth.findOne({ email });
