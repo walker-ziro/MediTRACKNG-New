@@ -77,6 +77,15 @@ const PatientLayout = () => {
 
   const isActive = (path) => location.pathname === path;
 
+  const handleSearch = (e) => {
+    if (e.key === 'Enter') {
+      const query = e.target.value.trim();
+      if (query) {
+        navigate(`/patient/search?q=${encodeURIComponent(query)}`);
+      }
+    }
+  };
+
   if (!userData) return null;
 
   return (
@@ -120,6 +129,7 @@ const PatientLayout = () => {
             <input
               type="text"
               placeholder="Search..."
+              onKeyDown={handleSearch}
               className={`w-full pl-10 pr-4 py-2 ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-200'} border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500`}
             />
           </div>
@@ -289,6 +299,7 @@ const PatientLayout = () => {
                 <input
                   type="text"
                   placeholder="Search records, appointments... (Ctrl+K)"
+                  onKeyDown={handleSearch}
                   className={`w-full pl-10 pr-4 py-2 ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-200'} border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 />
               </div>

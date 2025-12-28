@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useSettings } from '../../context/SettingsContext';
 import { useApi } from '../../hooks/useApi';
 
 const Patients = () => {
   const { theme, t , darkMode } = useSettings();
   const { fetchData, postData, putData } = useApi();
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [filterStatus, setFilterStatus] = useState('all');
   const [showModal, setShowModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);

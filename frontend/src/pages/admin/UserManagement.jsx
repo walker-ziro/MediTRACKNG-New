@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useSettings } from '../../context/SettingsContext';
 import { useApi } from '../../hooks/useApi';
 import { useNotification } from '../../context/NotificationContext';
@@ -8,6 +9,8 @@ const UserManagement = () => {
   const { theme, t , darkMode } = useSettings();
   const { fetchData, putData } = useApi();
   const { showNotification } = useNotification();
+  const [searchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -90,6 +93,30 @@ const UserManagement = () => {
         </div>
       </div>
 
+      <div className={`rounded-xl shadow-sm border p-6 mb-6 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <h2 className={`text-lg font-semibold ${darkMode ? 'text-white' : 'text-gray-900'}`}>All Users</h2>
+          
+          {searchTerm && (
+            <div className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-blue-50 border-blue-200 text-blue-800'}`}>
+              <span>Searching for: <strong>{searchTerm}</strong></span>
+              <button 
+                onClick={() => {
+                  setSearchTerm('');
+                  // Remove search param from URL without reloading
+                  const url = new URL(window.location);
+                  url.searchParams.delete('search');
+                  window.history.pushState({}, '', url);
+                }}
+                className="ml-2 hover:text-red-500"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+
       <div className={`rounded-xl shadow-sm border overflow-hidden ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
         <div className="overflow-x-auto">
           <table className="w-full">
@@ -105,7 +132,18 @@ const UserManagement = () => {
               </tr>
             </thead>
             <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
-              {users.map((user) => (
+              {users
+                .filter(user => {
+                  if (!searchTerm) return true;
+                  const term = searchTerm.toLowerCase();
+                  return (
+                    user.name.toLowerCase().includes(term) ||
+                    user.email.toLowerCase().includes(term) ||
+                    user.role.toLowerCase().includes(term) ||
+                    user.id.toLowerCase().includes(term)
+                  );
+                })
+                .map((user) => (
                 <tr key={user.id} className={`${darkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-50'} transition-colors`}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-400">{user.id}</td>
                   <td className={`px-6 py-4 whitespace-nowrap text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>{user.name}</td>

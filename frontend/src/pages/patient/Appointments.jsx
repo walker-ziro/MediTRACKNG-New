@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useSettings } from '../../context/SettingsContext';
 import { useNotification } from '../../context/NotificationContext';
 import { useApi } from '../../hooks/useApi';
@@ -7,6 +8,8 @@ const Appointments = () => {
   const { theme, t , darkMode } = useSettings();
   const { showNotification } = useNotification();
   const { fetchData, postData, putData, loading } = useApi();
+  const [searchParams] = useSearchParams();
+  const [searchTerm, setSearchTerm] = useState(searchParams.get('search') || '');
   const [showModal, setShowModal] = useState(false);
   const [appointments, setAppointments] = useState([]);
   const [doctors, setDoctors] = useState([]);
@@ -130,12 +133,32 @@ const Appointments = () => {
       </div>
 
       <div className={`rounded-xl shadow-sm border p-6 mb-6 ${darkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
-        <button 
-          onClick={() => setShowModal(true)}
-          className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-        >
-          + Book Appointment
-        </button>
+        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+          <button 
+            onClick={() => setShowModal(true)}
+            className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
+          >
+            + Book Appointment
+          </button>
+          
+          {searchTerm && (
+            <div className={`flex items-center gap-2 px-4 py-2 rounded-lg border ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-blue-50 border-blue-200 text-blue-800'}`}>
+              <span>Searching for: <strong>{searchTerm}</strong></span>
+              <button 
+                onClick={() => {
+                  setSearchTerm('');
+                  // Remove search param from URL without reloading
+                  const url = new URL(window.location);
+                  url.searchParams.delete('search');
+                  window.history.pushState({}, '', url);
+                }}
+                className="ml-2 hover:text-red-500"
+              >
+                ✕
+              </button>
+            </div>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
@@ -171,7 +194,18 @@ const Appointments = () => {
               </tr>
             </thead>
             <tbody className={`divide-y ${darkMode ? 'divide-gray-700' : 'divide-gray-200'}`}>
-              {appointments.map((apt) => (
+              {appointments
+                .filter(apt => {
+                  if (!searchTerm) return true;
+                  const term = searchTerm.toLowerCase();
+                  return (
+                    apt.doctor.toLowerCase().includes(term) ||
+                    apt.specialization.toLowerCase().includes(term) ||
+                    apt.type.toLowerCase().includes(term) ||
+                    apt.id.toLowerCase().includes(term)
+                  );
+                })
+                .map((apt) => (
                 <tr key={apt.id} className={darkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}>
                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600">{apt.id}</td>
                   <td className={`px-6 py-4 whitespace-nowrap text-sm ${darkMode ? 'text-white' : 'text-gray-900'}`}>{apt.date} {apt.time}</td>

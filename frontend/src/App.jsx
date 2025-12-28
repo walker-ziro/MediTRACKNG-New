@@ -63,6 +63,9 @@ import PatientTelemedicine from './pages/patient/Telemedicine';
 import PatientFamilyHealth from './pages/patient/FamilyHealth';
 import PatientSettings from './pages/patient/Settings';
 import NearbyHealthCenters from './pages/patient/NearbyHealthCenters';
+import PatientSearchResults from './pages/patient/SearchResults';
+import ProviderSearchResults from './pages/provider/SearchResults';
+import AdminSearchResults from './pages/admin/SearchResults';
 
 // Admin Pages
 import AdminUserManagement from './pages/admin/UserManagement';
@@ -247,6 +250,7 @@ function App() {
             <Route path="prescriptions" element={<ProviderPrescriptions />} />
             <Route path="lab-orders" element={<ProviderLabOrders />} />
             <Route path="telemedicine" element={<ProviderTelemedicine />} />
+            <Route path="search" element={<ProviderSearchResults />} />
             <Route path="settings" element={<ProviderSettings />} />
           </Route>
           
@@ -269,6 +273,7 @@ function App() {
             <Route path="telemedicine" element={<PatientTelemedicine />} />
             <Route path="family-health" element={<PatientFamilyHealth />} />
             <Route path="nearby-health-centers" element={<NearbyHealthCenters />} />
+            <Route path="search" element={<PatientSearchResults />} />
             <Route path="settings" element={<PatientSettings />} />
           </Route>
           
@@ -290,6 +295,7 @@ function App() {
             <Route path="analytics" element={<AdminAnalytics />} />
             <Route path="audit-logs" element={<AdminAuditLogs />} />
             <Route path="insurance" element={<AdminInsuranceManagement />} />
+            <Route path="search" element={<AdminSearchResults />} />
             <Route path="settings" element={<AdminSettings />} />
           </Route>
           
