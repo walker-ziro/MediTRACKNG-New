@@ -82,6 +82,7 @@ const ProviderLayout = () => {
       const query = e.target.value.trim();
       if (query) {
         navigate(`/provider/search?q=${encodeURIComponent(query)}`);
+        setIsSidebarOpen(false);
       }
     }
   };

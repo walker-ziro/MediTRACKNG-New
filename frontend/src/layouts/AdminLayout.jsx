@@ -82,6 +82,7 @@ const AdminLayout = () => {
       const query = e.target.value.trim();
       if (query) {
         navigate(`/admin/search?q=${encodeURIComponent(query)}`);
+        setIsSidebarOpen(false);
       }
     }
   };
