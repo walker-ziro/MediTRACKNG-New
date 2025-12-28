@@ -14,6 +14,7 @@ const PatientLayout = () => {
   const [currentTime, setCurrentTime] = useState(new Date());
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [notifications, setNotifications] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
   const profileRef = useRef(null);
 
   useEffect(() => {
@@ -79,10 +80,11 @@ const PatientLayout = () => {
 
   const handleSearch = (e) => {
     if (e.key === 'Enter') {
-      const query = e.target.value.trim();
+      const query = searchQuery.trim();
       if (query) {
         navigate(`/patient/search?q=${encodeURIComponent(query)}`);
         setIsSidebarOpen(false);
+        setSearchQuery('');
       }
     }
   };
@@ -130,6 +132,8 @@ const PatientLayout = () => {
             <input
               type="text"
               placeholder="Search..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               onKeyDown={handleSearch}
               className={`w-full pl-10 pr-4 py-2 ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-200'} border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500`}
             />
@@ -300,6 +304,8 @@ const PatientLayout = () => {
                 <input
                   type="text"
                   placeholder="Search records, appointments... (Ctrl+K)"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
                   onKeyDown={handleSearch}
                   className={`w-full pl-10 pr-4 py-2 ${darkMode ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-gray-50 border-gray-200'} border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500`}
                 />
