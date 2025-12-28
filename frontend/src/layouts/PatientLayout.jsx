@@ -85,6 +85,7 @@ const PatientLayout = () => {
         navigate(`/patient/search?q=${encodeURIComponent(query)}`);
         setIsSidebarOpen(false);
         setSearchQuery('');
+        e.target.blur();
       }
     }
   };
