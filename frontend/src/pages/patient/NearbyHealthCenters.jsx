@@ -136,23 +136,27 @@ const NearbyHealthCenters = () => {
       // Store map reference immediately
       leafletMapRef.current = map;
 
-      // Add tile layer - using OpenStreetMap (completely free)
+      // Add tile layer - using CartoDB (reliable and free)
       const tileUrl = darkMode 
         ? 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png'
-        : 'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png';
+        : 'https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png';
       
       const tileLayer = window.L.tileLayer(tileUrl, {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
         maxZoom: 19,
         minZoom: 3
       });
       
       tileLayer.addTo(map);
 
+      tileLayer.on('tileerror', (e) => {
+        console.warn('Tile loading error:', e);
+      });
+
       // Wait for map to be fully ready before adding markers
       map.whenReady(() => {
-        if (!isMountedRef.current || !leafletMapRef.current) {
-          console.warn('Component unmounted before map ready');
+        if (!isMountedRef.current || !leafletMapRef.current || map !== leafletMapRef.current) {
+          console.debug('Map no longer valid or replaced');
           return;
         }
 
@@ -266,18 +270,23 @@ const NearbyHealthCenters = () => {
           facilitiesData.sort((a, b) => a.distance - b.distance);
           setFacilities(facilitiesData);
 
-          // Check if map still exists before adding markers
-          if (!isMountedRef.current || !map || !leafletMapRef.current || !map.getContainer() || !map.getPanes()) {
-            console.warn('Map no longer valid, skipping marker addition');
+          // Check if map still exists and is the current map before adding markers
+          if (!isMountedRef.current || !map || map !== leafletMapRef.current || !map.getContainer() || !map.getPanes()) {
+            console.debug('Map no longer valid or replaced, skipping marker addition');
             setLoading(false);
             return;
           }
 
           // Add markers for facilities
           facilitiesData.forEach((facility, index) => {
-            // Skip if component unmounted or map destroyed
-            if (!isMountedRef.current || !leafletMapRef.current || !map.getContainer() || !map.getPanes()) {
+            // Skip if component unmounted or map destroyed or replaced
+            if (!isMountedRef.current || !leafletMapRef.current || map !== leafletMapRef.current || !map.getContainer() || !map.getPanes()) {
               return;
+            }
+
+            // Ensure marker pane exists
+            if (!map.getPane('markerPane')) {
+               return;
             }
 
             try {
