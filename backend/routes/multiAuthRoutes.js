@@ -44,22 +44,28 @@ router.post('/provider/register', async (req, res) => {
       email,
       phone,
       password,
+      dateOfBirth,
+      gender,
       specialization,
       licenseNumber,
       facilityId,
       facilityName,
       department,
       role,
-      licenseExpiryDate,
-      dateOfBirth,
-      gender,
-      address
+      licenseExpiryDate
     } = req.body;
 
     // Validate required fields
     if (!firstName || !lastName || !email || !phone || !password || !licenseNumber) {
       return res.status(400).json({ 
         message: 'Missing required fields: firstName, lastName, email, phone, password, licenseNumber' 
+      });
+    }
+
+    // Validate required personal fields
+    if (!dateOfBirth || !gender) {
+      return res.status(400).json({ 
+        message: 'Missing required fields: dateOfBirth, gender' 
       });
     }
 
@@ -106,6 +112,8 @@ router.post('/provider/register', async (req, res) => {
       email,
       phone,
       password,
+      dateOfBirth,
+      gender,
       licenseNumber,
       role: role || 'Doctor',
       otp,
@@ -118,9 +126,7 @@ router.post('/provider/register', async (req, res) => {
     if (facilityName) providerData.facilityName = facilityName;
     if (department) providerData.department = department;
     if (licenseExpiryDate) providerData.licenseExpiryDate = licenseExpiryDate;
-    if (dateOfBirth) providerData.dateOfBirth = dateOfBirth;
-    if (gender) providerData.gender = gender;
-    if (address) providerData.address = address;
+    // Note: dateOfBirth, gender, and address are not part of ProviderAuth schema
 
     const provider = await ProviderAuth.create(providerData);
 
@@ -330,6 +336,13 @@ router.post('/patient/register', async (req, res) => {
       });
     }
 
+    // Validate required medical fields
+    if (!dateOfBirth || !gender) {
+      return res.status(400).json({ 
+        message: 'Missing required fields: dateOfBirth, gender' 
+      });
+    }
+
     // Check if patient already exists
     let existingPatient = await PatientAuth.findOne({ 
       $or: [{ email }, { phone }] 
@@ -373,13 +386,13 @@ router.post('/patient/register', async (req, res) => {
       email,
       phone,
       password,
+      dateOfBirth,
+      gender,
       otp,
       otpExpires
     };
 
     // Add optional fields if provided
-    if (dateOfBirth) patientData.dateOfBirth = dateOfBirth;
-    if (gender) patientData.gender = gender;
     if (address) patientData.address = address;
     if (bloodType) patientData.bloodType = bloodType;
     if (genotype) patientData.genotype = genotype;
