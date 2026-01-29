@@ -141,7 +141,7 @@ router.post('/provider/register', async (req, res) => {
       console.error('Email sending failed:', emailResult.error);
       await ProviderAuth.findByIdAndDelete(provider._id);
       return res.status(500).json({ 
-        message: 'Failed to send verification email.',
+        message: 'Failed to send verification email. Please configure email service.',
         error: emailResult.error 
       });
     }
@@ -410,7 +410,7 @@ router.post('/patient/register', async (req, res) => {
       console.error('Email sending failed:', emailResult.error);
       await PatientAuth.findByIdAndDelete(patient._id);
       return res.status(500).json({ 
-        message: 'Failed to send verification email.',
+        message: 'Failed to send verification email. Please configure email service.',
         error: emailResult.error 
       });
     }

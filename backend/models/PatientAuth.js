@@ -154,9 +154,9 @@ patientAuthSchema.pre('save', async function(next) {
     const date = new Date();
     const dateStr = date.toISOString().slice(0, 10).replace(/-/g, '');
     const count = await mongoose.model('PatientAuth').countDocuments({
-      healthId: new RegExp(`^HID-${dateStr}`)
+      healthId: new RegExp(`^PID-${dateStr}`)
     });
-    this.healthId = `HID-${dateStr}-${String(count + 1).padStart(5, '0')}`;
+    this.healthId = `PID-${dateStr}-${String(count + 1).padStart(5, '0')}`;
   }
   next();
 });

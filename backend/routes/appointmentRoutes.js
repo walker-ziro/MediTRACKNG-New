@@ -29,6 +29,13 @@ router.post('/', auth, async (req, res) => {
       });
     }
 
+    // Ensure healthId is for a patient (starts with PID-)
+    if (!healthId.startsWith('PID-') && !healthId.startsWith('HID-')) {
+      return res.status(400).json({
+        message: 'Invalid patient ID. Only patients can have appointments.'
+      });
+    }
+
     // Find Patient
     const Patient = require('../models/Patient');
     console.log('Finding patient with healthId:', healthId);

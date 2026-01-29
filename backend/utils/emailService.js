@@ -5,7 +5,7 @@ let transporter = null;
 
 const createTransporter = () => {
   // Priority 1: Use Brevo (formerly Sendinblue) - works on Render
-  if (process.env.BREVO_API_KEY) {
+  if (process.env.BREVO_SMTP_USER && process.env.BREVO_SMTP_PASS) {
     return nodemailer.createTransport({
       host: 'smtp-relay.brevo.com',
       port: 587,
@@ -14,8 +14,8 @@ const createTransporter = () => {
       greetingTimeout: 10000,
       socketTimeout: 10000,
       auth: {
-        user: process.env.BREVO_SMTP_USER || process.env.BREVO_USER,
-        pass: process.env.BREVO_API_KEY,
+        user: process.env.BREVO_SMTP_USER,
+        pass: process.env.BREVO_SMTP_PASS,
       },
     });
   }
@@ -68,7 +68,7 @@ const sendOTP = async (email, otp) => {
     }
 
     // Use the authenticated user as the sender
-    const senderEmail = process.env.BREVO_API_KEY
+    const senderEmail = process.env.BREVO_SMTP_USER
       ? process.env.BREVO_FROM_EMAIL || 'noreply@meditrackng.com'
       : process.env.SENDGRID_API_KEY 
       ? process.env.SENDGRID_FROM_EMAIL || 'noreply@meditrackng.com'
