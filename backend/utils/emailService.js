@@ -58,11 +58,53 @@ transporter = createTransporter();
 
 const sendOTP = async (email, otp) => {
   try {
+    // Priority 1: Use Brevo REST API (works on all platforms including Render free tier)
+    if (process.env.BREVO_API_KEY && !process.env.BREVO_API_KEY.startsWith('xsmtpsib-')) {
+      console.log('Using Brevo REST API to send OTP');
+      
+      try {
+        const response = await axios.post(
+          'https://api.brevo.com/v3/smtp/email',
+          {
+            sender: {
+              name: 'MediTRACKNG',
+              email: process.env.BREVO_FROM_EMAIL || 'noreply@meditrackng.com'
+            },
+            to: [{ email: email }],
+            subject: 'Your Verification Code',
+            htmlContent: `
+              <div style="font-family: Arial, sans-serif; padding: 20px; color: #333;">
+                <h2 style="color: #2563eb;">MediTRACKNG Verification</h2>
+                <p>Thank you for registering. Please use the following OTP to verify your account:</p>
+                <h1 style="font-size: 32px; letter-spacing: 5px; color: #1e40af; margin: 20px 0;">${otp}</h1>
+                <p>This code will expire in 10 minutes.</p>
+                <p>If you did not request this, please ignore this email.</p>
+              </div>
+            `
+          },
+          {
+            headers: {
+              'accept': 'application/json',
+              'api-key': process.env.BREVO_API_KEY,
+              'content-type': 'application/json'
+            }
+          }
+        );
+
+        console.log('Brevo REST API response:', response.status);
+        return { success: true };
+      } catch (apiError) {
+        console.error('Brevo REST API error:', apiError.response?.data || apiError.message);
+        // Fall through to try SMTP
+      }
+    }
+
+    // Priority 2: Try SMTP (for local development with Gmail)
     // Ensure transporter exists
     if (!transporter) {
       transporter = createTransporter();
       if (!transporter) {
-        console.error("Email configuration missing: No email service configured (SENDGRID_API_KEY or GMAIL_USER/GMAIL_PASS).");
+        console.error("Email configuration missing: No email service configured.");
         return { success: false, error: "Server email configuration is missing. Please contact administrator." };
       }
     }
